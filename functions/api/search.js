@@ -43,21 +43,23 @@ export async function onRequestGet(context) {
   const rl = await enforceRateLimit(context.env, context.request);
   if (!rl.ok) return rateLimitFailed(rl, rl.limit);
 
+  // 参数名：优先 `query`（用户指定），并兼容旧的 `q` 调用方。
+  // 注意：Pages Functions 里请求对象是 context.request，没有裸的 request。
   const url = new URL(context.request.url);
-  const q = (url.searchParams.get('q') || '').trim();
-  if (!q) return json({ ok: true, query: '', cached: false, source: 'cache', items: [] });
-  if (q.length > 100) return fail('搜索关键词过长。', 400);
+  const query = (url.searchParams.get('query') || url.searchParams.get('q') || '').trim();
+  if (!query) return json({ ok: true, query: '', cached: false, source: 'cache', items: [] });
+  if (query.length > 100) return fail('搜索关键词过长。', 400);
 
   try {
     // 1) 先查 D1 缓存
     const cached = await DB.prepare(
       'SELECT id, title, artist, cover_url, bvid, bili_url FROM vocadb_cache WHERE title LIKE ? ORDER BY updated_at DESC LIMIT 20'
-    ).bind(`%${q}%`).all();
+    ).bind(`%${query}%`).all();
 
     if (cached.results && cached.results.length > 0) {
       return json({
         ok: true,
-        query: q,
+        query,
         cached: true,
         source: 'cache',
         items: cached.results.map(it => ({
@@ -72,7 +74,7 @@ export async function onRequestGet(context) {
     }
 
     // 2) 请求 VocaDB 公开 API（带 PVs/MainPicture 以自动提取封面与 B 站源）
-    const params = new URLSearchParams({ query: q, start: '0', maxResults: '12', lang: 'zh-CN', fields: 'PVs,MainPicture,ArtistString' });
+    const params = new URLSearchParams({ query, start: '0', maxResults: '12', lang: 'zh-CN', fields: 'PVs,MainPicture,ArtistString' });
     const res = await fetch(`${VOCADB_API}?${params.toString()}`, {
       headers: { 'user-agent': USER_AGENT, accept: 'application/json' },
     });
@@ -111,7 +113,7 @@ export async function onRequestGet(context) {
       await DB.batch(stmts);
     }
 
-    return json({ ok: true, query: q, cached: false, source: 'vocadb', items });
+    return json({ ok: true, query, cached: false, source: 'vocadb', items });
   } catch (error) {
     return fail(error?.message || '搜索失败，请稍后重试。', 500);
   }
