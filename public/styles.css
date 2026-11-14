@@ -356,3 +356,29 @@ html { scroll-behavior: smooth; }
 input, textarea, select { -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
 .live-pill, .week-chip, .top-tag, .admin-card-badge, .copy-count { -webkit-backdrop-filter: blur(10px) saturate(140%); backdrop-filter: blur(10px) saturate(140%); }
 .game-card { background: linear-gradient(160deg, rgba(255,255,255,.12), rgba(255,255,255,.05)); }
+
+/* ============================================================
+   新增小游戏：打砖块 / 打地鼠 / 华容道 / 黑白棋 / 石头剪刀布 / 21点
+   ============================================================ */
+.game-canvas { width: 100%; max-width: 300px; aspect-ratio: 3/4; border-radius: 14px; border: 1px solid rgba(255,255,255,.14); touch-action: none; display: block; margin: 0 auto; }
+
+.whack-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 300px; margin: 0 auto; }
+.whack-cell { aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #6b5332, #3a2c1a 70%); border: 1px solid rgba(255,255,255,.1); position: relative; font-size: 30px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.whack-cell.mole::before { content: '🐹'; position: absolute; bottom: 12%; animation: molePop .15s ease; }
+@keyframes molePop { from { transform: translateY(60%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.puzzle-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; max-width: 320px; margin: 0 auto; }
+.puzzle-cell { aspect-ratio: 1; border-radius: 10px; background: linear-gradient(160deg, rgba(255,255,255,.16), rgba(255,255,255,.06)); border: 1px solid rgba(255,255,255,.14); font-size: 20px; font-weight: 700; color: #f4f6ff; cursor: pointer; }
+.puzzle-cell.blank { background: transparent; border-color: transparent; pointer-events: none; }
+
+.reversi-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; max-width: 320px; margin: 0 auto; }
+.reversi-cell { aspect-ratio: 1; border-radius: 8px; background: #1a4d3a; border: 1px solid rgba(255,255,255,.1); position: relative; cursor: pointer; }
+.reversi-cell.black::after, .reversi-cell.white::after { content: ''; position: absolute; inset: 18%; border-radius: 50%; }
+.reversi-cell.black::after { background: #17181f; box-shadow: 0 2px 4px rgba(0,0,0,.5); }
+.reversi-cell.white::after { background: #f4f6ff; box-shadow: 0 2px 4px rgba(0,0,0,.35); }
+
+.rps-wrap { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.rps-wrap .button { flex: 1; min-width: 96px; }
+
+.bj-wrap { display: flex; flex-direction: column; gap: 12px; align-items: center; max-width: 300px; margin: 0 auto; }
+.game-status { font-size: 22px; font-weight: 700; color: #f4f6ff; letter-spacing: 1px; }
