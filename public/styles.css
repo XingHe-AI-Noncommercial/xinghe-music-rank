@@ -261,3 +261,70 @@ html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* ============================================================
+   星河音浪榜 · 小游戏（经典合集）
+   ============================================================ */
+.games-modal-card { width: min(560px, 92vw); max-height: min(86vh, 720px); overflow: auto; }
+.games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 16px; }
+.game-card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 8px; border-radius: 14px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.05); color: #e7eaf3; cursor: pointer; transition: transform .2s ease, border-color .2s ease, background .2s ease; text-align: center; }
+.game-card:hover { transform: translateY(-3px); border-color: rgba(126,217,255,.5); background: rgba(126,217,255,.1); }
+.game-card-icon { font-size: 26px; }
+.game-card strong { font-size: 14px; }
+.game-card small { color: #8b90a6; font-size: 10px; }
+.game-modal-card { width: min(400px, 94vw); }
+.game-stage { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 12px; }
+.game-canvas { max-width: 100%; background: #0c0e16; border: 1px solid rgba(255,255,255,.1); border-radius: 10px; }
+.game-btn { padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.08); color: #e7eaf3; cursor: pointer; font-size: 13px; }
+.game-btn:hover { background: rgba(255,255,255,.14); }
+.game-status { color: #a9aec2; font-size: 13px; text-align: center; min-height: 18px; }
+
+/* 2048 */
+.g2048-wrap { display: flex; flex-direction: column; gap: 8px; align-items: center; width: 100%; }
+.g2048-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: min(100%, 300px); background: rgba(255,255,255,.05); padding: 8px; border-radius: 12px; }
+.g2048-tile { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; border-radius: 8px; background: rgba(255,255,255,.06); color: #cfd4e4; }
+.g2048-tile.v2 { background: #3b4257; color: #eef2ff; }
+.g2048-tile.v4 { background: #4a5273; color: #eef2ff; }
+.g2048-tile.v8 { background: #6a5bd8; color: #fff; }
+.g2048-tile.v16 { background: #8a5cd8; color: #fff; }
+.g2048-tile.v32 { background: #d8548f; color: #fff; }
+.g2048-tile.v64 { background: #e04f4f; color: #fff; }
+.g2048-tile.v128, .g2048-tile.v256 { background: #f0a63a; color: #2a1200; }
+.g2048-tile.v512, .g2048-tile.v1024 { background: #f5c542; color: #2a1200; }
+.g2048-tile.v2048 { background: #ffe066; color: #2a1200; }
+
+/* 扫雷 */
+.mine-grid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 3px; width: min(100%, 300px); }
+.mine-cell { aspect-ratio: 1; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.08); color: #dfe4f2; font-size: 13px; cursor: pointer; border-radius: 4px; }
+.mine-cell:hover { background: rgba(255,255,255,.16); }
+.mine-cell.revealed { background: rgba(255,255,255,.04); cursor: default; }
+.mine-cell.boom { background: #e04f4f; color: #fff; }
+.mine-cell.flagged { background: rgba(255,213,102,.15); }
+.mine-cell.c1 { color: #7ed9ff; } .mine-cell.c2 { color: #6ee7b7; } .mine-cell.c3 { color: #ff6b9d; }
+.mine-cell.c4 { color: #c084fc; } .mine-cell.c5 { color: #fca5a5; } .mine-cell.c6 { color: #93c5fd; }
+.mine-cell.c7 { color: #fcd34d; } .mine-cell.c8 { color: #f9a8d4; }
+
+/* 五子棋 */
+.gomoku-board { display: grid; grid-template-columns: repeat(9, 1fr); gap: 2px; width: min(100%, 300px); background: rgba(255,255,255,.05); padding: 6px; border-radius: 10px; }
+.gomoku-cell { aspect-ratio: 1; border: 1px solid rgba(255,255,255,.08); background: transparent; color: #eef2ff; font-size: 16px; cursor: pointer; }
+.gomoku-cell:hover { background: rgba(255,255,255,.08); }
+.gomoku-cell.black { color: #0d0e16; text-shadow: 0 0 2px rgba(255,255,255,.5); }
+.gomoku-cell.white { color: #eef2ff; }
+
+/* 记忆翻牌 */
+.memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: min(100%, 300px); }
+.memory-card { aspect-ratio: 1; border-radius: 10px; border: 1px solid rgba(255,255,255,.14); background: linear-gradient(150deg, rgba(126,217,255,.2), rgba(63,140,255,.2)); color: #eef2ff; font-size: 22px; cursor: pointer; transition: transform .15s ease; }
+.memory-card.flipped { background: rgba(255,255,255,.08); }
+.memory-card.done { background: rgba(110,231,183,.18); border-color: rgba(110,231,183,.4); cursor: default; }
+
+/* 井字棋 */
+.tictac-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: min(100%, 240px); }
+.tictac-cell { aspect-ratio: 1; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); color: #eef2ff; font-size: 26px; cursor: pointer; }
+.tictac-cell:hover { background: rgba(255,255,255,.12); }
+.tictac-cell.black { color: #7ed9ff; }
+.tictac-cell.white { color: #ff6b9d; }
+
+/* 猜数字 */
+.guess-form { display: flex; gap: 8px; align-items: center; }
+.guess-form input { width: 90px; padding: 9px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.07); color: #eef2ff; font-size: 15px; text-align: center; }
+.guess-form input:focus { outline: 2px solid rgba(126,217,255,.6); }
