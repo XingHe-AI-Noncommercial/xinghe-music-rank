@@ -49,15 +49,18 @@ export async function ensureWeek(DB) {
 }
 
 // ---------- 响应工具 ----------
+// 注意：set-cookie 必须直接放在 Response 构造函数的 headers 对象里（Cloudflare
+// 官方可靠写法）；不要用 new Headers() 再 append('set-cookie')，部分运行时会把
+// set-cookie 当作禁用响应头静默丢弃，导致登录后 Cookie 未写入、随即被弹回。
 export function json(data, status = 200, extraHeaders = undefined) {
-  const headers = new Headers({
+  const headers = {
     'content-type': 'application/json; charset=utf-8',
     'cache-control': 'no-store',
     'x-content-type-options': 'nosniff',
-  });
+  };
   if (extraHeaders && typeof extraHeaders === 'object') {
     for (const [key, value] of Object.entries(extraHeaders)) {
-      if (value !== undefined && value !== null) headers.append(key, value);
+      if (value !== undefined && value !== null) headers[key] = value;
     }
   }
   return new Response(JSON.stringify(data), { status, headers });
@@ -176,7 +179,8 @@ export async function insertSong(DB, data, status = 'pending', meta = {}) {
 // ---------- 管理员会话（密码存 Cloudflare Secret，前端不可见） ----------
 export function cookieValue(name, value, options = {}) {
   const parts = [`${name}=${encodeURIComponent(value)}`, 'Path=/', 'HttpOnly', 'SameSite=Lax'];
-  if (options.secure !== false) parts.push('Secure');
+  // 只有明确 secure===true 才加 Secure，避免 http 环境下 Secure Cookie 不被存储
+  if (options.secure === true) parts.push('Secure');
   if (options.maxAge) parts.push(`Max-Age=${options.maxAge}`);
   return parts.join('; ');
 }
@@ -188,12 +192,14 @@ async function hmac(secret, message) {
   return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-export async function makeAdminCookie(env, ttlSeconds = 6 * 3600) {
+export async function makeAdminCookie(env, options = {}) {
   const secret = String(env.ADMIN_SESSION_SECRET || '');
   if (!secret) throw new Error('未配置 ADMIN_SESSION_SECRET（请在 Cloudflare Secret 中设置）。');
+  const ttlSeconds = options.ttlSeconds || 6 * 3600;
+  const secure = options.secure === true;
   const payload = `${Date.now()}|${Math.random().toString(36).slice(2)}`;
   const sig = await hmac(secret, payload);
-  return { value: `${payload}.${sig}`, cookie: cookieValue('xh_admin', `${payload}.${sig}`, { maxAge: ttlSeconds }) };
+  return { value: `${payload}.${sig}`, cookie: cookieValue('xh_admin', `${payload}.${sig}`, { secure, maxAge: ttlSeconds }) };
 }
 
 export async function isAdmin(request, env) {
