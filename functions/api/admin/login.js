@@ -13,6 +13,8 @@ export async function onRequestPost(context) {
 
   const body = await readBody(context.request);
   const supplied = String(body?.password || '');
+  // 只识别 admin 开头的密钥（与配置的 ADMIN_PASSWORD 匹配）
+  if (!supplied.toLowerCase().startsWith('admin')) return fail('密钥必须以 admin 开头。', 401);
   let diff = supplied.length ^ expected.length;
   const length = Math.max(supplied.length, expected.length);
   for (let i = 0; i < length; i++) diff |= (supplied.charCodeAt(i) || 0) ^ (expected.charCodeAt(i) || 0);
