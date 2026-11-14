@@ -144,6 +144,30 @@ export async function bumpRequestCounter(DB) {
   } catch { return false; }
 }
 
+// ---------- 访客收件箱（复用 settings 表，按 IP 存 JSON 消息；无 SQL 改动） ----------
+export async function getInbox(DB, ip) {
+  const raw = await getSetting(DB, 'inbox:' + ip, '[]');
+  try { const arr = JSON.parse(raw); return Array.isArray(arr) ? arr : []; } catch { return []; }
+}
+
+export async function setInbox(DB, ip, list) {
+  await setSetting(DB, 'inbox:' + ip, JSON.stringify(list.slice(0, 100)));
+}
+
+export async function addInboxMessage(DB, ip, title, body) {
+  if (!ip) return;
+  const list = await getInbox(DB, ip);
+  list.unshift({ id: makeId(), title: String(title || '').slice(0, 80), body: String(body || '').slice(0, 1000), createdAt: isoNow(), read: false });
+  await setInbox(DB, ip, list);
+}
+
+export async function markInboxRead(DB, ip, id) {
+  const list = await getInbox(DB, ip);
+  const item = list.find(m => m.id === id);
+  if (item) { item.read = true; await setInbox(DB, ip, list); }
+  return Boolean(item);
+}
+
 // ---------- 访客国家码（Cloudflare CF-IPCountry 头） ----------
 export function countryCode(request) {
   return String(request.headers.get('CF-IPCountry') || '').toUpperCase();
