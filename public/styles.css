@@ -445,3 +445,22 @@ input, textarea, select { -webkit-backdrop-filter: blur(8px); backdrop-filter: b
 .modal-actions .button { min-height: 40px; }
 textarea { width: 100%; border: 1px solid rgba(255,255,255,.1); border-radius: 10px; padding: 10px 12px; color: #f7f4ff; background: rgba(255,255,255,.035); outline: 0; font-size: 11px; resize: vertical; font-family: inherit; }
 textarea:focus { border-color: rgba(168,139,255,.45); box-shadow: 0 0 0 3px rgba(168,139,255,.08); }
+
+/* ============================================================
+   收件箱新消息 · 进入网页全屏提示
+   ============================================================ */
+.inbox-alert { position: fixed; inset: 0; z-index: 58; display: flex; align-items: center; justify-content: center; padding: 20px; background: radial-gradient(120% 90% at 50% -20%, #1c2a52, #0a0f22 55%, #05070f); }
+.inbox-alert.hidden { display: none; }
+.inbox-alert-slide { text-align: center; max-width: min(92vw, 440px); width: 100%; padding: 30px 22px 24px; border-radius: 26px; border: 1px solid rgba(140,180,255,.24); background: linear-gradient(160deg, rgba(30,42,86,.75), rgba(13,18,38,.9)); box-shadow: 0 30px 90px rgba(0,0,0,.6), inset 0 0 60px rgba(120,160,255,.06); animation: banSlide .6s cubic-bezier(.2,.9,.24,1.02) both; }
+.inbox-alert-icon { font-size: clamp(48px, 14vw, 72px); line-height: 1; margin-bottom: 12px; animation: inboxBounce 1.4s ease-in-out infinite; }
+@keyframes inboxBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.inbox-alert-slide h2 { font-size: clamp(20px, 5vw, 27px); margin: 0 0 12px; color: #eaf1ff; }
+.inbox-alert-slide h2 span { color: #9ec1ff; }
+.inbox-alert-preview { margin: 0 0 22px; color: #b9c6e8; font-size: clamp(11px, 3vw, 13px); line-height: 1.8; max-height: 88px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+.inbox-alert-preview.is-empty { display: none; }
+.inbox-alert-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.inbox-alert-actions .button { min-width: 130px; }
+@media (max-width: 640px) {
+  .inbox-alert { padding: 14px; }
+  .inbox-alert-slide { padding: 24px 14px 20px; border-radius: 20px; }
+}
