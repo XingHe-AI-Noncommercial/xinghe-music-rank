@@ -171,15 +171,15 @@
               <div id="admin-ip-list" class="admin-ip-list"></div>
               <form id="admin-ban-form" class="admin-add-form">
                 <label>IP 地址<input name="ip" maxlength="64" required placeholder="点下方「封禁」自动填入，或手填"></label>
-                <label>时效（小时）<input name="hours" type="number" min="1" max="8760" value="24" placeholder="24"></label>
+                <label>时效（秒）<input name="seconds" type="number" min="1" max="31536000" value="3600" placeholder="秒"></label>
                 <label class="wide">原因<input name="reason" maxlength="200" placeholder="封禁原因（可选）"></label>
-                <div class="copy-row"><label class="inline-check"><input name="permanent" type="checkbox"> 永久封禁（忽略时效）</label></div>
+                <div class="copy-row"><label class="inline-check"><input name="permanent" type="checkbox"> 永久封禁（忽略时效）</label><span class="ban-presets"><button type="button" data-sec="60">1分</button><button type="button" data-sec="300">5分</button><button type="button" data-sec="900">15分</button><button type="button" data-sec="3600">1时</button><button type="button" data-sec="86400">24时</button></span></div>
                 <button class="button button-primary" type="submit">⛔ 封禁此 IP</button>
               </form>
               <div id="admin-ban-list" class="admin-ban-list"></div>
               <div class="copy-row" style="margin-top:10px">
                 <button id="ban-simulate-toggle" class="button button-outline">▶ 模拟封禁预览</button>
-                <label class="inline-check" style="margin-left:8px">时长 <input id="ban-simulate-hours" type="number" min="1" max="24" value="1" style="width:56px"> 小时</label>
+                <label class="inline-check" style="margin-left:8px">时长 <input id="ban-simulate-seconds" type="number" min="1" max="86400" value="60" style="width:64px"> 秒</label>
               </div>
             </section>
           </div>
@@ -216,14 +216,22 @@
     </div>
   </section>
 
-  <!-- IP 封禁页（真实封禁命中或开发者模拟预览时显示） -->
+  <!-- IP 封禁页（真实封禁命中或开发者模拟预览时显示）：动态下滑 + 中央三角警告 -->
   <section id="ban-screen" class="ban-screen hidden" aria-label="IP 被封禁">
-    <div class="ban-body">
-      <div class="ban-icon">⛔</div>
+    <div class="ban-grid-bg" aria-hidden="true"></div>
+    <div class="ban-slide">
+      <div class="ban-warning" aria-hidden="true">
+        <svg viewBox="0 0 100 100"><defs><linearGradient id="warnGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd166"/><stop offset="1" stop-color="#ff8c42"/></linearGradient></defs><polygon points="50,7 93,87 7,87" fill="url(#warnGrad)" stroke="#fff3d6" stroke-width="4" stroke-linejoin="round"/><rect x="45.8" y="34" width="8.4" height="32" rx="4.2" fill="#1b1226"/><circle cx="50" cy="77" r="5" fill="#1b1226"/></svg>
+        <span class="ban-ring"></span>
+      </div>
       <h1>您已被封禁</h1>
       <p id="ban-reason">由于异常行为，您的 IP 已被暂时封禁。</p>
       <div id="ban-until" class="ban-until">剩余 —</div>
-      <button id="ban-exit-preview" class="button button-outline hidden">结束预览，回到网站</button>
+      <div class="ban-actions">
+        <button id="ban-dev" class="button button-outline hidden">🔓 开发者模式（自我解封）</button>
+        <button id="ban-exit-preview" class="button button-outline hidden">结束预览，回到网站</button>
+      </div>
+      <div class="ban-foot">星河音浪榜 · 安全封禁</div>
     </div>
   </section>
 
