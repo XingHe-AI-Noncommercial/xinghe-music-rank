@@ -165,11 +165,12 @@
               <div id="admin-announcement-list" class="admin-announcement-list"></div>
             </section>
 
-            <!-- IP 封禁：封禁指定 IP + 时效 + 模拟封禁预览 -->
+            <!-- IP 封禁：显示访客公网 IP + 进入/投稿，可选中封禁；支持模拟封禁预览 -->
             <section class="admin-card">
-              <div class="admin-card-title"><div><span class="mini-label">IP BAN</span><h3>IP 封禁</h3><p class="admin-card-subtitle">封禁一个 IP（可设时效），被封禁者访问时看到封禁页；支持模拟封禁预览效果。</p></div><span id="admin-ban-count" class="admin-card-badge">0 条</span></div>
+              <div class="admin-card-title"><div><span class="mini-label">IP BAN</span><h3>IP 封禁</h3><p class="admin-card-subtitle">每个用户进入网站或投稿都会记录他的公网 IP。在下方列表中选中一个 IP，点「封禁」填好时效即可封号；被封 IP 访问时看到封禁页。</p></div><span id="admin-ban-count" class="admin-card-badge">0 条</span></div>
+              <div id="admin-ip-list" class="admin-ip-list"></div>
               <form id="admin-ban-form" class="admin-add-form">
-                <label>IP 地址<input name="ip" maxlength="64" required placeholder="例如 1.2.3.4 或 IPv6"></label>
+                <label>IP 地址<input name="ip" maxlength="64" required placeholder="点下方「封禁」自动填入，或手填"></label>
                 <label>时效（小时）<input name="hours" type="number" min="1" max="8760" value="24" placeholder="24"></label>
                 <label class="wide">原因<input name="reason" maxlength="200" placeholder="封禁原因（可选）"></label>
                 <div class="copy-row"><label class="inline-check"><input name="permanent" type="checkbox"> 永久封禁（忽略时效）</label></div>
