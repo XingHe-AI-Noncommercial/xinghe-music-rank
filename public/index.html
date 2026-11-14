@@ -16,7 +16,7 @@
       <span class="brand-text"><strong>星河音浪榜</strong><small>XINGHE MUSIC CHART · LITE</small></span>
     </a>
     <nav class="main-nav"><a class="nav-active" href="#list">本周榜单</a><a href="#submit">投稿</a><a href="#about">规则说明</a></nav>
-    <div class="header-actions"><span id="header-live" class="live-pill"><i></i>正在连接</span><button class="button button-quiet" id="open-admin">开发者模式 ↗</button></div>
+    <div class="header-actions"><span id="header-live" class="live-pill"><i></i>正在连接</span><button class="button button-quiet" id="open-games">🎮 小游戏</button><button class="button button-quiet" id="open-admin">开发者模式 ↗</button></div>
   </header>
 
   <main id="top" class="page-shell">
@@ -199,6 +199,30 @@
   </section>
 
   <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- 小游戏：选择面板 -->
+  <div id="games-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="games-title">
+    <div class="modal-card games-modal-card">
+      <button class="modal-close" data-close="games-modal" aria-label="关闭">×</button>
+      <div class="modal-eyebrow">MINI GAMES / CLASSICS</div>
+      <h2 id="games-title">小游戏</h2>
+      <p class="modal-description">经典小游戏合集，点一个就能玩。手机支持点按 / 滑动操作。</p>
+      <div id="games-grid" class="games-grid"></div>
+    </div>
+  </div>
+
+  <!-- 小游戏：单个游戏舞台 -->
+  <div id="game-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="game-title">
+    <div class="modal-card game-modal-card">
+      <button id="game-close" class="modal-close" aria-label="关闭">×</button>
+      <div class="modal-eyebrow">MINI GAME</div>
+      <h2 id="game-title">小游戏</h2>
+      <p id="game-desc" class="modal-description"></p>
+      <div id="game-stage" class="game-stage"></div>
+    </div>
+  </div>
+
   <script src="./app.js" defer></script>
+  <script src="./games.js" defer></script>
 </body>
 </html>
