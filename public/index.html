@@ -259,6 +259,19 @@
     </div>
   </div>
 
+  <!-- 收件箱有新消息：进入网页时的全屏提示 -->
+  <section id="inbox-alert" class="inbox-alert hidden" aria-label="收件箱新消息">
+    <div class="inbox-alert-slide">
+      <div class="inbox-alert-icon" aria-hidden="true">📬</div>
+      <h2>您有 <span id="inbox-alert-count">1</span> 条新消息</h2>
+      <p id="inbox-alert-preview" class="inbox-alert-preview"></p>
+      <div class="inbox-alert-actions">
+        <button id="inbox-alert-later" class="button button-outline">稍后</button>
+        <button id="inbox-alert-view" class="button button-primary">查看收件箱</button>
+      </div>
+    </div>
+  </section>
+
   <!-- 收件箱：投稿审核结果等消息 -->
   <div id="inbox-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="inbox-title">
     <div class="modal-card modal-narrow">
