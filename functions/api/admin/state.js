@@ -3,7 +3,7 @@
 // 精简版后台数据：全部作品（含状态）+ 待审核列表 + 统计 + 本周周期。
 // 需开发者登录，同样限流。
 // ============================================================================
-import { enforceRateLimit, ensureWeek, fail, isAdmin, json, mondayOfBeijing, rateLimitFailed } from '../../_lib.js';
+import { enforceRateLimit, ensureWeek, fail, isAdmin, isMaintenanceOn, json, maskBvid, mondayOfBeijing, rateLimitFailed } from '../../_lib.js';
 
 export async function onRequestGet(context) {
   if (!(await isAdmin(context.request, context.env))) return fail('请先登录开发者模式。', 401);
@@ -30,15 +30,16 @@ export async function onRequestGet(context) {
          (SELECT COUNT(*) FROM songs WHERE status = 'rejected') AS rejected`
     ).first();
 
-    // 一键复制：只含已审核通过（approved）的 BV 号
-    const approvedBvids = (songs.results || []).filter(s => s.status === 'approved').map(s => s.bvid).filter(Boolean);
+    // 一键复制：只含已审核通过（approved）的【掩码】BV 号（对外不给真实编号）
+    const approvedBvids = (songs.results || []).filter(s => s.status === 'approved').map(s => maskBvid(s.bvid)).filter(Boolean);
 
     return json({
       ok: true,
       week: mondayOfBeijing(),
+      maintenance: await isMaintenanceOn(DB),
       songs: (songs.results || []).map(s => ({
         id: s.id,
-        bvid: s.bvid,
+        bvid: maskBvid(s.bvid),
         artist: s.artist,
         title: s.title,
         status: s.status,
@@ -49,7 +50,7 @@ export async function onRequestGet(context) {
       })),
       pending: (pending.results || []).map(s => ({
         id: s.id,
-        bvid: s.bvid,
+        bvid: maskBvid(s.bvid),
         artist: s.artist,
         title: s.title,
         createdAt: s.created_at,
