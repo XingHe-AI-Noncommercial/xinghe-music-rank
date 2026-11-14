@@ -15,6 +15,7 @@
     realBan: null,
     simUntil: 0,
     banDevSession: false,
+    rejectId: null,
   };
   // 开发者会话令牌：登录后存于 sessionStorage，后台请求带 Authorization 头（Cookie 之外的兜底）
   let adminToken = '';
@@ -503,11 +504,33 @@
 
   $('#admin-submissions-list').addEventListener('click', async event => {
     const button = event.target.closest('[data-review]'); if (!button) return;
-    const id = button.dataset.id; const action = button.dataset.review; button.disabled = true;
+    const id = button.dataset.id; const action = button.dataset.review;
+    // 拒绝：先弹「拒绝理由」，理由会发到投稿人收件箱
+    if (action === 'reject') {
+      state.rejectId = id;
+      const reasonBox = $('#reject-reason'); if (reasonBox) reasonBox.value = '';
+      showModal('reject-modal');
+      return;
+    }
+    button.disabled = true;
     try {
       const result = await api(`/api/admin/submissions/${encodeURIComponent(id)}`, { method: 'POST', body: JSON.stringify({ action }) });
       showToast(result.message, 'success'); await loadAdminData(); await refreshState();
     } catch (error) { showToast(error.message, 'error'); button.disabled = false; }
+  });
+
+  // 拒绝理由确认：发送理由到投稿人收件箱并拒绝
+  $('#reject-confirm').addEventListener('click', async () => {
+    const id = state.rejectId; if (!id) { hideModal('reject-modal'); return; }
+    const reason = ($('#reject-reason')?.value || '').trim();
+    const btn = $('#reject-confirm'); btn.disabled = true;
+    try {
+      const result = await api(`/api/admin/submissions/${encodeURIComponent(id)}`, { method: 'POST', body: JSON.stringify({ action: 'reject', reason }) });
+      showToast(result.message, 'success');
+      state.rejectId = null; hideModal('reject-modal');
+      await loadAdminData(); await refreshState();
+    } catch (error) { showToast(error.message, 'error'); }
+    finally { btn.disabled = false; }
   });
 
   $('#admin-songs-table').addEventListener('click', async event => {
@@ -627,6 +650,41 @@
     if (state.simUntil) { state.simUntil = 0; hideBanScreen(); const t = $('#ban-simulate-toggle'); if (t) t.textContent = '▶ 模拟封禁预览'; showToast('已结束模拟封禁预览。'); }
   });
 
+  // ---------- 收件箱（右上角 📬：投稿审核结果等消息） ----------
+  function renderInbox(messages) {
+    const holder = $('#inbox-list'); if (!holder) return;
+    const arr = Array.isArray(messages) ? messages : [];
+    const unread = arr.filter(m => !m.read).length;
+    const badge = $('#inbox-badge');
+    if (badge) { badge.textContent = unread > 99 ? '99+' : String(unread); badge.classList.toggle('hidden', unread === 0); }
+    if (!arr.length) { holder.innerHTML = '<div class="empty-table">收件箱是空的，暂无消息。</div>'; return; }
+    holder.innerHTML = arr.map(m => `<article class="inbox-item ${m.read ? 'is-read' : ''}">
+      <div class="inbox-head"><strong>${escapeHtml(m.title)}</strong>${m.read ? '' : '<span class="inbox-dot"></span>'}<small>${fmtDate(m.createdAt)}</small></div>
+      <p>${escapeHtml(m.body)}</p>
+    </article>`).join('');
+  }
+
+  async function loadInbox() {
+    try {
+      const data = await api('/api/inbox', { method: 'GET' });
+      renderInbox(data.messages || []);
+    } catch (error) { /* 静默：收件箱可能不可用 */ }
+  }
+
+  const openInbox = $('#open-inbox');
+  if (openInbox) openInbox.addEventListener('click', async () => {
+    showModal('inbox-modal');
+    await loadInbox();
+  });
+  const inboxClear = $('#inbox-clear');
+  if (inboxClear) inboxClear.addEventListener('click', async () => {
+    try {
+      await api('/api/inbox/read', { method: 'POST', body: JSON.stringify({ id: '*' }) });
+      showToast('已全部标记为已读。', 'success');
+      await loadInbox();
+    } catch (error) { showToast(error.message, 'error'); }
+  });
+
   // ---------- 体验优化：BV 输入自动转大写并去空格 ----------
   $$('input[name="bvid"]').forEach(input => input.addEventListener('input', () => {
     const cleaned = input.value.toUpperCase().replace(/\s+/g, '');
@@ -635,4 +693,5 @@
 
   // ---------- 启动 ----------
   refreshState();
+  loadInbox(); // 右上角收件箱徽标
 })();
