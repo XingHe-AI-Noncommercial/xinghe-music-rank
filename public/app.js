@@ -668,12 +668,43 @@
     try {
       const data = await api('/api/inbox', { method: 'GET' });
       renderInbox(data.messages || []);
-    } catch (error) { /* 静默：收件箱可能不可用 */ }
+      return data.messages || [];
+    } catch (error) { return []; }
+  }
+
+  // 进入网页时：若有未读消息，全屏提示
+  function maybeShowInboxAlert(messages) {
+    const arr = Array.isArray(messages) ? messages : [];
+    const unread = arr.filter(m => !m.read);
+    if (!unread.length) return;
+    if (sessionStorage.getItem('inboxAlertDismissed') === '1') return; // 本会话已稍后
+    const el = $('#inbox-alert'); if (!el) return;
+    const count = $('#inbox-alert-count'), preview = $('#inbox-alert-preview');
+    if (count) count.textContent = String(unread.length > 99 ? '99+' : unread.length);
+    if (preview) {
+      const latest = unread[0];
+      preview.textContent = `${latest.title}：${latest.body}`;
+      preview.classList.toggle('is-empty', !latest.body);
+    }
+    el.classList.remove('hidden');
   }
 
   const openInbox = $('#open-inbox');
   if (openInbox) openInbox.addEventListener('click', async () => {
     showModal('inbox-modal');
+    await loadInbox();
+  });
+  const inboxAlertLater = $('#inbox-alert-later');
+  if (inboxAlertLater) inboxAlertLater.addEventListener('click', () => {
+    sessionStorage.setItem('inboxAlertDismissed', '1');
+    hideBanScreen(); // 通用隐藏遮罩（收件箱提示复用同层逻辑）
+    $('#inbox-alert')?.classList.add('hidden');
+  });
+  const inboxAlertView = $('#inbox-alert-view');
+  if (inboxAlertView) inboxAlertView.addEventListener('click', async () => {
+    $('#inbox-alert')?.classList.add('hidden');
+    showModal('inbox-modal');
+    try { await api('/api/inbox/read', { method: 'POST', body: JSON.stringify({ id: '*' }) }); } catch (error) {}
     await loadInbox();
   });
   const inboxClear = $('#inbox-clear');
@@ -693,5 +724,5 @@
 
   // ---------- 启动 ----------
   refreshState();
-  loadInbox(); // 右上角收件箱徽标
+  loadInbox().then(maybeShowInboxAlert); // 进入网页：有未读消息则全屏提示
 })();
