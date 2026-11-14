@@ -40,14 +40,13 @@
     <section class="metrics-grid" aria-label="站点概况">
       <article class="metric-card metric-feature"><div class="metric-top"><span>本周上架</span><span class="metric-icon">◈</span></div><strong id="metric-approved">—</strong><div class="metric-bottom"><span>审核通过的视频</span><span class="metric-accent">LISTED</span></div></article>
       <article class="metric-card"><div class="metric-top"><span>待审核</span><span class="metric-icon">⏳</span></div><strong id="metric-pending">—</strong><div class="metric-bottom"><span>等待开发者处理</span><span class="metric-accent">PENDING</span></div></article>
-      <article class="metric-card"><div class="metric-top"><span>已拒绝</span><span class="metric-icon">×</span></div><strong id="metric-rejected">—</strong><div class="metric-bottom"><span>未通过的投稿</span><span class="metric-accent">REJECTED</span></div></article>
       <article class="metric-card"><div class="metric-top"><span>今日可投</span><span class="metric-icon">⌁</span></div><strong id="metric-submit" class="metric-tier">—</strong><div class="metric-bottom"><span id="metric-submit-sub">每天每 IP 1 个</span><span class="metric-accent">TODAY</span></div></article>
     </section>
 
     <section id="submit" class="add-section">
       <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> SUBMIT A VIDEO</div><h2>投稿一个视频 <span class="top-tag">待审核</span></h2><p>填 BV 号、作者名、视频名。每天每 IP 限投 1 个，提交后由开发者审核。</p></div></div>
       <form id="submit-form" class="submit-form">
-        <label>B 站 BV 号 / 链接<input name="bvid" maxlength="120" required placeholder="BV1xx411c7mD 或粘贴 B 站视频链接" autocomplete="off"></label>
+        <label>B 站 BV 号（只填 BV 号，不要粘贴链接）<input name="bvid" maxlength="120" required placeholder="BV1xx411c7mD（不要粘贴 B 站链接）" autocomplete="off"></label>
         <label>作者名<input name="artist" maxlength="100" placeholder="作者 / UP 主（可空，默认未知创作者）" autocomplete="off"></label>
         <label class="wide">视频名<input name="title" maxlength="100" required placeholder="视频标题 / 歌名" autocomplete="off"></label>
         <button class="button button-primary" type="submit">提交审核 <span>→</span></button>
@@ -57,7 +56,7 @@
 
     <section id="list" class="ranking-section">
       <div class="ranking-header">
-        <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> THIS WEEK</div><h2>本周榜单 <span id="list-total" class="top-tag">0 个</span></h2><p>仅显示审核通过的作品；点击卡片跳转 B 站播放。</p></div></div>
+        <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> THIS WEEK</div><h2>本周榜单 <span id="list-total" class="top-tag">0 个</span></h2><p>仅显示审核通过的作品；BV 号对外一律以掩码显示，不提供 B 站跳转。</p></div></div>
         <div class="ranking-tools"><span id="week-chip" class="week-chip">本周周期：—</span><button id="refresh-button" class="icon-button" title="刷新榜单" aria-label="刷新榜单">⟳</button></div>
       </div>
       <div id="list-grid" class="collection-grid"><div class="loading-panel"><span class="loader"></span> 正在加载本周榜单…</div></div>
@@ -71,9 +70,9 @@
         <article class="rule-card"><span class="rule-number">01</span><span class="rule-icon">⟳</span><h3>每周一清空</h3><p>每周一北京时间 00:00，全部作品清空，重新开始新的一周。</p><div class="rule-example"><span>周期</span><strong>周一重置</strong></div></article>
         <article class="rule-card"><span class="rule-number">02</span><span class="rule-icon">⌁</span><h3>每天每 IP 1 个</h3><p>同一 IP 每天最多投稿 1 个作品；被拒绝后当天可重新提交。</p><div class="rule-example"><span>限额</span><strong>1 / 天</strong></div></article>
         <article class="rule-card"><span class="rule-number">03</span><span class="rule-icon">⏳</span><h3>需审核上架</h3><p>投稿先进待审核；开发者通过后才显示在榜单、才被复制。</p><div class="rule-example"><span>流程</span><strong>先审后上</strong></div></article>
-        <article class="rule-card"><span class="rule-number">04</span><span class="rule-icon">⧉</span><h3>一键复制 BV</h3><p>开发者模式可复制全部已上架视频的 BV 号，中间用逗号分隔。</p><div class="rule-example"><span>仅含</span><strong>已上架</strong></div></article>
+        <article class="rule-card"><span class="rule-number">04</span><span class="rule-icon">⧉</span><h3>一键复制 BV</h3><p>开发者模式可复制全部已上架作品的掩码 BV 号，中间用逗号分隔。</p><div class="rule-example"><span>仅含</span><strong>已上架</strong></div></article>
       </div>
-      <div class="formula-strip"><span class="formula-icon">∑</span><div><strong>每周重置 · 投稿需审核 · 开发者一键复制</strong><small>周一 00:00 清空 · 每天每 IP 1 个 · 通过审核才上架 · 播放仅依赖 B 站视频 · 不上传音频、不使用 R2。</small></div><span class="formula-eq">LITE ENGINE / XH</span></div>
+      <div class="formula-strip"><span class="formula-icon">∑</span><div><strong>每周重置 · 投稿需审核 · 开发者一键复制</strong><small>周一 00:00 清空 · 每天每 IP 1 个 · 通过审核才上架 · BV 号对外掩码显示 · 不上传音频、不使用 R2。</small></div><span class="formula-eq">LITE ENGINE / XH</span></div>
     </section>
 
     <footer class="site-footer"><div class="footer-brand"><span class="footer-star">✦</span><span><strong>星河音浪榜 · 精简版</strong><small>XINGHE MUSIC CHART · LITE</small></span></div><p>为这一周，留一颗星的位置。</p><div class="footer-right"><span>WEEKLY COMMUNITY PROJECT</span><span>© <span id="current-year">2026</span> XINGHE</span></div></footer>
@@ -131,11 +130,24 @@
             <section class="admin-card">
               <div class="admin-card-title"><div><span class="mini-label">QUICK LIST</span><h3>开发者快速上架（不限次数）</h3><p class="admin-card-subtitle">开发者上架 = 已同意审核，直接通过，不受每天 1 个限制。</p></div></div>
               <form id="admin-add-form" class="admin-add-form">
-                <label>BV 号 / 链接<input name="bvid" maxlength="120" required placeholder="BV1xx411c7mD"></label>
+                <label>BV 号（只填 BV 号，不要粘贴链接）<input name="bvid" maxlength="120" required placeholder="BV1xx411c7mD"></label>
                 <label>作者名<input name="artist" maxlength="100" placeholder="未知创作者"></label>
                 <label>视频名<input name="title" maxlength="100" required placeholder="视频标题"></label>
                 <button class="button button-primary" type="submit">＋ 直接上架</button>
               </form>
+            </section>
+
+            <!-- 站点工具：维护开关 + 清除已拒绝 -->
+            <section class="admin-card">
+              <div class="admin-card-title"><div><span class="mini-label">SITE TOOLS</span><h3>站点工具</h3><p class="admin-card-subtitle">一键开启 / 关闭网站维护；清除已拒绝投稿。</p></div></div>
+              <div class="copy-row">
+                <button id="maintenance-toggle" class="button button-primary">开始网站维护</button>
+                <span id="maintenance-state" class="copy-count">维护关闭</span>
+              </div>
+              <div class="copy-row">
+                <button id="clear-rejected" class="button button-outline">🗑 清除已拒绝投稿</button>
+                <span id="clear-rejected-count" class="copy-count">已拒绝 0 个</span>
+              </div>
             </section>
           </div>
 
@@ -156,6 +168,20 @@
       </section>
     </div>
   </div>
+
+  <!-- 网站维护中遮罩（默认隐藏；/api/state 返回 maintenance:true 时显示） -->
+  <section id="maintenance-screen" class="maintenance-screen hidden" aria-label="网站维护中">
+    <header class="maintenance-head">
+      <span class="brand-mark">✦</span>
+      <button id="maintenance-dev" class="button button-outline">开发者模式 ↗</button>
+    </header>
+    <div class="maintenance-body">
+      <div class="maintenance-icon">🛠</div>
+      <h1>网站维护中</h1>
+      <p>我们正在对站点进行维护升级，请稍后访问。给您带来不便，敬请谅解。</p>
+      <small>维护状态下仅开发者可进入后台；站点恢复正常后将自动解除。</small>
+    </div>
+  </section>
 
   <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
   <script src="./app.js" defer></script>
