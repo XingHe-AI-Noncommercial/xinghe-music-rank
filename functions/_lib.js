@@ -1,208 +1,222 @@
 // ============================================================================
-// 星河音浪榜 · 共享工具库
-// 规则：每人每天 30 票；对同一作品每天最多 15 票；提交需审核。
-// 包含：JSON 响应、访客 Cookie、IP 限流、BV 规范化、曲目插入、管理员会话
+// 星河音浪榜 · 精简版 v4 公共库
+//   规则：每周一清空；普通访客每天每 IP 最多投稿 1 个；
+//         开发者审核通过才上架；开发者上架不限次数；API 限流 10 秒 / 10 次。
 // ============================================================================
 
-export const DAILY_VOTES = 30;     // 每人每天总票数上限
-export const SONG_VOTE_CAP = 15;   // 对同一作品每天最多票数
+export const RATE_LIMIT_WINDOW = 10;  // 秒
+export const RATE_LIMIT_MAX = 10;     // 请求数
+export const MAX_TITLE = 100;
+export const MAX_ARTIST = 100;
 
-export const isoNow = () => new Date().toISOString();
-export const makeId = () => crypto.randomUUID();
-
-// 北京时间日期（用于每日票数重置）
-export function beijingDay(date = new Date()) {
-  const d = new Date(date.getTime() + 8 * 60 * 60 * 1000);
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+// ---------- 时间 ----------
+export function isoNow() {
+  return new Date().toISOString();
 }
 
-// 统一 JSON 响应
-export function json(data, status = 200, extraHeaders = {}) {
+export function makeId() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
+// 北京时间当天日期 YYYY-MM-DD
+export function beijingDay(now = new Date()) {
+  return new Date(now.getTime() + 8 * 3600e3).toISOString().slice(0, 10);
+}
+
+// 北京时间“本周一”日期 YYYY-MM-DD（周一为每周第一天）
+export function mondayOfBeijing(now = new Date()) {
+  const utc = new Date(now.getTime() + 8 * 3600e3);
+  const weekday = utc.getUTCDay();               // 0=周日 … 6=周六
+  const offset = (weekday + 6) % 7;              // 距本周一的天数
+  const monday = new Date(Date.UTC(utc.getUTCFullYear(), utc.getUTCMonth(), utc.getUTCDate() - offset));
+  return monday.toISOString().slice(0, 10);
+}
+
+// 每周一清空：若 settings.week_key 不是本周一，则清空全部歌曲并记录。
+// 返回 true 表示本次发生了清空。每个 API 入口调用一次，幂等。
+export async function ensureWeek(DB) {
+  const week = mondayOfBeijing();
+  const row = await DB.prepare("SELECT value FROM settings WHERE key = 'week_key'").first();
+  if (row?.value === week) return false;
+  await DB.batch([
+    DB.prepare("DELETE FROM songs").run(),
+    DB.prepare("INSERT INTO settings(key, value) VALUES('week_key', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(week).run(),
+  ]);
+  return true;
+}
+
+// ---------- 响应工具 ----------
+export function json(data, status = 200, extraHeaders = undefined) {
   const headers = new Headers({
     'content-type': 'application/json; charset=utf-8',
     'cache-control': 'no-store',
     'x-content-type-options': 'nosniff',
-    ...extraHeaders,
   });
+  if (extraHeaders && typeof extraHeaders === 'object') {
+    for (const [key, value] of Object.entries(extraHeaders)) {
+      if (value !== undefined && value !== null) headers.append(key, value);
+    }
+  }
   return new Response(JSON.stringify(data), { status, headers });
 }
 
-export function fail(message, status = 400, extraHeaders = {}) {
+export function fail(message, status = 400, extraHeaders = undefined) {
   return json({ ok: false, error: message }, status, extraHeaders);
 }
 
 export async function readBody(request) {
-  try { return await request.json(); } catch { return null; }
+  const text = await request.text();
+  if (!text) return {};
+  try { return JSON.parse(text); } catch { return {}; }
 }
 
-// ----------------------------------------------------------------------------
-// 匿名访客身份：基于 HttpOnly Cookie，无需注册 / 登录
-// ----------------------------------------------------------------------------
-export async function getViewer(context) {
-  let id = cookieValue(context.request, 'xh_vid');
-  let fresh = false;
-  if (!id || !/^[a-f0-9-]{32,36}$/i.test(id)) {
-    id = makeId();
-    fresh = true;
-  }
-  const cookie = fresh ? `xh_vid=${encodeURIComponent(id)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000` : null;
-  return { id, cookie };
-}
-
-// ----------------------------------------------------------------------------
-// 客户端 IP 识别（优先使用 Cloudflare 提供的真实 IP）
-// ----------------------------------------------------------------------------
+// ---------- 客户端 IP ----------
 export function getClientIp(request) {
-  const cf = request.headers.get('CF-Connecting-IP');
-  if (cf) return cf.trim();
-  const forwarded = request.headers.get('X-Forwarded-For');
-  if (forwarded) return forwarded.split(',')[0].trim();
-  const realIp = request.headers.get('X-Real-IP');
-  if (realIp) return realIp.trim();
-  return 'unknown';
+  const header = request.headers.get('CF-Connecting-IP')
+    || (request.headers.get('X-Forwarded-For') || '').split(',')[0].trim()
+    || request.headers.get('X-Real-IP')
+    || 'unknown';
+  return String(header).slice(0, 64);
 }
 
-// ----------------------------------------------------------------------------
-// API 频率限制：每个 IP 每 10 秒最多 10 次（可通过参数覆盖）
-// 返回：{ ok, ip, remaining, limit, retryAfter }
-// ----------------------------------------------------------------------------
+// ---------- API 频率限制：每个 IP 每 10 秒最多 10 次 ----------
 export async function enforceRateLimit(env, request, options = {}) {
-  const limit = Number(options.limit) || 10;
-  const windowSeconds = Number(options.windowSeconds) || 10;
-  const db = env?.DB;
+  const limit = Number(options.limit) || RATE_LIMIT_MAX;
+  const windowSeconds = Number(options.windowSeconds) || RATE_LIMIT_WINDOW;
   const ip = getClientIp(request);
-  if (!db) return { ok: true, ip, remaining: limit, limit };
-
-  const nowMs = Date.now();
+  const now = Date.now();
   const windowMs = windowSeconds * 1000;
-  const now = isoNow();
+  const DB = env.DB;
+  if (!DB) return { ok: true, ip, remaining: limit, limit }; // 无库则放行（由各接口自行处理）
 
-  const row = await db.prepare('SELECT request_count, last_request_at FROM rate_limits WHERE ip = ?').bind(ip).first();
-  if (!row) {
-    await db.prepare('INSERT INTO rate_limits(ip, request_count, last_request_at) VALUES(?, 1, ?)').bind(ip, now).run();
+  const row = await DB.prepare("SELECT request_count, last_request_at FROM rate_limits WHERE ip = ?").bind(ip).first();
+  const lastAt = row?.last_request_at ? Number(row.last_request_at) : 0;
+  const count = Number(row?.request_count || 0);
+
+  if (now - lastAt > windowMs) {
+    await DB.prepare(
+      "INSERT INTO rate_limits(ip, request_count, last_request_at) VALUES(?, 1, ?) ON CONFLICT(ip) DO UPDATE SET request_count = 1, last_request_at = excluded.last_request_at"
+    ).bind(ip, String(now)).run();
     return { ok: true, ip, remaining: limit - 1, limit };
   }
 
-  const lastMs = new Date(String(row.last_request_at)).getTime() || 0;
-  const used = Number(row.request_count || 0);
-
-  if (nowMs - lastMs < windowMs) {
-    if (used >= limit) {
-      return { ok: false, ip, remaining: 0, limit, retryAfter: Math.max(1, Math.ceil((windowMs - (nowMs - lastMs)) / 1000)) };
-    }
-    await db.prepare('UPDATE rate_limits SET request_count = request_count + 1, last_request_at = ? WHERE ip = ?').bind(now, ip).run();
-    return { ok: true, ip, remaining: limit - used - 1, limit };
+  if (count >= limit) {
+    const retryAfter = Math.max(1, Math.ceil((lastAt + windowMs - now) / 1000));
+    return { ok: false, ip, limit, retryAfter };
   }
 
-  await db.prepare('UPDATE rate_limits SET request_count = 1, last_request_at = ? WHERE ip = ?').bind(now, ip).run();
-  return { ok: true, ip, remaining: limit - 1, limit };
+  await DB.prepare(
+    "UPDATE rate_limits SET request_count = request_count + 1, last_request_at = ? WHERE ip = ?"
+  ).bind(String(now), ip).run();
+  return { ok: true, ip, remaining: limit - count - 1, limit };
 }
 
-export function rateLimitFailed(result, limit = 10) {
-  const retryAfter = Number(result?.retryAfter) || 10;
-  const message = `请求过于频繁：每个 IP 每 10 秒最多 ${limit} 次，请 ${retryAfter} 秒后再试。`;
+export function rateLimitFailed(result, limit = RATE_LIMIT_MAX) {
+  const retryAfter = Number(result?.retryAfter) || RATE_LIMIT_WINDOW;
+  const message = `请求过于频繁：每个 IP 每 ${RATE_LIMIT_WINDOW} 秒最多 ${limit} 次，请 ${retryAfter} 秒后再试。`;
   return json({ ok: false, error: message, retryAfter }, 429, { 'retry-after': String(retryAfter) });
 }
 
-// ----------------------------------------------------------------------------
-// B 站 BV 号 / 链接规范化
-// ----------------------------------------------------------------------------
-export function normalizeBvid(value) {
-  const raw = String(value || '').trim();
-  const match = raw.match(/BV[0-9A-Za-z]+/);
-  if (match) return match[0];
-  return /^BV[0-9A-Za-z]{6,}$/.test(raw) ? raw : '';
+// ---------- BV 号工具 ----------
+// 从任意输入中提取 BV 号（兼容直接 BV 号或含 BV 的 B 站链接）
+export function normalizeBvid(input) {
+  const s = String(input || '').trim();
+  const m = s.match(/BV[0-9A-Za-z]+/);
+  return m ? m[0] : '';
 }
 
-export function normalizeBiliUrl(value, bvid = '') {
-  let raw = String(value || '').trim();
-  if (!raw && bvid) return `https://www.bilibili.com/video/${bvid}`;
-  const bv = normalizeBvid(raw);
-  if (bv && raw.startsWith('BV')) return `https://www.bilibili.com/video/${bv}`;
-  return raw;
+export function normalizeBiliUrl(bvid) {
+  const b = normalizeBvid(bvid);
+  return b ? `https://www.bilibili.com/video/${b}` : '';
 }
 
-// ----------------------------------------------------------------------------
-// 曲目插入（submit.js 与 admin 共用）
-// status：'pending' | 'approved' | 'rejected'
-// 返回 { ok, id, ... } 或 { ok:false, error }
-// ----------------------------------------------------------------------------
-export async function insertSong(db, data = {}, status = 'pending') {
-  const title = String(data.title || '').trim();
-  const artist = String(data.artist || '').trim() || '未知创作者';
-  const coverUrl = String(data.coverUrl || data.cover_url || '').trim();
-  const bvid = normalizeBvid(data.bvid || '');
-  const biliUrl = normalizeBiliUrl(data.biliUrl || data.bili_url || '', bvid);
+// ---------- 投稿校验 ----------
+// { bvid, artist, title } → { ok, bvid, title, artist, biliUrl } | { ok:false, error }
+export function validateSubmission(data = {}) {
+  const bvid = normalizeBvid(data?.bvid);
+  if (!bvid) return { ok: false, error: 'BV 号格式不对，应形如 BV1xx411c7mD（可粘贴 B 站链接）。' };
 
-  if (!title) return { ok: false, error: '歌名不能为空。' };
-  if (title.length > 100) return { ok: false, error: '歌名最多 100 个字。' };
-  if (artist.length > 100) return { ok: false, error: '歌手 / 创作者最多 100 个字。' };
-  if (!bvid) return { ok: false, error: '该曲目没有可用的 B 站视频源（未自动匹配到 BV 号），无法收录。' };
-  if (!biliUrl || !/^https?:\/\//i.test(biliUrl)) return { ok: false, error: 'B 站链接无效。' };
-  if (!biliUrl.includes('bilibili.com')) return { ok: false, error: 'B 站链接必须指向 bilibili.com。' };
+  const title = String(data?.title || '').trim();
+  if (!title) return { ok: false, error: '请填写视频名。' };
+  if (title.length > MAX_TITLE) return { ok: false, error: `视频名过长（最多 ${MAX_TITLE} 字）。` };
 
-  // 同一 BV 号在 pending/approved 中只允许一条
-  const dup = await db.prepare("SELECT id FROM songs WHERE bvid = ? AND status != 'rejected'").bind(bvid).first();
-  if (dup) return { ok: false, error: '这个 B 站视频已经存在（待审核或已收录）。' };
+  const artist = String(data?.artist || '').trim() || '未知创作者';
+  if (artist.length > MAX_ARTIST) return { ok: false, error: `作者名过长（最多 ${MAX_ARTIST} 字）。` };
+
+  return { ok: true, bvid, title, artist, biliUrl: normalizeBiliUrl(bvid) };
+}
+
+// ---------- 插入歌曲（带审核状态） ----------
+// status: 'pending'（用户投稿，待审核）/ 'approved'（开发者上架，直接通过）
+export async function insertSong(DB, data, status = 'pending', meta = {}) {
+  const v = validateSubmission(data);
+  if (!v.ok) return { ok: false, error: v.error };
+
+  // 同一 BV 号只允许一条（含待审核与已上架；被拒的可重新提交）
+  const existing = await DB.prepare("SELECT id FROM songs WHERE bvid = ? AND status != 'rejected'").bind(v.bvid).first();
+  if (existing) return { ok: false, error: '这个 BV 号已经在队列 / 上架列表里了（含待审核）。' };
 
   const id = makeId();
   const now = isoNow();
-  const approved = status === 'approved';
-  await db.prepare(
-    `INSERT INTO songs(id, title, artist, cover_url, bvid, bili_url, status, votes, created_at, reviewed_at, reviewed_by)
-     VALUES(?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`
-  ).bind(id, title, artist, coverUrl, bvid, biliUrl, approved ? 'approved' : status, now, approved ? now : null, approved ? '星河' : null).run();
-
-  return { ok: true, id, title, artist, coverUrl, bvid, biliUrl, status: approved ? 'approved' : status };
+  await DB.prepare(
+    `INSERT INTO songs(id, bvid, artist, title, status, submitter_ip, day, created_at, reviewed_at, reviewed_by)
+     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(
+    id, v.bvid, v.artist, v.title, status,
+    meta?.submitterIp || null, meta?.day || null, now,
+    status === 'approved' ? now : null,
+    status === 'approved' ? '开发者' : null
+  ).run();
+  return { ok: true, id, bvid: v.bvid };
 }
 
-// ----------------------------------------------------------------------------
-// 管理员会话（登录后使用 HttpOnly Cookie）
-// ----------------------------------------------------------------------------
-function base64Url(bytes) {
-  let binary = '';
-  for (const b of new Uint8Array(bytes)) binary += String.fromCharCode(b);
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+// ---------- 管理员会话（密码存 Cloudflare Secret，前端不可见） ----------
+export function cookieValue(name, value, options = {}) {
+  const parts = [`${name}=${encodeURIComponent(value)}`, 'Path=/', 'HttpOnly', 'SameSite=Lax'];
+  if (options.secure !== false) parts.push('Secure');
+  if (options.maxAge) parts.push(`Max-Age=${options.maxAge}`);
+  return parts.join('; ');
 }
 
-async function hmac(value, secret) {
-  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  return base64Url(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value)));
+async function hmac(secret, message) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(message));
+  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-export function cookieValue(request, name) {
-  const raw = request.headers.get('cookie') || '';
-  for (const part of raw.split(';')) {
-    const index = part.indexOf('=');
-    if (index < 0) continue;
-    if (part.slice(0, index).trim() === name) return decodeURIComponent(part.slice(index + 1).trim());
-  }
-  return null;
-}
-
-export async function makeAdminCookie(env) {
-  if (!env.ADMIN_SESSION_SECRET) throw new Error('后台会话密钥未配置');
-  const expiry = String(Math.floor(Date.now() / 1000) + 12 * 60 * 60);
-  const token = `${expiry}.${await hmac(expiry, env.ADMIN_SESSION_SECRET)}`;
-  return `xh_admin=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=43200`;
+export async function makeAdminCookie(env, ttlSeconds = 6 * 3600) {
+  const secret = String(env.ADMIN_SESSION_SECRET || '');
+  if (!secret) throw new Error('未配置 ADMIN_SESSION_SECRET（请在 Cloudflare Secret 中设置）。');
+  const payload = `${Date.now()}|${Math.random().toString(36).slice(2)}`;
+  const sig = await hmac(secret, payload);
+  return { value: `${payload}.${sig}`, cookie: cookieValue('xh_admin', `${payload}.${sig}`, { maxAge: ttlSeconds }) };
 }
 
 export async function isAdmin(request, env) {
-  if (!env.ADMIN_SESSION_SECRET) return false;
-  const token = cookieValue(request, 'xh_admin');
-  if (!token) return false;
-  const dot = token.indexOf('.');
-  if (dot < 1) return false;
-  const expiry = token.slice(0, dot);
-  if (!/^\d+$/.test(expiry) || Number(expiry) < Math.floor(Date.now() / 1000)) return false;
-  const expected = await hmac(expiry, env.ADMIN_SESSION_SECRET);
-  const actual = token.slice(dot + 1);
-  if (actual.length !== expected.length) return false;
-  let diff = 0;
-  for (let i = 0; i < actual.length; i++) diff |= actual.charCodeAt(i) ^ expected.charCodeAt(i);
-  return diff === 0;
+  const cookie = request.headers.get('cookie') || '';
+  const m = cookie.match(/(?:^|;\s*)xh_admin=([^;]+)/);
+  if (!m) return false;
+  let token;
+  try { token = decodeURIComponent(m[1]); } catch { return false; }
+  const parts = token.split('.');
+  if (parts.length !== 2) return false;
+  const secret = String(env.ADMIN_SESSION_SECRET || '');
+  if (!secret) return false;
+  const [payload, sig] = parts;
+  const expect = await hmac(secret, payload);
+  if (sig !== expect) return false;
+  const ts = Number(payload.split('|')[0]);
+  if (!ts || Date.now() - ts > 6 * 3600 * 1000) return false;
+  return true;
 }
 
 export async function adminOnly(context) {
-  return isAdmin(context.request, context.env);
+  if (!(await isAdmin(context.request, context.env))) {
+    return fail('请先登录开发者模式。', 401);
+  }
+  return null;
 }
