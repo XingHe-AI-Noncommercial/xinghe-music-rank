@@ -16,7 +16,7 @@
       <span class="brand-text"><strong>星河音浪榜</strong><small>XINGHE MUSIC CHART · LITE</small></span>
     </a>
     <nav class="main-nav"><a class="nav-active" href="#list">本周榜单</a><a href="#submit">投稿</a><a href="#about">规则说明</a></nav>
-    <div class="header-actions"><span id="header-live" class="live-pill"><i></i>正在连接</span><button class="button button-quiet" id="open-games">🎮 小游戏</button><button class="button button-quiet" id="open-admin">开发者模式 ↗</button></div>
+    <div class="header-actions"><span id="header-live" class="live-pill"><i></i>正在连接</span><button class="button button-quiet inbox-btn" id="open-inbox" aria-label="收件箱">📬<span id="inbox-badge" class="inbox-badge hidden">0</span></button><button class="button button-quiet" id="open-games">🎮 小游戏</button><button class="button button-quiet" id="open-admin">开发者模式 ↗</button></div>
   </header>
 
   <main id="top" class="page-shell">
@@ -256,6 +256,30 @@
       <h2 id="game-title">小游戏</h2>
       <p id="game-desc" class="modal-description"></p>
       <div id="game-stage" class="game-stage"></div>
+    </div>
+  </div>
+
+  <!-- 收件箱：投稿审核结果等消息 -->
+  <div id="inbox-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="inbox-title">
+    <div class="modal-card modal-narrow">
+      <button class="modal-close" data-close="inbox-modal" aria-label="关闭">×</button>
+      <div class="modal-eyebrow">MESSAGES / INBOX</div>
+      <h2 id="inbox-title">收件箱</h2>
+      <p class="modal-description">这里会收到投稿审核结果等消息，例如被拒绝时的理由。</p>
+      <div id="inbox-list" class="inbox-list"></div>
+      <div class="modal-actions"><button id="inbox-clear" class="button button-outline">全部标为已读</button></div>
+    </div>
+  </div>
+
+  <!-- 后台拒绝投稿：填写理由（发送到投稿人收件箱） -->
+  <div id="reject-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="reject-title">
+    <div class="modal-card modal-narrow">
+      <button class="modal-close" data-close="reject-modal" aria-label="关闭">×</button>
+      <div class="modal-eyebrow">REJECTION REASON</div>
+      <h2 id="reject-title">拒绝理由</h2>
+      <p class="modal-description">填写拒绝理由，将发送到该投稿人的收件箱。</p>
+      <textarea id="reject-reason" rows="3" placeholder="例如：视频名不符合本周主题、BV 号无效…"></textarea>
+      <div class="modal-actions"><button class="button button-outline" data-close="reject-modal">取消</button><button class="button button-primary" id="reject-confirm">发送拒绝理由并拒绝</button></div>
     </div>
   </div>
 
