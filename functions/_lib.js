@@ -65,6 +65,37 @@ export async function isMaintenanceOn(DB) {
   return (await getSetting(DB, 'maintenance', '0')) === '1';
 }
 
+// ---------- 公告栏（复用 settings 表存 JSON，无需改 SQL） ----------
+const MAX_ANNOUNCEMENTS = 30;
+
+export async function getAnnouncements(DB) {
+  const raw = await getSetting(DB, 'announcements', '[]');
+  try {
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : [];
+  } catch { return []; }
+}
+
+export async function setAnnouncements(DB, list) {
+  await setSetting(DB, 'announcements', JSON.stringify(list.slice(0, MAX_ANNOUNCEMENTS)));
+}
+
+export async function addAnnouncement(DB, text, author = '管理员') {
+  const list = await getAnnouncements(DB);
+  const item = { id: makeId(), text: String(text).slice(0, 500), createdAt: isoNow(), author: String(author || '管理员') };
+  list.unshift(item);
+  await setAnnouncements(DB, list);
+  return item;
+}
+
+export async function removeAnnouncement(DB, id) {
+  const list = await getAnnouncements(DB);
+  const next = list.filter(a => a.id !== id);
+  if (next.length === list.length) return false;
+  await setAnnouncements(DB, next);
+  return true;
+}
+
 // ---------- 响应工具 ----------
 // 注意：set-cookie 必须直接放在 Response 构造函数的 headers 对象里（Cloudflare
 // 官方可靠写法）；不要用 new Headers() 再 append('set-cookie')，部分运行时会把
