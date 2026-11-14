@@ -333,7 +333,8 @@ html { scroll-behavior: smooth; }
    星河音浪榜 · IP 封禁 + 更多液态玻璃
    ============================================================ */
 /* 封禁页（全屏，覆盖整站） */
-.ban-screen { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; padding: 24px; background: radial-gradient(1100px 600px at 50% -10%, #241a20, #0b0c13); }
+.ban-screen { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 24px; background: radial-gradient(1100px 600px at 50% -10%, #241a20, #0b0c13); }
+.ban-screen.hidden { display: none; }
 .ban-body { text-align: center; max-width: 430px; }
 .ban-icon { font-size: 54px; margin-bottom: 14px; }
 .ban-body h1 { font-size: 26px; margin: 0 0 10px; color: #f4f6ff; }
@@ -382,3 +383,22 @@ input, textarea, select { -webkit-backdrop-filter: blur(8px); backdrop-filter: b
 
 .bj-wrap { display: flex; flex-direction: column; gap: 12px; align-items: center; max-width: 300px; margin: 0 auto; }
 .game-status { font-size: 22px; font-weight: 700; color: #f4f6ff; letter-spacing: 1px; }
+
+
+/* 访客公网 IP 列表（后台 IP 封禁卡） */
+.admin-ip-list { display: grid; gap: 8px; margin-bottom: 14px; max-height: 320px; overflow: auto; padding-right: 2px; }
+.admin-ip-row { display: flex; gap: 10px; align-items: flex-start; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; padding: 10px 12px; }
+.admin-ip-row.is-active { border-color: rgba(200,248,120,.2); background: rgba(200,248,120,.03); }
+.admin-ip-main { flex: 0 0 auto; min-width: 0; }
+.admin-ip-ip { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.admin-ip-ip code { color: #7ed9ff; font-size: 12px; word-break: break-all; }
+.admin-ip-main small { display: block; color: #8b90a6; font-size: 10px; margin-top: 3px; }
+.admin-ip-songs { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.ip-song { display: block; font-size: 10px; color: #b8b9cc; white-space: normal; overflow-wrap: anywhere; line-height: 1.5; }
+.ip-song-status { display: inline-block; padding: 1px 5px; border-radius: 5px; font-size: 8px; margin-right: 5px; vertical-align: 1px; }
+.ip-song-status.st-approved { color: var(--lime); background: rgba(200,248,120,.1); }
+.ip-song-status.st-pending { color: #ffd27a; background: rgba(255,210,122,.1); }
+.ip-song-status.st-rejected { color: var(--pink); background: rgba(255,128,191,.1); }
+.ip-none { color: #6b6e82; font-size: 10px; }
+.admin-ip-actions { flex: 0 0 auto; }
+.admin-ip-actions .tiny-button.danger { color: #ff9abf; border-color: rgba(255,128,191,.13); }
