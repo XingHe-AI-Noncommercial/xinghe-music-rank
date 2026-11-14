@@ -154,7 +154,7 @@ export function normalizeBiliUrl(bvid) {
 }
 
 // 掩码 BV 号：BV 后面的随机字符全部替换成 X（对外一律不给真实编号）
-// 例：BV1xx411c7mD → BVXXXXXXXXXX
+// 例：输入真实 BV → 掩码 BVXXXXXXXXXX
 export function maskBvid(bvid) {
   const b = normalizeBvid(bvid);
   if (!b) return '';
@@ -168,10 +168,10 @@ export function validateSubmission(data = {}) {
   const raw = String(data?.bvid || '').trim();
   // 禁止粘贴链接：只接受裸 BV 号
   if (/https?:\/\/|bilibili\.com|哔哩/i.test(raw)) {
-    return { ok: false, error: '请只输入 BV 号（如 BV1xx411c7mD），不要粘贴 B 站链接。' };
+    return { ok: false, error: '请只输入 BV 号（如 BVXXXXXXXXXX），不要粘贴 B 站链接。' };
   }
   const bvid = normalizeBvid(raw);
-  if (!bvid) return { ok: false, error: 'BV 号格式不对，应形如 BV1xx411c7mD（无需粘贴链接）。' };
+  if (!bvid) return { ok: false, error: 'BV 号格式不对，应形如 BVXXXXXXXXXX（无需粘贴链接）。' };
 
   const title = String(data?.title || '').trim();
   if (!title) return { ok: false, error: '请填写视频名。' };
