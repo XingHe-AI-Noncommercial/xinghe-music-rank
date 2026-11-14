@@ -3,7 +3,7 @@
 // 精简版：返回本周【已审核通过】的上架作品 + 统计 + 今日投稿额度。
 // 每次请求先做“每周一清空”，再读取数据。同样 10 秒 / 10 次 IP 限流。
 // ============================================================================
-import { beijingDay, enforceRateLimit, ensureWeek, fail, getClientIp, isMaintenanceOn, json, maskBvid, mondayOfBeijing, rateLimitFailed } from '../_lib.js';
+import { beijingDay, enforceRateLimit, ensureWeek, fail, getAnnouncements, getClientIp, isMaintenanceOn, json, maskBvid, mondayOfBeijing, rateLimitFailed } from '../_lib.js';
 
 export async function onRequestGet(context) {
   const { DB } = context.env;
@@ -37,6 +37,7 @@ export async function onRequestGet(context) {
       ok: true,
       week: mondayOfBeijing(),
       maintenance: await isMaintenanceOn(DB),
+      announcements: (await getAnnouncements(DB)).map(a => ({ id: a.id, text: a.text, createdAt: a.createdAt })),
       songs: (approved.results || []).map(s => ({
         id: s.id,
         bvid: maskBvid(s.bvid),
