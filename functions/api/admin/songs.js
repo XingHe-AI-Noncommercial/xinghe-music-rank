@@ -1,6 +1,7 @@
 // ============================================================================
 // POST /api/admin/songs
-// 后台单条添加歌曲（免审核，直接入库）。需管理员登录，同样限流。
+// 开发者快速上架（不限次数，直接 approved，即开发者已同意审核）。
+// 需开发者登录，同样限流。
 // ============================================================================
 import { enforceRateLimit, fail, insertSong, isAdmin, json, rateLimitFailed, readBody } from '../../_lib.js';
 
@@ -19,7 +20,7 @@ export async function onRequestPost(context) {
   try {
     const result = await insertSong(DB, body, 'approved');
     if (!result.ok) return fail(result.error, 400);
-    return json({ ok: true, message: '已直接通过并加入收藏列表。', id: result.id });
+    return json({ ok: true, message: '已由开发者上架（不限次数），本周榜单已更新并计入一键复制。', id: result.id });
   } catch (error) {
     return fail(error?.message || '添加失败。', 500);
   }
