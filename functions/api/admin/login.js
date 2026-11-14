@@ -18,8 +18,9 @@ export async function onRequestPost(context) {
   if (diff !== 0) return fail('后台密码不正确。', 401);
 
   try {
-    const cookie = await makeAdminCookie(context.env);
-    return json({ ok: true, adminName: '星河' }, 200, { 'set-cookie': cookie });
+    const secure = new URL(context.request.url).protocol === 'https:';
+    const cookie = await makeAdminCookie(context.env, { secure });
+    return json({ ok: true, adminName: '开发者' }, 200, { 'set-cookie': cookie });
   } catch (error) {
     return fail(error.message || '无法建立后台会话。', 500);
   }
