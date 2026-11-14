@@ -140,3 +140,33 @@
   .submission-item{flex-wrap:wrap}
   .submission-actions{width:100%;justify-content:flex-end}
 }
+
+
+/* ================================================================
+   星河音浪榜 · 精简版 v4 样式（投稿表单 / 榜单卡片 / 开发者复制）
+   ================================================================ */
+.submit-form{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:22px;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:rgba(255,255,255,.02);margin-top:16px}
+.submit-form .wide{grid-column:1/-1}
+.submit-form label{display:flex;flex-direction:column;gap:7px;font-size:10px;color:#84879c}
+.submit-form input{height:44px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(255,255,255,.04);color:#f7f4ff;padding:0 13px;font-size:13px;outline:0}
+.submit-form input:focus{border-color:rgba(114,231,219,.55)}
+.submit-form input::placeholder{color:#5f6277}
+.submit-form .button{align-self:end;grid-column:1/-1;width:100%;height:46px}
+.submit-form.is-locked{opacity:.55;pointer-events:none}
+.submit-status{margin-top:12px;font-size:10px;color:#7fd8cd}
+.submit-status.warn{color:#ffb98a}
+.lite-card{flex-direction:row;align-items:center;gap:14px}
+.lite-rank{flex:0 0 34px;height:34px;display:grid;place-items:center;border-radius:10px;background:rgba(114,231,219,.1);border:1px solid rgba(114,231,219,.22);color:#7fd8cd;font-size:11px;font-weight:700;font-family:ui-monospace,Menlo,Consolas,monospace}
+.track-open{flex:0 0 38px;height:38px;display:grid;place-items:center;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#f7f4ff;font-size:12px;transition:.15s}
+.track-open:hover{border-color:rgba(114,231,219,.45);color:#a9f2e8;background:rgba(114,231,219,.08)}
+.copy-card{border-color:rgba(114,231,219,.18)}
+.copy-row{display:flex;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+.copy-count{font-size:10px;color:#84879c}
+.bv-preview{margin:12px 0 0;padding:12px 14px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(0,0,0,.25);color:#cfe9e5;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10px;line-height:1.7;white-space:pre-wrap;word-break:break-all;max-height:150px;overflow:auto}
+@media(max-width:760px){
+  .submit-form{grid-template-columns:1fr;padding:16px}
+  .submit-form .wide{grid-column:auto}
+  .lite-card{gap:10px}
+  .lite-rank{flex-basis:28px;height:28px;font-size:10px}
+  .track-open{flex-basis:34px;height:34px}
+}
