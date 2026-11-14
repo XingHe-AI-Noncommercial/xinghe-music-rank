@@ -48,6 +48,23 @@ export async function ensureWeek(DB) {
   return true;
 }
 
+// ---------- settings 工具（维护开关等，复用已有 settings 表，不改表结构） ----------
+export async function getSetting(DB, key, def = '') {
+  try {
+    const row = await DB.prepare('SELECT value FROM settings WHERE key = ?').bind(key).first();
+    return row?.value ?? def;
+  } catch { return def; }
+}
+
+export async function setSetting(DB, key, value) {
+  await DB.prepare("INSERT INTO settings(key, value) VALUES(?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
+    .bind(key, String(value)).run();
+}
+
+export async function isMaintenanceOn(DB) {
+  return (await getSetting(DB, 'maintenance', '0')) === '1';
+}
+
 // ---------- 响应工具 ----------
 // 注意：set-cookie 必须直接放在 Response 构造函数的 headers 对象里（Cloudflare
 // 官方可靠写法）；不要用 new Headers() 再 append('set-cookie')，部分运行时会把
@@ -136,11 +153,25 @@ export function normalizeBiliUrl(bvid) {
   return b ? `https://www.bilibili.com/video/${b}` : '';
 }
 
+// 掩码 BV 号：BV 后面的随机字符全部替换成 X（对外一律不给真实编号）
+// 例：BV1xx411c7mD → BVXXXXXXXXXX
+export function maskBvid(bvid) {
+  const b = normalizeBvid(bvid);
+  if (!b) return '';
+  return 'BV' + 'X'.repeat(Math.max(0, b.length - 2));
+}
+
 // ---------- 投稿校验 ----------
-// { bvid, artist, title } → { ok, bvid, title, artist, biliUrl } | { ok:false, error }
+// { bvid, artist, title } → { ok, bvid, title, artist } | { ok:false, error }
+// 注意：bvid 为数据库存储用的真实编号（供去重）；对外返回时统一用 maskBvid 掩码。
 export function validateSubmission(data = {}) {
-  const bvid = normalizeBvid(data?.bvid);
-  if (!bvid) return { ok: false, error: 'BV 号格式不对，应形如 BV1xx411c7mD（可粘贴 B 站链接）。' };
+  const raw = String(data?.bvid || '').trim();
+  // 禁止粘贴链接：只接受裸 BV 号
+  if (/https?:\/\/|bilibili\.com|哔哩/i.test(raw)) {
+    return { ok: false, error: '请只输入 BV 号（如 BV1xx411c7mD），不要粘贴 B 站链接。' };
+  }
+  const bvid = normalizeBvid(raw);
+  if (!bvid) return { ok: false, error: 'BV 号格式不对，应形如 BV1xx411c7mD（无需粘贴链接）。' };
 
   const title = String(data?.title || '').trim();
   if (!title) return { ok: false, error: '请填写视频名。' };
@@ -149,7 +180,7 @@ export function validateSubmission(data = {}) {
   const artist = String(data?.artist || '').trim() || '未知创作者';
   if (artist.length > MAX_ARTIST) return { ok: false, error: `作者名过长（最多 ${MAX_ARTIST} 字）。` };
 
-  return { ok: true, bvid, title, artist, biliUrl: normalizeBiliUrl(bvid) };
+  return { ok: true, bvid, title, artist };
 }
 
 // ---------- 插入歌曲（带审核状态） ----------
