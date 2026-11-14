@@ -328,3 +328,31 @@ html { scroll-behavior: smooth; }
 .guess-form { display: flex; gap: 8px; align-items: center; }
 .guess-form input { width: 90px; padding: 9px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.07); color: #eef2ff; font-size: 15px; text-align: center; }
 .guess-form input:focus { outline: 2px solid rgba(126,217,255,.6); }
+
+/* ============================================================
+   星河音浪榜 · IP 封禁 + 更多液态玻璃
+   ============================================================ */
+/* 封禁页（全屏，覆盖整站） */
+.ban-screen { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; padding: 24px; background: radial-gradient(1100px 600px at 50% -10%, #241a20, #0b0c13); }
+.ban-body { text-align: center; max-width: 430px; }
+.ban-icon { font-size: 54px; margin-bottom: 14px; }
+.ban-body h1 { font-size: 26px; margin: 0 0 10px; color: #f4f6ff; }
+.ban-body p { color: #a9aec2; line-height: 1.7; margin: 0 0 16px; }
+.ban-until { display: inline-block; padding: 8px 18px; border-radius: 12px; background: rgba(255,93,126,.14); border: 1px solid rgba(255,93,126,.3); color: #ff8aa0; font-size: 14px; margin-bottom: 18px; }
+
+/* 后台封禁卡 */
+.admin-ban-list { display: grid; gap: 8px; margin-top: 12px; }
+.admin-ban-row { display: flex; gap: 10px; align-items: center; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.09); border-radius: 12px; padding: 10px 12px; }
+.admin-ban-copy { flex: 1; min-width: 0; }
+.admin-ban-copy code { color: #7ed9ff; font-size: 12px; }
+.admin-ban-copy small { display: block; color: #8b90a6; font-size: 11px; margin-top: 3px; }
+.inline-check { display: inline-flex; align-items: center; gap: 6px; color: #c9cde0; font-size: 13px; }
+.inline-check input { width: auto; }
+
+/* 更多液态玻璃：页头 / 侧边导航 / 输入框 / 徽标 */
+.site-header { -webkit-backdrop-filter: blur(14px) saturate(150%); backdrop-filter: blur(14px) saturate(150%); background: rgba(10,11,18,.55); }
+.admin-nav { -webkit-backdrop-filter: blur(10px) saturate(140%); backdrop-filter: blur(10px) saturate(140%); }
+.admin-nav.active { background: rgba(126,217,255,.14); }
+input, textarea, select { -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.live-pill, .week-chip, .top-tag, .admin-card-badge, .copy-count { -webkit-backdrop-filter: blur(10px) saturate(140%); backdrop-filter: blur(10px) saturate(140%); }
+.game-card { background: linear-gradient(160deg, rgba(255,255,255,.12), rgba(255,255,255,.05)); }
