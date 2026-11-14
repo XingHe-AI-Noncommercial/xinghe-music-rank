@@ -3,7 +3,7 @@
 // 精简版：返回本周【已审核通过】的上架作品 + 统计 + 今日投稿额度。
 // 每次请求先做“每周一清空”，再读取数据。同样 10 秒 / 10 次 IP 限流。
 // ============================================================================
-import { beijingDay, enforceRateLimit, ensureWeek, fail, getAnnouncements, getClientIp, isMaintenanceOn, json, maskBvid, mondayOfBeijing, rateLimitFailed } from '../_lib.js';
+import { beijingDay, bumpRequestCounter, enforceRateLimit, ensureWeek, fail, getAnnouncements, getBan, getClientIp, isMaintenanceOn, json, maskBvid, mondayOfBeijing, rateLimitFailed } from '../_lib.js';
 
 export async function onRequestGet(context) {
   const { DB } = context.env;
@@ -14,6 +14,16 @@ export async function onRequestGet(context) {
 
   try {
     await ensureWeek(DB); // 周一清空（幂等）
+
+    // IP 封禁：命中则返回封禁状态（含剩余时效），前端显示封禁页
+    const ip = getClientIp(context.request);
+    const ban = await getBan(DB, ip);
+    if (ban) {
+      return json({ ok: true, banned: true, ban: { until: ban.until, reason: ban.reason || '' } });
+    }
+
+    // 全局 60 秒请求计数：超过 60 次自动开启维护
+    await bumpRequestCounter(DB);
 
     const approved = await DB.prepare(
       "SELECT id, bvid, artist, title, created_at FROM songs WHERE status = 'approved' ORDER BY created_at ASC"
@@ -27,7 +37,6 @@ export async function onRequestGet(context) {
     ).first();
 
     // 今日该 IP 投稿情况（pending / approved 占用当日 1 次额度；rejected 不占用，可重投）
-    const ip = getClientIp(context.request);
     const day = beijingDay();
     const todayRow = await DB.prepare(
       "SELECT status FROM songs WHERE submitter_ip = ? AND day = ? AND status IN ('pending','approved') LIMIT 1"
