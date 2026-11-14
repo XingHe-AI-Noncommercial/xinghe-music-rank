@@ -42,18 +42,22 @@ export async function onRequestGet(context) {
       "SELECT status FROM songs WHERE submitter_ip = ? AND day = ? AND status IN ('pending','approved') LIMIT 1"
     ).bind(ip, day).first();
 
-    // ⚠️ 实验版：公开榜单不显示任何投稿（后台照常审核/复制，数据仍保留）。
-    // 旧版（显示投稿）已备份到 git 分支 backup-before-blank；如需回退还原该版即可。
     return json({
       ok: true,
       week: mondayOfBeijing(),
       maintenance: await isMaintenanceOn(DB),
       announcements: (await getAnnouncements(DB)).map(a => ({ id: a.id, text: a.text, createdAt: a.createdAt })),
-      songs: [],
+      songs: (approved.results || []).map(s => ({
+        id: s.id,
+        bvid: maskBvid(s.bvid),
+        artist: s.artist,
+        title: s.title,
+        createdAt: s.created_at,
+      })),
       summary: {
-        approved: 0,
-        pending: 0,
-        rejected: 0,
+        approved: Number(counts?.approved || 0),
+        pending: Number(counts?.pending || 0),
+        rejected: Number(counts?.rejected || 0),
       },
       submit: {
         dailyLimit: 1,
