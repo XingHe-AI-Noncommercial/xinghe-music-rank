@@ -282,6 +282,7 @@
       state.adminData = await api('/api/admin/state', { method: 'GET' });
       adminRetry = 0;
       renderAdmin();
+      await loadIps();
     } catch (error) {
       // 刚登录后第一次请求可能因 Cookie 尚未就位而瞬时 401：重试一次再判定
       if (state.adminLoggedIn && adminRetry < 1 && /登录|会话|登录开发者/.test(error.message)) {
@@ -435,6 +436,50 @@
       </div>`;
     }).join('');
   }
+
+  // 访客公网 IP 列表：每个进入/投稿过的 IP + 其活动/投稿，点「封禁」自动填入表单
+  function renderAdminIps(ips, bans) {
+    const holder = $('#admin-ip-list'); if (!holder) return;
+    const arr = Array.isArray(ips) ? ips : [];
+    const bannedMap = {};
+    (Array.isArray(bans) ? bans : []).forEach(b => { bannedMap[b.ip] = true; });
+    if (!arr.length) { holder.innerHTML = '<div class="empty-table">暂无访客记录（用户进入后会显示公网 IP）。</div>'; return; }
+    holder.innerHTML = arr.map(item => {
+      const ip = item.ip;
+      const lastAt = Number(item.lastAt || 0);
+      const when = lastAt ? (item.active ? '🟢 刚进来' : timeAgo(lastAt)) : '—';
+      const songs = (item.songs || []).map(s => {
+        const label = s.status === 'approved' ? '通过' : s.status === 'pending' ? '待审' : '拒';
+        return `<span class="ip-song"><b class="ip-song-status st-${s.status}">${label}</b>${escapeHtml(s.bvid)} · ${escapeHtml(s.artist)} · ${escapeHtml(s.title)}</span>`;
+      }).join('');
+      const banned = bannedMap[ip];
+      return `<div class="admin-ip-row ${item.active ? 'is-active' : ''}">
+        <div class="admin-ip-main">
+          <div class="admin-ip-ip"><code>${escapeHtml(ip)}</code>${banned ? '<span class="state-pill">已封禁</span>' : ''}</div>
+          <small>${when} · ${Number(item.requests || 0)} 次请求 · ${(item.songs || []).length} 条投稿</small>
+        </div>
+        <div class="admin-ip-songs">${songs || '<small class="ip-none">暂无投稿</small>'}</div>
+        <div class="admin-ip-actions">
+          ${banned ? `<button class="tiny-button" data-ban-unban="${escapeHtml(ip)}">解封</button>` : `<button class="tiny-button danger" data-ban-ip="${escapeHtml(ip)}">⛔ 封禁</button>`}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function timeAgo(ms) {
+    const diff = Math.max(0, Date.now() - ms);
+    if (diff < 60000) return Math.floor(diff / 1000) + ' 秒前';
+    if (diff < 3600000) return Math.floor(diff / 60000) + ' 分钟前';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + ' 小时前';
+    return Math.floor(diff / 86400000) + ' 天前';
+  }
+
+  async function loadIps() {
+    try {
+      const data = await api('/api/admin/ips', { method: 'GET' });
+      renderAdminIps(data.ips || [], (state.adminData && state.adminData.bans) || []);
+    } catch (error) { /* 静默：列表可能为空 */ }
+  }
   $('#admin-song-search').addEventListener('input', () => { if (state.adminData) renderAdminSongs(state.adminData.songs || []); });
 
   $('#admin-add-form').addEventListener('submit', async event => {
@@ -526,21 +571,34 @@
     } catch (error) { showToast(error.message, 'error'); button.disabled = false; }
   });
 
+  // 选中访客 IP → 填入封禁表单并定位（也可直接点表单里的「封禁此 IP」完成）
+  $('#admin-ip-list').addEventListener('click', event => {
+    const button = event.target.closest('[data-ban-ip]'); if (!button) return;
+    const ip = button.dataset.banIp;
+    const form = $('#admin-ban-form'); if (!form) return;
+    const ipInput = form.querySelector('[name="ip"]');
+    if (ipInput) { ipInput.value = ip; ipInput.focus(); ipInput.select(); }
+    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    showToast(`已选中 ${ip}，选好时效后点「⛔ 封禁此 IP」即可封号。`);
+  });
+
   // 模拟封禁预览（仅开发者本地查看，不真实封禁任何 IP）
-  $('#ban-simulate-toggle').addEventListener('click', () => {
+  const simToggle = $('#ban-simulate-toggle');
+  if (simToggle) simToggle.addEventListener('click', () => {
     const hours = Number($('#ban-simulate-hours').value) || 1;
     if (state.simUntil) {
       state.simUntil = 0; hideBanScreen();
-      $('#ban-simulate-toggle').textContent = '▶ 模拟封禁预览';
+      simToggle.textContent = '▶ 模拟封禁预览';
       showToast('已结束模拟封禁预览。');
       return;
     }
     state.simUntil = Date.now() + hours * 3600e3;
     showBanScreen({ until: state.simUntil, reason: '模拟封禁预览（仅开发者可见，非真实封禁）' }, true);
-    $('#ban-simulate-toggle').textContent = '■ 结束模拟封禁';
+    simToggle.textContent = '■ 结束模拟封禁';
   });
-  $('#ban-exit-preview').addEventListener('click', () => {
-    if (state.simUntil) { state.simUntil = 0; hideBanScreen(); $('#ban-simulate-toggle').textContent = '▶ 模拟封禁预览'; showToast('已结束模拟封禁预览。'); }
+  const exitPreview = $('#ban-exit-preview');
+  if (exitPreview) exitPreview.addEventListener('click', () => {
+    if (state.simUntil) { state.simUntil = 0; hideBanScreen(); const t = $('#ban-simulate-toggle'); if (t) t.textContent = '▶ 模拟封禁预览'; showToast('已结束模拟封禁预览。'); }
   });
 
   // ---------- 体验优化：BV 输入自动转大写并去空格 ----------
