@@ -14,6 +14,7 @@
     adminSidebarOpen: false,
     realBan: null,
     simUntil: 0,
+    banDevSession: false,
   };
   // 开发者会话令牌：登录后存于 sessionStorage，后台请求带 Authorization 头（Cookie 之外的兜底）
   let adminToken = '';
@@ -124,8 +125,9 @@
     el.classList.remove('hidden');
     el.dataset.simulated = simulated ? '1' : '';
     $('#ban-reason').textContent = ban?.reason || '由于异常行为，您的 IP 已被暂时封禁。';
-    const exit = $('#ban-exit-preview');
-    if (exit) exit.classList.toggle('hidden', !simulated);
+    const dev = $('#ban-dev'), exit = $('#ban-exit-preview');
+    if (dev) dev.classList.toggle('hidden', simulated);       // 真实封禁：可进开发者模式自我解封
+    if (exit) exit.classList.toggle('hidden', !simulated);    // 模拟预览：只给结束按钮
     clearInterval(banTimer);
     const until = Number(ban?.until || 0);
     const tick = () => {
@@ -141,8 +143,13 @@
     clearInterval(banTimer);
   }
   function applyBan(data) {
-    if (data && data.banned) { state.realBan = data.ban || {}; showBanScreen(state.realBan, false); }
-    else if (state.realBan) { state.realBan = null; if (!state.simUntil) hideBanScreen(); }
+    if (data && data.banned) {
+      if (state.banDevSession) return; // 开发者已通过封禁页进入开发者模式，暂不弹回（自我解封流程）
+      state.realBan = data.ban || {}; showBanScreen(state.realBan, false);
+    } else if (state.realBan) {
+      state.realBan = null; state.banDevSession = false;
+      if (!state.simUntil) hideBanScreen();
+    }
   }
   function setConnection(connected) {
     const tag = $('#header-live');
@@ -545,19 +552,38 @@
     event.preventDefault();
     const form = event.currentTarget;
     const ip = form.querySelector('[name="ip"]').value.trim();
-    const hours = Number(form.querySelector('[name="hours"]').value) || 0;
+    const seconds = Number(form.querySelector('[name="seconds"]').value) || 0;
     const permanent = Boolean(form.querySelector('[name="permanent"]').checked);
     const reason = form.querySelector('[name="reason"]').value.trim();
     if (!ip) { showToast('请输入要封禁的 IP。', 'error'); return; }
+    if (!permanent && !(seconds > 0)) { showToast('请选择封禁时效（秒）或勾选永久。', 'error'); return; }
     const button = form.querySelector('button[type="submit"]');
     button.disabled = true; button.textContent = '封禁中…';
     try {
-      const result = await api('/api/admin/bans', { method: 'POST', body: JSON.stringify({ ip, hours, permanent, reason }) });
+      const result = await api('/api/admin/bans', { method: 'POST', body: JSON.stringify({ ip, seconds, permanent, reason }) });
       showToast(result.message, 'success');
-      form.reset(); form.querySelector('[name="hours"]').value = '24';
+      form.reset(); form.querySelector('[name="seconds"]').value = '3600';
       await loadAdminData();
     } catch (error) { showToast(error.message, 'error'); }
     finally { button.disabled = false; button.textContent = '⛔ 封禁此 IP'; }
+  });
+
+  // 秒时效快捷预设
+  document.querySelectorAll('.ban-presets button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const form = $('#admin-ban-form'); if (!form) return;
+      const inp = form.querySelector('[name="seconds"]');
+      if (inp) inp.value = btn.dataset.sec;
+      const perm = form.querySelector('[name="permanent"]'); if (perm) perm.checked = false;
+    });
+  });
+
+  // 封禁页上的「开发者模式」：让开发者（含自封）进入后台自我解封
+  const banDev = $('#ban-dev');
+  if (banDev) banDev.addEventListener('click', () => {
+    state.banDevSession = true;
+    hideBanScreen();
+    showModal('admin-login-modal');
   });
 
   $('#admin-ban-list').addEventListener('click', async event => {
@@ -585,14 +611,14 @@
   // 模拟封禁预览（仅开发者本地查看，不真实封禁任何 IP）
   const simToggle = $('#ban-simulate-toggle');
   if (simToggle) simToggle.addEventListener('click', () => {
-    const hours = Number($('#ban-simulate-hours').value) || 1;
+    const seconds = Number($('#ban-simulate-seconds').value) || 60;
     if (state.simUntil) {
       state.simUntil = 0; hideBanScreen();
       simToggle.textContent = '▶ 模拟封禁预览';
       showToast('已结束模拟封禁预览。');
       return;
     }
-    state.simUntil = Date.now() + hours * 3600e3;
+    state.simUntil = Date.now() + seconds * 1000;
     showBanScreen({ until: state.simUntil, reason: '模拟封禁预览（仅开发者可见，非真实封禁）' }, true);
     simToggle.textContent = '■ 结束模拟封禁';
   });
