@@ -3,7 +3,7 @@
 // 精简版：返回本周【已审核通过】的上架作品 + 统计 + 今日投稿额度。
 // 每次请求先做“每周一清空”，再读取数据。同样 10 秒 / 10 次 IP 限流。
 // ============================================================================
-import { beijingDay, enforceRateLimit, ensureWeek, fail, getClientIp, json, mondayOfBeijing, rateLimitFailed } from '../_lib.js';
+import { beijingDay, enforceRateLimit, ensureWeek, fail, getClientIp, isMaintenanceOn, json, maskBvid, mondayOfBeijing, rateLimitFailed } from '../_lib.js';
 
 export async function onRequestGet(context) {
   const { DB } = context.env;
@@ -36,13 +36,13 @@ export async function onRequestGet(context) {
     return json({
       ok: true,
       week: mondayOfBeijing(),
+      maintenance: await isMaintenanceOn(DB),
       songs: (approved.results || []).map(s => ({
         id: s.id,
-        bvid: s.bvid,
+        bvid: maskBvid(s.bvid),
         artist: s.artist,
         title: s.title,
         createdAt: s.created_at,
-        biliUrl: `https://www.bilibili.com/video/${s.bvid}`,
       })),
       summary: {
         approved: Number(counts?.approved || 0),
