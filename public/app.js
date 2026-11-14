@@ -19,8 +19,8 @@
 
   // ---------- 本地预览数据（后端未连接时展示） ----------
   const demoTracks = [
-    { id: 'd1', bvid: 'BV1xx411c7mD', artist: 'Luna / 虚构企划', title: '玻璃海的来信', createdAt: new Date(Date.now() - 3600e3).toISOString() },
-    { id: 'd2', bvid: 'BV1Kz4y1D7mE', artist: '青空研究所', title: '凌晨四点的星尘', createdAt: new Date(Date.now() - 7200e3).toISOString() },
+    { id: 'd1', bvid: 'BVXXXXXXXXXX', artist: 'Luna / 虚构企划', title: '玻璃海的来信', createdAt: new Date(Date.now() - 3600e3).toISOString() },
+    { id: 'd2', bvid: 'BVXXXXXXXXXX', artist: '青空研究所', title: '凌晨四点的星尘', createdAt: new Date(Date.now() - 7200e3).toISOString() },
   ];
   function seedPreview(reason) {
     return {
@@ -83,6 +83,7 @@
       const data = await api('/api/state', { method: 'GET' });
       state.data = data;
       state.realMode = true;
+      applyMaintenance(Boolean(data.maintenance));
       renderPage();
       setConnection(true);
     } catch (error) {
@@ -93,12 +94,18 @@
       }
       state.realMode = false;
       state.data = seedPreview(error.message);
+      applyMaintenance(false); // 连不上后台则无法确认维护状态，按正常显示
       renderPage();
       setConnection(false);
       if (showError) showToast(`当前显示本地预览：${error.message}`, 'error');
     } finally {
       state.loading = false;
     }
+  }
+  // 网站维护遮罩：开启时覆盖全站，右上角仅开发者可进入后台
+  function applyMaintenance(on) {
+    const el = $('#maintenance-screen');
+    if (el) el.classList.toggle('hidden', !on);
   }
   function setConnection(connected) {
     const tag = $('#header-live');
@@ -116,7 +123,6 @@
     $('#current-year').textContent = String(new Date().getFullYear());
     $('#metric-approved').textContent = number(summary.approved ?? data.songs?.length ?? 0);
     $('#metric-pending').textContent = number(summary.pending || 0);
-    $('#metric-rejected').textContent = number(summary.rejected || 0);
     $('#metric-submit').textContent = submit.submittedToday ? '0' : '1';
     $('#metric-submit-sub').textContent = submit.submittedToday
       ? '今天已投过（每天每 IP 1 个）'
@@ -151,15 +157,15 @@
     const grid = $('#list-grid');
     if (!songs.length) { grid.innerHTML = ''; return; }
     grid.innerHTML = songs.map((song, index) => {
-      const biliUrl = song.biliUrl || `https://www.bilibili.com/video/${song.bvid}`;
+      // 对外只显示掩码 BV 号，不提供 B 站跳转（不暴露真实编号）
       return `<article class="track-card lite-card">
         <span class="lite-rank">${String(index + 1).padStart(2, '0')}</span>
         <div class="track-info">
-          <a class="track-title" href="${escapeHtml(biliUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(song.title)}</a>
+          <span class="track-title">${escapeHtml(song.title)}</span>
           <span class="track-artist">${escapeHtml(song.artist || '未知创作者')}</span>
           <span class="track-bv">${escapeHtml(song.bvid || '')}</span>
         </div>
-        <a class="track-open" href="${escapeHtml(biliUrl)}" target="_blank" rel="noopener noreferrer" title="跳转 B 站播放">▶</a>
+        <span class="track-open" title="不提供跳转（BV 号已掩码）">♪</span>
       </article>`;
     }).join('');
   }
@@ -197,6 +203,8 @@
     if (state.adminLoggedIn) { showModal('admin-modal'); await loadAdminData(); }
     else showModal('admin-login-modal');
   }
+  // 维护页右上角“开发者模式”：未登录走密码登录，仅真正的开发者可进
+  $('#maintenance-dev').addEventListener('click', openAdmin);
 
   $('#login-form').addEventListener('submit', async event => {
     event.preventDefault();
@@ -276,6 +284,14 @@
 
     renderAdminSubmissions(data.pending || []);
     renderAdminSongs(data.songs || []);
+
+    // 站点工具：维护状态 + 清除已拒绝
+    const mnt = Boolean(data.maintenance);
+    $('#maintenance-toggle').textContent = mnt ? '关闭网站维护' : '开始网站维护';
+    $('#maintenance-state').textContent = mnt ? '维护开启中' : '维护关闭';
+    $('#maintenance-toggle').classList.toggle('button-primary', !mnt);
+    $('#clear-rejected-count').textContent = `已拒绝 ${number(s.rejected || 0)} 个`;
+    $('#clear-rejected').disabled = !(s.rejected > 0);
   }
 
   // 一键复制
@@ -284,6 +300,34 @@
     if (!bvList) { showToast('本周还没有已上架的作品。', 'error'); return; }
     try { await copyText(bvList); showToast(`已复制 ${bvList.split(',').filter(Boolean).length} 个 BV 号。`, 'success'); }
     catch { showToast('复制失败，请手动选择上方文本复制。', 'error'); }
+  });
+
+  // 网站维护开关
+  $('#maintenance-toggle').addEventListener('click', async () => {
+    const cur = Boolean(state.adminData?.maintenance);
+    const button = $('#maintenance-toggle');
+    button.disabled = true;
+    try {
+      const res = await api('/api/admin/maintenance', { method: 'POST', body: JSON.stringify({ on: !cur }) });
+      showToast(res.message, 'success');
+      state.adminData = { ...(state.adminData || {}), maintenance: res.maintenance };
+      await loadAdminData();
+      await refreshState();
+    } catch (error) { showToast(error.message, 'error'); }
+    finally { button.disabled = false; }
+  });
+
+  // 清除已拒绝投稿
+  $('#clear-rejected').addEventListener('click', async () => {
+    const button = $('#clear-rejected');
+    button.disabled = true;
+    try {
+      const res = await api('/api/admin/rejected', { method: 'DELETE' });
+      showToast(`${res.message}（清除 ${res.cleared || 0} 条）`, 'success');
+      await loadAdminData();
+      await refreshState();
+    } catch (error) { showToast(error.message, 'error'); }
+    finally { button.disabled = false; }
   });
 
   function renderAdminSubmissions(pending) {
