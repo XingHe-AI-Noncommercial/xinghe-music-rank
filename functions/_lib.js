@@ -203,15 +203,21 @@ export async function makeAdminCookie(env, options = {}) {
 }
 
 export async function isAdmin(request, env) {
-  const cookie = request.headers.get('cookie') || '';
-  const m = cookie.match(/(?:^|;\s*)xh_admin=([^;]+)/);
-  if (!m) return false;
-  let token;
-  try { token = decodeURIComponent(m[1]); } catch { return false; }
-  const parts = token.split('.');
-  if (parts.length !== 2) return false;
   const secret = String(env.ADMIN_SESSION_SECRET || '');
   if (!secret) return false;
+  // 1) 首选：xh_admin Cookie
+  const cookie = request.headers.get('cookie') || '';
+  let token = (cookie.match(/(?:^|;\s*)xh_admin=([^;]+)/) || [])[1] || '';
+  // 2) 兜底：Authorization: Bearer <token>（无痕/浏览器拦截 Cookie 时仍可登录）
+  if (!token) {
+    const am = (request.headers.get('authorization') || '').match(/^Bearer\s+(.+)$/i);
+    if (am) token = am[1];
+  }
+  if (!token) return false;
+  let decoded;
+  try { decoded = decodeURIComponent(token); } catch { return false; }
+  const parts = decoded.split('.');
+  if (parts.length !== 2) return false;
   const [payload, sig] = parts;
   const expect = await hmac(secret, payload);
   if (sig !== expect) return false;
