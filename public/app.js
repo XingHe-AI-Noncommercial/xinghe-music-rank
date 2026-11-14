@@ -12,6 +12,8 @@
     adminLoggedIn: false,
     adminTab: 'overview',
     adminSidebarOpen: false,
+    realBan: null,
+    simUntil: 0,
   };
   // 开发者会话令牌：登录后存于 sessionStorage，后台请求带 Authorization 头（Cookie 之外的兜底）
   let adminToken = '';
@@ -84,6 +86,7 @@
       state.data = data;
       state.realMode = true;
       applyMaintenance(Boolean(data.maintenance));
+      applyBan(data);
       renderPage();
       setConnection(true);
     } catch (error) {
@@ -106,6 +109,40 @@
   function applyMaintenance(on) {
     const el = $('#maintenance-screen');
     if (el) el.classList.toggle('hidden', !on);
+  }
+
+  // ---------- IP 封禁页 ----------
+  let banTimer = null;
+  function fmtBanLeft(until) {
+    const left = until - Date.now();
+    if (left <= 0) return '封禁已到期，即将解除…';
+    const h = Math.floor(left / 3600000), m = Math.floor(left % 3600000 / 60000), s = Math.floor(left % 60000 / 1000);
+    return (h ? `${h} 小时 ` : '') + (m ? `${m} 分 ` : '') + `${s} 秒`;
+  }
+  function showBanScreen(ban, simulated) {
+    const el = $('#ban-screen'); if (!el) return;
+    el.classList.remove('hidden');
+    el.dataset.simulated = simulated ? '1' : '';
+    $('#ban-reason').textContent = ban?.reason || '由于异常行为，您的 IP 已被暂时封禁。';
+    const exit = $('#ban-exit-preview');
+    if (exit) exit.classList.toggle('hidden', !simulated);
+    clearInterval(banTimer);
+    const until = Number(ban?.until || 0);
+    const tick = () => {
+      const node = $('#ban-until'); if (!node) return;
+      if (!until) { node.textContent = '永久封禁'; return; }
+      node.textContent = '剩余 ' + fmtBanLeft(until);
+      if (Date.now() >= until) clearInterval(banTimer);
+    };
+    tick(); banTimer = setInterval(tick, 1000);
+  }
+  function hideBanScreen() {
+    $('#ban-screen')?.classList.add('hidden');
+    clearInterval(banTimer);
+  }
+  function applyBan(data) {
+    if (data && data.banned) { state.realBan = data.ban || {}; showBanScreen(state.realBan, false); }
+    else if (state.realBan) { state.realBan = null; if (!state.simUntil) hideBanScreen(); }
   }
   function setConnection(connected) {
     const tag = $('#header-live');
@@ -300,6 +337,7 @@
     renderAdminSubmissions(data.pending || []);
     renderAdminSongs(data.songs || []);
     renderAdminAnnouncements(data.announcements || []);
+    renderAdminBans(data.bans || []);
 
     // 站点工具：维护状态 + 清除已拒绝
     const mnt = Boolean(data.maintenance);
@@ -384,6 +422,19 @@
       <button class="inline-action danger" data-announcement-delete="${escapeHtml(a.id)}">删除</button>
     </div>`).join('');
   }
+  function renderAdminBans(bans) {
+    const holder = $('#admin-ban-list'); if (!holder) return;
+    const arr = Array.isArray(bans) ? bans : [];
+    const count = $('#admin-ban-count'); if (count) count.textContent = `${arr.length} 条`;
+    if (!arr.length) { holder.innerHTML = '<div class="empty-table">暂无被封禁的 IP。</div>'; return; }
+    holder.innerHTML = arr.map(b => {
+      const perm = !Number(b.until);
+      return `<div class="admin-ban-row">
+        <div class="admin-ban-copy"><code>${escapeHtml(b.ip)}</code><small>${perm ? '永久封禁' : '剩余 ' + fmtBanLeft(Number(b.until))}${b.reason ? ' · ' + escapeHtml(b.reason) : ''}</small></div>
+        <button class="inline-action danger" data-ban-unban="${escapeHtml(b.ip)}">解封</button>
+      </div>`;
+    }).join('');
+  }
   $('#admin-song-search').addEventListener('input', () => { if (state.adminData) renderAdminSongs(state.adminData.songs || []); });
 
   $('#admin-add-form').addEventListener('submit', async event => {
@@ -442,6 +493,54 @@
       const result = await api(`/api/admin/announcements/${encodeURIComponent(button.dataset.announcementDelete)}`, { method: 'DELETE' });
       showToast(result.message, 'success'); await loadAdminData(); await refreshState();
     } catch (error) { showToast(error.message, 'error'); button.disabled = false; }
+  });
+
+  // ---------- IP 封禁 ----------
+  $('#admin-ban-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const ip = form.querySelector('[name="ip"]').value.trim();
+    const hours = Number(form.querySelector('[name="hours"]').value) || 0;
+    const permanent = Boolean(form.querySelector('[name="permanent"]').checked);
+    const reason = form.querySelector('[name="reason"]').value.trim();
+    if (!ip) { showToast('请输入要封禁的 IP。', 'error'); return; }
+    const button = form.querySelector('button[type="submit"]');
+    button.disabled = true; button.textContent = '封禁中…';
+    try {
+      const result = await api('/api/admin/bans', { method: 'POST', body: JSON.stringify({ ip, hours, permanent, reason }) });
+      showToast(result.message, 'success');
+      form.reset(); form.querySelector('[name="hours"]').value = '24';
+      await loadAdminData();
+    } catch (error) { showToast(error.message, 'error'); }
+    finally { button.disabled = false; button.textContent = '⛔ 封禁此 IP'; }
+  });
+
+  $('#admin-ban-list').addEventListener('click', async event => {
+    const button = event.target.closest('[data-ban-unban]'); if (!button) return;
+    const ip = button.dataset.banUnban;
+    if (!confirm(`确定解除 ${ip} 的封禁吗？`)) return;
+    button.disabled = true;
+    try {
+      const result = await api(`/api/admin/bans/${encodeURIComponent(ip)}`, { method: 'DELETE' });
+      showToast(result.message, 'success'); await loadAdminData();
+    } catch (error) { showToast(error.message, 'error'); button.disabled = false; }
+  });
+
+  // 模拟封禁预览（仅开发者本地查看，不真实封禁任何 IP）
+  $('#ban-simulate-toggle').addEventListener('click', () => {
+    const hours = Number($('#ban-simulate-hours').value) || 1;
+    if (state.simUntil) {
+      state.simUntil = 0; hideBanScreen();
+      $('#ban-simulate-toggle').textContent = '▶ 模拟封禁预览';
+      showToast('已结束模拟封禁预览。');
+      return;
+    }
+    state.simUntil = Date.now() + hours * 3600e3;
+    showBanScreen({ until: state.simUntil, reason: '模拟封禁预览（仅开发者可见，非真实封禁）' }, true);
+    $('#ban-simulate-toggle').textContent = '■ 结束模拟封禁';
+  });
+  $('#ban-exit-preview').addEventListener('click', () => {
+    if (state.simUntil) { state.simUntil = 0; hideBanScreen(); $('#ban-simulate-toggle').textContent = '▶ 模拟封禁预览'; showToast('已结束模拟封禁预览。'); }
   });
 
   // ---------- 体验优化：BV 输入自动转大写并去空格 ----------
