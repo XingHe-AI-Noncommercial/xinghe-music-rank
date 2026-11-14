@@ -506,6 +506,253 @@
     return { stop() { form.onsubmit = null; } };
   }
 
+  // ============================================================
+  // 打砖块
+  // ============================================================
+  function openBreakout(stage) {
+    const W = 300, H = 400;
+    const cvs = document.createElement('canvas'); cvs.width = W; cvs.height = H; cvs.className = 'game-canvas';
+    const ctx = cvs.getContext('2d');
+    const st = status(stage);
+    let paddle, ball, bricks, score, over, won, timer, keys = {};
+    function reset() {
+      paddle = { x: W / 2 - 30, w: 60, y: H - 24, h: 10 };
+      ball = { x: W / 2, y: H - 44, dx: 3, dy: -3, r: 6 };
+      bricks = []; const cols = 8, rows = 5, bw = (W - 20) / cols;
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) bricks.push({ x: 10 + c * bw, y: 34 + r * 18, w: bw - 4, h: 14, alive: true });
+      score = 0; over = false; won = false;
+      st.textContent = '得分：0 · ← → 或左右滑动控制挡板';
+      if (timer) clearInterval(timer);
+      draw();
+    }
+    function draw() {
+      ctx.fillStyle = '#0c0e16'; ctx.fillRect(0, 0, W, H);
+      bricks.forEach(b => { if (b.alive) { ctx.fillStyle = '#ff6b9d'; ctx.fillRect(b.x, b.y, b.w, b.h); } });
+      ctx.fillStyle = '#7ed9ff'; ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
+      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2); ctx.fill();
+      if (over) { ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#fff'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('游戏结束', W / 2, H / 2); }
+      if (won) { ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#6ee7b7'; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('通关！', W / 2, H / 2); }
+    }
+    function step() {
+      if (over || won) return;
+      if (keys.left) paddle.x -= 7; if (keys.right) paddle.x += 7;
+      paddle.x = clamp(paddle.x, 0, W - paddle.w);
+      ball.x += ball.dx; ball.y += ball.dy;
+      if (ball.x < ball.r || ball.x > W - ball.r) ball.dx *= -1;
+      if (ball.y < ball.r) ball.dy *= -1;
+      if (ball.y > paddle.y - ball.r && ball.y < paddle.y + paddle.h && ball.x > paddle.x - ball.r && ball.x < paddle.x + paddle.w + ball.r && ball.dy > 0) ball.dy = -Math.abs(ball.dy) * 1.02;
+      let hit = false;
+      bricks.forEach(b => {
+        if (!b.alive || hit) return;
+        if (ball.x > b.x - ball.r && ball.x < b.x + b.w + ball.r && ball.y > b.y - ball.r && ball.y < b.y + b.h + ball.r) { b.alive = false; hit = true; ball.dy *= -1; score += 10; st.textContent = `得分：${score}`; }
+      });
+      if (ball.y > H + ball.r) { over = true; draw(); return; }
+      if (bricks.every(b => !b.alive)) { won = true; draw(); return; }
+      draw();
+    }
+    const key = e => { if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = true; if (e.key === 'ArrowRight' || e.key === 'd') keys.right = true; };
+    const keyUp = e => { if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = false; if (e.key === 'ArrowRight' || e.key === 'd') keys.right = false; };
+    document.addEventListener('keydown', key); document.addEventListener('keyup', keyUp);
+    cvs.addEventListener('touchmove', e => { e.preventDefault(); const r = cvs.getBoundingClientRect(); paddle.x = clamp((e.touches[0].clientX - r.left) * (W / r.width) - paddle.w / 2, 0, W - paddle.w); }, { passive: false });
+    stage.appendChild(cvs); stage.appendChild(st); restartBtn(stage, reset);
+    reset(); timer = setInterval(step, 16);
+    return { stop() { clearInterval(timer); document.removeEventListener('keydown', key); document.removeEventListener('keyup', keyUp); } };
+  }
+
+  // ============================================================
+  // 打地鼠（30 秒限时）
+  // ============================================================
+  function openWhack(stage) {
+    const wrap = document.createElement('div'); wrap.className = 'whack-grid';
+    const st = status(stage);
+    let cells, score, timer, moleTimer, timeLeft, over;
+    function reset() {
+      score = 0; timeLeft = 30; over = false;
+      wrap.innerHTML = ''; cells = [];
+      for (let i = 0; i < 9; i++) { const c = document.createElement('button'); c.className = 'whack-cell'; c.dataset.i = i; wrap.appendChild(c); cells.push(c); }
+      st.textContent = '得分：0 · 时间 30 秒';
+      if (timer) clearInterval(timer); if (moleTimer) clearInterval(moleTimer);
+      timer = setInterval(() => {
+        if (over) return;
+        timeLeft--; st.textContent = `得分：${score} · 时间 ${timeLeft} 秒`;
+        if (timeLeft <= 0) { over = true; clearInterval(timer); clearInterval(moleTimer); cells.forEach(c => c.classList.remove('mole')); st.textContent = `⏱ 结束！得分 ${score}`; }
+      }, 1000);
+      moleTimer = setInterval(() => {
+        if (over) return;
+        cells.forEach(c => c.classList.remove('mole'));
+        if (Math.random() < 0.85) { cells[Math.floor(Math.random() * 9)].classList.add('mole'); }
+      }, 800);
+    }
+    wrap.addEventListener('click', e => {
+      const el = e.target.closest('.whack-cell'); if (!el || over) return;
+      if (el.classList.contains('mole')) { el.classList.remove('mole'); score += 10; st.textContent = `得分：${score} · 时间 ${timeLeft} 秒`; }
+    });
+    stage.appendChild(st); stage.appendChild(wrap); restartBtn(stage, reset);
+    reset();
+    return { stop() { clearInterval(timer); clearInterval(moleTimer); } };
+  }
+
+  // ============================================================
+  // 数字华容道（15 滑块）
+  // ============================================================
+  function openPuzzle(stage) {
+    const wrap = document.createElement('div'); wrap.className = 'puzzle-grid';
+    const st = status(stage);
+    let tiles, moves;
+    function isSolvable() {
+      const arr = tiles.filter(v => v); let inv = 0;
+      for (let i = 0; i < arr.length; i++) for (let j = i + 1; j < arr.length; j++) if (arr[i] > arr[j]) inv++;
+      const blankRowFromBottom = 4 - Math.floor(tiles.indexOf(0) / 4);
+      return (inv + blankRowFromBottom) % 2 === 0;
+    }
+    function reset() {
+      tiles = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0]; moves = 0;
+      for (let i = tiles.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [tiles[i], tiles[j]] = [tiles[j], tiles[i]]; }
+      if (!isSolvable()) [tiles[0], tiles[1]] = [tiles[1], tiles[0]];
+      st.textContent = '步数：0 · 点相邻数字滑动';
+      render();
+    }
+    function render() {
+      wrap.innerHTML = '';
+      tiles.forEach((v, idx) => {
+        const c = document.createElement('button'); c.className = 'puzzle-cell' + (v ? '' : ' blank'); c.textContent = v || ''; c.dataset.idx = idx;
+        wrap.appendChild(c);
+      });
+      if (tiles.every((v, i) => v === (i + 1) % 16)) st.textContent = `🎉 完成！共 ${moves} 步`;
+    }
+    function slide(idx) {
+      const blank = tiles.indexOf(0), r = Math.floor(idx / 4), c = idx % 4, br = Math.floor(blank / 4), bc = blank % 4;
+      if ((Math.abs(r - br) + Math.abs(c - bc)) === 1) { [tiles[idx], tiles[blank]] = [tiles[blank], tiles[idx]]; moves++; st.textContent = `步数：${moves}`; render(); }
+    }
+    wrap.addEventListener('click', e => { const el = e.target.closest('.puzzle-cell'); if (el && !el.classList.contains('blank')) slide(+el.dataset.idx); });
+    stage.appendChild(st); stage.appendChild(wrap); restartBtn(stage, reset);
+    reset();
+    return { stop() { wrap.onclick = null; } };
+  }
+
+  // ============================================================
+  // 黑白棋（6×6，双人）
+  // ============================================================
+  function openReversi(stage) {
+    const N = 6;
+    const wrap = document.createElement('div'); wrap.className = 'reversi-grid';
+    const st = status(stage);
+    let board, turn, over;
+    function dirs() { const d = []; for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) if (i || j) d.push([i, j]); return d; }
+    function valid(i, j) {
+      if (board[i][j]) return null;
+      const flips = [];
+      for (const [di, dj] of dirs()) {
+        let ni = i + di, nj = j + dj; const f = [];
+        while (ni >= 0 && nj >= 0 && ni < N && nj < N && board[ni][nj] === 3 - turn) { f.push([ni, nj]); ni += di; nj += dj; }
+        if (f.length && ni >= 0 && nj >= 0 && ni < N && nj < N && board[ni][nj] === turn) flips.push(...f);
+      }
+      return flips.length ? flips : null;
+    }
+    function reset() {
+      board = Array.from({ length: N }, () => Array(N).fill(0));
+      const m = N / 2; board[m - 1][m - 1] = 1; board[m][m] = 1; board[m - 1][m] = 2; board[m][m - 1] = 2;
+      turn = 1; over = false;
+      st.textContent = '● 黑先（点击落子翻转）';
+      render();
+    }
+    function render() {
+      wrap.innerHTML = '';
+      for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+        const c = document.createElement('button'); c.className = 'reversi-cell' + (board[i][j] ? (board[i][j] === 1 ? ' black' : ' white') : ''); c.dataset.i = i; c.dataset.j = j;
+        wrap.appendChild(c);
+      }
+      let b = 0, w = 0; board.forEach(r => r.forEach(v => { if (v === 1) b++; if (v === 2) w++; }));
+      if (over) st.textContent = `🎉 ${b > w ? '黑胜' : b < w ? '白胜' : '平局'}（${b} : ${w}）`;
+      else st.textContent = `● ${b} · ○ ${w} · ${turn === 1 ? '黑' : '白'}方走`;
+    }
+    wrap.addEventListener('click', e => {
+      const el = e.target.closest('.reversi-cell'); if (!el || over) return;
+      const i = +el.dataset.i, j = +el.dataset.j;
+      const flips = valid(i, j); if (!flips) return;
+      board[i][j] = turn; flips.forEach(([a, b]) => board[a][b] = turn);
+      let any = false; for (let a = 0; a < N; a++) for (let b = 0; b < N; b++) if (!board[a][b] && valid(a, b)) any = true;
+      if (!any) over = true; else turn = 3 - turn;
+      render();
+    });
+    stage.appendChild(st); stage.appendChild(wrap); restartBtn(stage, reset);
+    reset();
+    return { stop() { wrap.onclick = null; } };
+  }
+
+  // ============================================================
+  // 石头剪刀布（对战电脑）
+  // ============================================================
+  function openRps(stage) {
+    const wrap = document.createElement('div'); wrap.className = 'rps-wrap';
+    const st = status(stage);
+    let score = 0, ai = 0;
+    const beats = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
+    const emoji = { rock: '✊', paper: '✋', scissors: '✌️' };
+    function reset() { score = 0; ai = 0; st.textContent = `你 0 : 0 电脑 · 选一个出`; }
+    function play(choice) {
+      const opts = ['rock', 'paper', 'scissors'], a = opts[Math.floor(Math.random() * 3)];
+      let result;
+      if (beats[choice] === a) { score++; result = '你赢了'; }
+      else if (choice === a) { result = '平局'; }
+      else { ai++; result = '电脑赢了'; }
+      st.textContent = `${emoji[choice]} ${result} ${emoji[a]} · 你 ${score} : ${ai} 电脑`;
+    }
+    [['rock', '石头'], ['paper', '布'], ['scissors', '剪刀']].forEach(([k, label]) => {
+      const b = btn(`${emoji[k]} ${label}`); b.addEventListener('click', () => play(k)); wrap.appendChild(b);
+    });
+    stage.appendChild(st); stage.appendChild(wrap); restartBtn(stage, reset);
+    reset();
+    return { stop() { wrap.onclick = null; } };
+  }
+
+  // ============================================================
+  // 21 点（对战电脑）
+  // ============================================================
+  function openBlackjack(stage) {
+    const wrap = document.createElement('div'); wrap.className = 'bj-wrap';
+    const st = status(stage);
+    const result = document.createElement('div'); result.className = 'game-status';
+    let deck, player, dealer, over = false;
+    function newDeck() {
+      const suits = ['♠', '♥', '♦', '♣'], vals = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+      deck = []; suits.forEach(s => vals.forEach(v => deck.push({ s, v })));
+      for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+    }
+    function value(hand) {
+      let total = 0, aces = 0;
+      hand.forEach(c => { if (c.v === 'A') { aces++; total += 11; } else if (['J', 'Q', 'K'].includes(c.v)) total += 10; else total += Number(c.v); });
+      while (total > 21 && aces > 0) { total -= 10; aces--; }
+      return total;
+    }
+    function show() { result.textContent = `你 ${value(player)} · 庄 ${value(dealer)}`; }
+    function reset() {
+      newDeck(); player = [deck.pop(), deck.pop()]; dealer = [deck.pop()]; over = false;
+      wrap.querySelectorAll('button').forEach(b => b.disabled = false);
+      show(); st.textContent = '要牌或停牌';
+    }
+    function hit() {
+      if (over) return;
+      player.push(deck.pop());
+      if (value(player) > 21) { over = true; show(); st.textContent = '💥 爆牌，庄赢！'; wrap.querySelectorAll('button').forEach(b => b.disabled = true); }
+      else if (value(player) === 21) stand();
+      else show();
+    }
+    function stand() {
+      if (over) return; over = true;
+      while (value(dealer) < 17) dealer.push(deck.pop());
+      const p = value(player), d = value(dealer);
+      st.textContent = d > 21 ? '🎉 庄爆牌，你赢了！' : d > p ? '庄赢。' : d === p ? '平局。' : '🎉 你赢了！';
+      show(); wrap.querySelectorAll('button').forEach(b => b.disabled = true);
+    }
+    const hitBtn = btn('＋ 要牌'); hitBtn.addEventListener('click', hit);
+    const standBtn = btn('■ 停牌'); standBtn.addEventListener('click', stand);
+    wrap.appendChild(result); wrap.appendChild(hitBtn); wrap.appendChild(standBtn);
+    stage.appendChild(st); stage.appendChild(wrap); restartBtn(stage, reset);
+    reset();
+    return { stop() { wrap.onclick = null; } };
+  }
+
   // ---------- 游戏清单 ----------
   const GAMES = {
     snake:   { name: '贪吃蛇', desc: '经典街机 · 键盘/滑动', icon: '🐍', open: openSnake },
@@ -516,6 +763,12 @@
     memory:  { name: '记忆翻牌', desc: '翻牌配对 · 记忆考验', icon: '🃏', open: openMemory },
     tictac:  { name: '井字棋', desc: '双人对弈 · 经典三连', icon: '❌', open: openTicTac },
     guess:   { name: '猜数字', desc: '1-100 · 数值推理', icon: '🎯', open: openGuess },
+    breakout: { name: '打砖块', desc: '挡板弹球 · 清空砖块', icon: '🧱', open: openBreakout },
+    whack:   { name: '打地鼠', desc: '30 秒限时 · 点中得分', icon: '🐹', open: openWhack },
+    puzzle:  { name: '数字华容道', desc: '15 滑块 · 滑到顺序', icon: '🀄', open: openPuzzle },
+    reversi: { name: '黑白棋', desc: '双人对弈 · 翻转吃子', icon: '⚪', open: openReversi },
+    rps:     { name: '石头剪刀布', desc: '对战电脑 · 经典', icon: '✊', open: openRps },
+    blackjack:{ name: '21 点', desc: '对战电脑 · 要牌/停牌', icon: '♠️', open: openBlackjack },
   };
 
   // ---------- 选择面板 ----------
