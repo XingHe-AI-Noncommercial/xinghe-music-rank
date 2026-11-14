@@ -164,6 +164,23 @@
               </form>
               <div id="admin-announcement-list" class="admin-announcement-list"></div>
             </section>
+
+            <!-- IP 封禁：封禁指定 IP + 时效 + 模拟封禁预览 -->
+            <section class="admin-card">
+              <div class="admin-card-title"><div><span class="mini-label">IP BAN</span><h3>IP 封禁</h3><p class="admin-card-subtitle">封禁一个 IP（可设时效），被封禁者访问时看到封禁页；支持模拟封禁预览效果。</p></div><span id="admin-ban-count" class="admin-card-badge">0 条</span></div>
+              <form id="admin-ban-form" class="admin-add-form">
+                <label>IP 地址<input name="ip" maxlength="64" required placeholder="例如 1.2.3.4 或 IPv6"></label>
+                <label>时效（小时）<input name="hours" type="number" min="1" max="8760" value="24" placeholder="24"></label>
+                <label class="wide">原因<input name="reason" maxlength="200" placeholder="封禁原因（可选）"></label>
+                <div class="copy-row"><label class="inline-check"><input name="permanent" type="checkbox"> 永久封禁（忽略时效）</label></div>
+                <button class="button button-primary" type="submit">⛔ 封禁此 IP</button>
+              </form>
+              <div id="admin-ban-list" class="admin-ban-list"></div>
+              <div class="copy-row" style="margin-top:10px">
+                <button id="ban-simulate-toggle" class="button button-outline">▶ 模拟封禁预览</button>
+                <label class="inline-check" style="margin-left:8px">时长 <input id="ban-simulate-hours" type="number" min="1" max="24" value="1" style="width:56px"> 小时</label>
+              </div>
+            </section>
           </div>
 
           <div id="admin-view-submissions" class="admin-view hidden">
@@ -195,6 +212,17 @@
       <h1>网站维护中</h1>
       <p>我们正在对站点进行维护升级，请稍后访问。给您带来不便，敬请谅解。</p>
       <small>维护状态下仅开发者可进入后台；站点恢复正常后将自动解除。</small>
+    </div>
+  </section>
+
+  <!-- IP 封禁页（真实封禁命中或开发者模拟预览时显示） -->
+  <section id="ban-screen" class="ban-screen hidden" aria-label="IP 被封禁">
+    <div class="ban-body">
+      <div class="ban-icon">⛔</div>
+      <h1>您已被封禁</h1>
+      <p id="ban-reason">由于异常行为，您的 IP 已被暂时封禁。</p>
+      <div id="ban-until" class="ban-until">剩余 —</div>
+      <button id="ban-exit-preview" class="button button-outline hidden">结束预览，回到网站</button>
     </div>
   </section>
 
