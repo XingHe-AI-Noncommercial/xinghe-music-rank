@@ -170,3 +170,14 @@
   .lite-rank{flex-basis:28px;height:28px;font-size:10px}
   .track-open{flex-basis:34px;height:34px}
 }
+
+/* 网站维护中遮罩 */
+.maintenance-screen{position:fixed;inset:0;z-index:25;display:flex;flex-direction:column;background:radial-gradient(ellipse at 20% -10%,rgba(90,70,150,.22),transparent 45%),var(--bg);}
+.maintenance-screen.hidden{display:none;}
+.maintenance-head{display:flex;align-items:center;justify-content:space-between;max-width:1320px;width:100%;margin:0 auto;padding:18px 38px;}
+.maintenance-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 24px;gap:10px;}
+.maintenance-icon{font-size:56px;filter:drop-shadow(0 0 22px rgba(168,139,255,.35));}
+.maintenance-body h1{font-size:clamp(28px,5vw,44px);margin:6px 0 0;letter-spacing:.02em;}
+.maintenance-body p{color:#9a9cb0;max-width:480px;margin:0;}
+.maintenance-body small{color:#6a6d80;margin-top:8px;}
+@media(max-width:760px){.maintenance-head{padding:14px 18px;}}
