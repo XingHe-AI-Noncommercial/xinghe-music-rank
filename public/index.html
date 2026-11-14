@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#090a10">
-  <meta name="description" content="星河音浪榜：搜索 VocaDB 曲库、自动匹配 B 站源与封面，审核通过后可投票。每人每天 30 票，单曲每天最多 15 票。">
-  <title>星河音浪榜 · XingHe Music Chart</title>
+  <meta name="description" content="星河音浪榜 · 精简版：每周一清空的 B 站视频投稿榜单。每天每 IP 限投 1 个，开发者审核通过后上架，可一键复制全部 BV 号。">
+  <title>星河音浪榜 · 精简版</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -13,181 +13,143 @@
   <header class="site-header">
     <a class="brand" href="#top" aria-label="星河音浪榜主页">
       <span class="brand-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 3.5 29 18l15.5 6-15.5 5L24 44.5 19 29 3.5 24 19 18z" fill="currentColor"/><circle cx="24" cy="24" r="4" fill="#0b0c13"/></svg></span>
-      <span class="brand-text"><strong>星河音浪榜</strong><small>XINGHE MUSIC CHART</small></span>
+      <span class="brand-text"><strong>星河音浪榜</strong><small>XINGHE MUSIC CHART · LITE</small></span>
     </a>
-    <nav class="main-nav"><a class="nav-active" href="#collection">收藏列表</a><a href="#add-song">提交歌曲</a><a href="#about">规则说明</a></nav>
-    <div class="header-actions"><span id="header-live" class="live-pill"><i></i>正在连接</span><button class="button button-quiet" id="open-admin">管理后台 ↗</button></div>
+    <nav class="main-nav"><a class="nav-active" href="#list">本周榜单</a><a href="#submit">投稿</a><a href="#about">规则说明</a></nav>
+    <div class="header-actions"><span id="header-live" class="live-pill"><i></i>正在连接</span><button class="button button-quiet" id="open-admin">开发者模式 ↗</button></div>
   </header>
 
   <main id="top" class="page-shell">
     <section class="hero-panel">
       <div class="hero-copy">
-        <div class="eyebrow"><span class="eyebrow-line"></span> BILIBILI MUSIC VOTING <span id="week-label" class="week-chip">实时收录</span></div>
-        <h1>为喜欢的音乐，<br><em>投出你的一票。</em></h1>
-        <p class="hero-subtitle">搜索 VocaDB 曲库，封面与 B 站源自动匹配；提交后审核通过即可上榜。每位访客每天 30 票，同一首歌每天最多投 15 票。</p>
-        <div class="hero-cta"><a class="button button-primary" href="#collection">去投票 <span>↓</span></a><button class="button button-outline" id="open-submit">＋ 提交一首歌曲</button></div>
-        <div class="hero-footnote"><span class="tiny-spark">✦</span> 播放源仅 B 站 · 不上传音频 · 每人每天 30 票 · 单曲每日上限 15 票</div>
+        <div class="eyebrow"><span class="eyebrow-line"></span> WEEKLY BILIBILI COLLECTION <span id="week-label" class="week-chip">本周</span></div>
+        <h1>每 <em>周一</em> 清空一次，<br>只为这一周。</h1>
+        <p class="hero-subtitle">投稿你喜欢的 B 站视频（BV 号 / 作者名 / 视频名）。每天每 IP 限投 1 个，开发者审核通过后才上架；开发者可一键复制全部 BV 号。</p>
+        <div class="hero-cta"><a class="button button-primary" href="#submit">立即投稿 <span>↓</span></a><button class="button button-outline" id="open-admin-dev">开发者模式</button></div>
+        <div class="hero-footnote"><span class="tiny-spark">✦</span> 每周一 00:00 清空 · 每天每 IP 限 1 个 · 通过审核才上架 · 不上传音频</div>
       </div>
       <div class="hero-art" aria-hidden="true">
         <div class="orbit orbit-1"></div><div class="orbit orbit-2"></div><div class="orbit orbit-3"></div>
-        <div class="orbit-core"><span class="core-star">♫</span><span class="core-caption">SOUND<br>OF STARS</span></div>
+        <div class="orbit-core"><span class="core-star">♫</span><span class="core-caption">WEEK<br>RESET</span></div>
         <div class="floating-note note-a">♫</div><div class="floating-note note-b">♪</div><div class="floating-note note-c">✧</div>
-        <div class="art-label label-top">XH / 01</div><div class="art-label label-bottom">VOTE · PLAY · RANK</div>
+        <div class="art-label label-top">XH / LITE</div><div class="art-label label-bottom">SUBMIT · REVIEW · COPY</div>
       </div>
       <div class="hero-index"><span>01</span><span class="index-line"></span><span>03</span></div>
     </section>
 
     <section class="metrics-grid" aria-label="站点概况">
-      <article class="metric-card metric-feature"><div class="metric-top"><span>已收录</span><span class="metric-icon">◈</span></div><strong id="metric-songs">—</strong><div class="metric-bottom"><span>审核通过的作品</span><span class="metric-accent">SONGS</span></div></article>
-      <article class="metric-card"><div class="metric-top"><span>待审核</span><span class="metric-icon">⏳</span></div><strong id="metric-pending">—</strong><div class="metric-bottom"><span>等待管理员通过</span><span class="metric-accent">PENDING</span></div></article>
-      <article class="metric-card"><div class="metric-top"><span>总票数</span><span class="metric-icon">✧</span></div><strong id="metric-votes">—</strong><div class="metric-bottom"><span>累计投出的票</span><span class="metric-accent">VOTES</span></div></article>
-      <article class="metric-card"><div class="metric-top"><span>今日剩余</span><span class="metric-icon">⌁</span></div><strong id="metric-remain" class="metric-tier">—</strong><div class="metric-bottom"><span id="metric-remain-sub">每人每天 30 票</span><span class="metric-accent">TODAY</span></div></article>
+      <article class="metric-card metric-feature"><div class="metric-top"><span>本周上架</span><span class="metric-icon">◈</span></div><strong id="metric-approved">—</strong><div class="metric-bottom"><span>审核通过的视频</span><span class="metric-accent">LISTED</span></div></article>
+      <article class="metric-card"><div class="metric-top"><span>待审核</span><span class="metric-icon">⏳</span></div><strong id="metric-pending">—</strong><div class="metric-bottom"><span>等待开发者处理</span><span class="metric-accent">PENDING</span></div></article>
+      <article class="metric-card"><div class="metric-top"><span>已拒绝</span><span class="metric-icon">×</span></div><strong id="metric-rejected">—</strong><div class="metric-bottom"><span>未通过的投稿</span><span class="metric-accent">REJECTED</span></div></article>
+      <article class="metric-card"><div class="metric-top"><span>今日可投</span><span class="metric-icon">⌁</span></div><strong id="metric-submit" class="metric-tier">—</strong><div class="metric-bottom"><span id="metric-submit-sub">每天每 IP 1 个</span><span class="metric-accent">TODAY</span></div></article>
     </section>
 
-    <section id="add-song" class="add-section">
-      <div class="section-heading">
-        <div><div class="eyebrow"><span class="eyebrow-line"></span> SUBMIT A TRACK</div><h2>提交歌曲 <span class="top-tag">VocaDB 搜索</span></h2><p>从 VocaDB 选中曲目，封面与 B 站源自动匹配；提交后需管理员审核，通过才进入收藏列表。</p></div>
-      </div>
-      <div class="search-panel">
-        <label class="search-box big-search"><span>⌕</span><input id="vocadb-search" type="search" placeholder="搜索 VocaDB 曲库（歌名 / 歌手）…" aria-label="搜索 VocaDB 曲库" autocomplete="off"></label>
-      </div>
-      <p id="vocadb-status" class="search-status">输入关键词，从 VocaDB 曲库检索（自动匹配 B 站源与封面）。</p>
-      <div id="vocadb-results" class="vocadb-results"></div>
+    <section id="submit" class="add-section">
+      <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> SUBMIT A VIDEO</div><h2>投稿一个视频 <span class="top-tag">待审核</span></h2><p>填 BV 号、作者名、视频名。每天每 IP 限投 1 个，提交后由开发者审核。</p></div></div>
+      <form id="submit-form" class="submit-form">
+        <label>B 站 BV 号 / 链接<input name="bvid" maxlength="120" required placeholder="BV1xx411c7mD 或粘贴 B 站视频链接" autocomplete="off"></label>
+        <label>作者名<input name="artist" maxlength="100" placeholder="作者 / UP 主（可空，默认未知创作者）" autocomplete="off"></label>
+        <label class="wide">视频名<input name="title" maxlength="100" required placeholder="视频标题 / 歌名" autocomplete="off"></label>
+        <button class="button button-primary" type="submit">提交审核 <span>→</span></button>
+      </form>
+      <p id="submit-status" class="submit-status">还未投稿，今天可以投 1 个。</p>
     </section>
 
-    <section id="collection" class="ranking-section">
+    <section id="list" class="ranking-section">
       <div class="ranking-header">
-        <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> MUSIC COLLECTION</div><h2>收藏列表 <span id="collection-total" class="top-tag">0 首</span></h2><p>按总票数排序；点击卡片跳转 B 站播放，右侧可直接投票。</p></div></div>
-        <div class="ranking-tools"><label class="search-box"><span>⌕</span><input id="collection-search" type="search" placeholder="筛选歌名 / 歌手" aria-label="筛选收藏列表"></label><button id="refresh-button" class="icon-button" title="刷新列表" aria-label="刷新列表">⟳</button></div>
+        <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> THIS WEEK</div><h2>本周榜单 <span id="list-total" class="top-tag">0 个</span></h2><p>仅显示审核通过的作品；点击卡片跳转 B 站播放。</p></div></div>
+        <div class="ranking-tools"><span id="week-chip" class="week-chip">本周周期：—</span><button id="refresh-button" class="icon-button" title="刷新榜单" aria-label="刷新榜单">⟳</button></div>
       </div>
-      <div id="voting-banner" class="voting-banner is-open"><span class="banner-symbol">⌁</span><div><strong id="voting-title">今日剩余 30 票</strong><p id="voting-desc">每人每天 30 票，同一首歌每天最多 15 票；北京时间 00:00 重置。</p></div><span class="banner-state">TODAY</span></div>
-      <div id="collection-grid" class="collection-grid"><div class="loading-panel"><span class="loader"></span> 正在加载收藏列表…</div></div>
-      <div id="empty-search" class="empty-state hidden"><span>⌕</span><strong>没有找到相关歌曲</strong><p>试试换一个歌名或歌手名字。</p></div>
-      <div class="ranking-footer"><span><i class="tiny-dot"></i> 投票是站内计数，不会影响任何第三方平台</span><span id="ranking-count">共 0 首</span></div>
+      <div id="list-grid" class="collection-grid"><div class="loading-panel"><span class="loader"></span> 正在加载本周榜单…</div></div>
+      <div id="empty-list" class="empty-state hidden"><span>⌕</span><strong>本周还是空的</strong><p>投一个视频，或等开发者上架；每周一 00:00 清空。</p></div>
+      <div class="ranking-footer"><span><i class="tiny-dot"></i> 只有审核通过的作品才会被计入开发者的一键复制</span><span id="list-count">共 0 个</span></div>
     </section>
 
     <section id="about" class="rules-section">
-      <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> HOW IT WORKS</div><h2>投票规则如何运作？</h2><p>本站只做收藏、跳转与站内投票，不保存任何音频。</p></div></div>
+      <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> HOW IT WORKS</div><h2>规则说明</h2><p>一个每周重置的 B 站视频投稿榜。</p></div></div>
       <div class="rules-grid">
-        <article class="rule-card"><span class="rule-number">01</span><span class="rule-icon">⌁</span><h3>每人每天 30 票</h3><p>每个访客（匿名）每天共有 30 票可分配，北京时间 00:00 重置。</p><div class="rule-example"><span>每日额度</span><strong>30 票</strong></div></article>
-        <article class="rule-card"><span class="rule-number">02</span><span class="rule-icon">✦</span><h3>单曲上限 15 票</h3><p>同一天对同一首歌最多投 15 票，避免单曲刷分。</p><div class="rule-example"><span>单曲每日</span><strong>15 票</strong></div></article>
-        <article class="rule-card"><span class="rule-number">03</span><span class="rule-icon">⏳</span><h3>提交需审核</h3><p>用户提交的歌曲先进入待审核，管理员通过后才上榜、才可投票。</p><div class="rule-example"><span>流程</span><strong>先审后上</strong></div></article>
-        <article class="rule-card"><span class="rule-number">04</span><span class="rule-icon">▶</span><h3>播放源 · B 站</h3><p>每首歌自动匹配一个 B 站 BV 号与链接，点击即可跳转原视频播放。</p><div class="rule-example"><span>依赖</span><strong>B站视频</strong></div></article>
+        <article class="rule-card"><span class="rule-number">01</span><span class="rule-icon">⟳</span><h3>每周一清空</h3><p>每周一北京时间 00:00，全部作品清空，重新开始新的一周。</p><div class="rule-example"><span>周期</span><strong>周一重置</strong></div></article>
+        <article class="rule-card"><span class="rule-number">02</span><span class="rule-icon">⌁</span><h3>每天每 IP 1 个</h3><p>同一 IP 每天最多投稿 1 个作品；被拒绝后当天可重新提交。</p><div class="rule-example"><span>限额</span><strong>1 / 天</strong></div></article>
+        <article class="rule-card"><span class="rule-number">03</span><span class="rule-icon">⏳</span><h3>需审核上架</h3><p>投稿先进待审核；开发者通过后才显示在榜单、才被复制。</p><div class="rule-example"><span>流程</span><strong>先审后上</strong></div></article>
+        <article class="rule-card"><span class="rule-number">04</span><span class="rule-icon">⧉</span><h3>一键复制 BV</h3><p>开发者模式可复制全部已上架视频的 BV 号，中间用逗号分隔。</p><div class="rule-example"><span>仅含</span><strong>已上架</strong></div></article>
       </div>
-      <div class="formula-strip"><span class="formula-icon">∑</span><div><strong>排名 = 累计票数（纯票数，无加权）</strong><small>每人每天 30 票 · 单曲每日上限 15 票 · 播放仅依赖 B 站视频 · 不上传音频、不使用 R2。</small></div><span class="formula-eq">VOTE ENGINE / XH</span></div>
+      <div class="formula-strip"><span class="formula-icon">∑</span><div><strong>每周重置 · 投稿需审核 · 开发者一键复制</strong><small>周一 00:00 清空 · 每天每 IP 1 个 · 通过审核才上架 · 播放仅依赖 B 站视频 · 不上传音频、不使用 R2。</small></div><span class="formula-eq">LITE ENGINE / XH</span></div>
     </section>
 
-    <footer class="site-footer"><div class="footer-brand"><span class="footer-star">✦</span><span><strong>星河音浪榜</strong><small>XINGHE MUSIC CHART</small></span></div><p>为喜欢的声音，留一颗星的位置。</p><div class="footer-right"><span>COMMUNITY PROJECT</span><span>© <span id="current-year">2026</span> XINGHE</span></div></footer>
+    <footer class="site-footer"><div class="footer-brand"><span class="footer-star">✦</span><span><strong>星河音浪榜 · 精简版</strong><small>XINGHE MUSIC CHART · LITE</small></span></div><p>为这一周，留一颗星的位置。</p><div class="footer-right"><span>WEEKLY COMMUNITY PROJECT</span><span>© <span id="current-year">2026</span> XINGHE</span></div></footer>
   </main>
 
-  <!-- 提交弹窗：封面 / BV 自动带出，无需手动填写 -->
-  <div id="submit-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="submit-title">
-    <div class="modal-card modal-narrow">
-      <button class="modal-close" data-close="submit-modal" aria-label="关闭">×</button>
-      <div class="modal-eyebrow">SUBMIT A TRACK / REVIEW</div>
-      <h2 id="submit-title">确认提交审核</h2>
-      <p class="modal-description">封面与 B 站源已自动从 VocaDB 匹配。提交后需管理员审核，通过才会进入收藏列表。</p>
-      <div id="submit-selected" class="selected-track hidden"></div>
-      <div class="submit-info">
-        <div><span>B 站 BV 号</span><strong id="submit-bvid">—</strong></div>
-        <div><span>B 站播放链接</span><strong id="submit-bili">—</strong></div>
-      </div>
-      <form id="submit-form" class="stack-form">
-        <button class="button button-primary submit-wide" type="submit">提交审核 <span>→</span></button>
-      </form>
-      <p class="form-note">BV 号 / 链接 / 封面均由系统自动匹配，无需手动填写。</p>
-    </div>
-  </div>
-
-  <!-- 管理员登录弹窗 -->
+  <!-- 开发者登录弹窗 -->
   <div id="admin-login-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="login-title">
     <div class="modal-card modal-narrow login-card">
       <button class="modal-close" data-close="admin-login-modal" aria-label="关闭">×</button>
       <div class="login-mark">✦</div>
-      <div class="modal-eyebrow">ADMIN CONSOLE / AUTHORIZED</div>
-      <h2 id="login-title">后台管理入口</h2>
-      <p class="modal-description">管理员：<strong>星河</strong>。登录密码只在后台验证，不会放进网址或页面代码。</p>
+      <div class="modal-eyebrow">DEVELOPER MODE / AUTHORIZED</div>
+      <h2 id="login-title">开发者模式入口</h2>
+      <p class="modal-description">密码保存在 Cloudflare 后台（Secret），不会出现在前端代码或网址里。</p>
       <form id="login-form" class="stack-form">
-        <label>管理员密码<input name="password" type="password" autocomplete="current-password" required placeholder="输入你配置的后台密码"></label>
+        <label>开发者密码<input name="password" type="password" autocomplete="current-password" required placeholder="输入你配置的 ADMIN_PASSWORD"></label>
         <button class="button button-primary submit-wide" type="submit">安全登录 <span>→</span></button>
       </form>
-      <p class="form-note">需先在 Cloudflare Pages Secrets 中配置后台密钥。</p>
+      <p class="form-note">需先在 Cloudflare Pages Secrets 中配置 ADMIN_PASSWORD 与 ADMIN_SESSION_SECRET。</p>
     </div>
   </div>
 
-  <!-- 管理后台弹窗 -->
+  <!-- 开发者后台弹窗 -->
   <div id="admin-modal" class="modal-backdrop hidden admin-backdrop" role="dialog" aria-modal="true" aria-labelledby="admin-title">
     <div class="admin-shell">
       <aside class="admin-sidebar">
-        <div class="admin-side-brand"><span class="brand-mark small-mark">✦</span><span><strong>星河控制台</strong><small>ADMIN SYSTEM</small></span></div>
-        <div class="admin-profile"><div class="profile-avatar">星</div><div><strong>星河</strong><small>最高权限管理员</small></div><span class="profile-online"></span></div>
+        <div class="admin-side-brand"><span class="brand-mark small-mark">✦</span><span><strong>开发者控制台</strong><small>DEV SYSTEM</small></span></div>
+        <div class="admin-profile"><div class="profile-avatar">星</div><div><strong>开发者</strong><small>审核 · 上架 · 复制</small></div><span class="profile-online"></span></div>
         <div class="admin-nav-label">工作空间</div>
         <button class="admin-nav active" data-admin-tab="overview"><span>◫</span> 总览面板</button>
         <button class="admin-nav" data-admin-tab="submissions"><span>⏳</span> 投稿审核 <b id="admin-pending-badge">0</b></button>
-        <button class="admin-nav" data-admin-tab="songs"><span>♫</span> 歌曲管理</button>
-        <button class="admin-nav" data-admin-tab="import"><span>⇪</span> 批量导入</button>
+        <button class="admin-nav" data-admin-tab="songs"><span>♫</span> 作品管理</button>
         <div class="sidebar-spacer"></div>
-        <button id="admin-logout" class="admin-logout">↪ 退出后台</button>
-        <div class="admin-side-foot">XINGHE MUSIC CHART<br>ADMIN BUILD 3.0</div>
+        <button id="admin-logout" class="admin-logout">↪ 退出开发者模式</button>
+        <div class="admin-side-foot">XINGHE MUSIC CHART<br>LITE BUILD 4.0</div>
       </aside>
       <section class="admin-main">
         <header class="admin-topbar">
           <div><button id="admin-mobile-menu" class="admin-menu-button">☰</button><span class="admin-breadcrumb">工作空间 <span>›</span> <strong id="admin-current-tab">总览面板</strong></span></div>
-          <div class="admin-top-actions"><span class="admin-secure-tag">● 安全会话</span><button class="modal-close admin-close" data-close="admin-modal" aria-label="关闭后台">×</button></div>
+          <div class="admin-top-actions"><span class="admin-secure-tag">● 安全会话</span><button class="modal-close admin-close" data-close="admin-modal" aria-label="关闭开发者后台">×</button></div>
         </header>
         <div class="admin-content">
-          <div class="admin-welcome"><div><div class="modal-eyebrow">MONITOR / REVIEW / MANAGE</div><h2 id="admin-title">总览面板</h2><p id="admin-page-desc">查看收录与审核状态，快速添加歌曲。</p></div><button id="admin-refresh" class="button button-outline admin-refresh">⟳ 刷新数据</button></div>
+          <div class="admin-welcome"><div><div class="modal-eyebrow">REVIEW / LIST / COPY</div><h2 id="admin-title">总览面板</h2><p id="admin-page-desc">审核投稿、上架作品、一键复制 BV 号。</p></div><button id="admin-refresh" class="button button-outline admin-refresh">⟳ 刷新数据</button></div>
 
-          <!-- 总览 -->
           <div id="admin-view-overview" class="admin-view">
             <div id="admin-kpi-grid" class="admin-kpi-grid"></div>
+
+            <!-- 一键复制（只含已审核通过） -->
+            <section class="admin-card copy-card">
+              <div class="admin-card-title"><div><span class="mini-label">COPY BV NUMBERS</span><h3>一键复制全部 BV 号</h3><p class="admin-card-subtitle">只复制<b>已审核通过（上架）</b>的作品；待审核 / 已拒绝的不包含在内。中间用逗号分隔。</p></div></div>
+              <div class="copy-row"><button id="copy-bv" class="button button-primary">⧉ 复制全部 BV 号</button><span id="copy-bv-count" class="copy-count">已上架 0 个</span></div>
+              <pre id="bv-preview" class="bv-preview">（暂无已上架作品）</pre>
+            </section>
+
+            <!-- 快速上架（不限次数） -->
             <section class="admin-card">
-              <div class="admin-card-title"><div><span class="mini-label">QUICK ACTION</span><h3>快速添加歌曲（直接通过）</h3><p class="admin-card-subtitle">管理员添加直接进入收藏列表，无需审核。BV 号 / 链接可手动填写。</p></div></div>
+              <div class="admin-card-title"><div><span class="mini-label">QUICK LIST</span><h3>开发者快速上架（不限次数）</h3><p class="admin-card-subtitle">开发者上架 = 已同意审核，直接通过，不受每天 1 个限制。</p></div></div>
               <form id="admin-add-form" class="admin-add-form">
-                <label>歌名<input name="title" maxlength="100" required placeholder="歌名"></label>
-                <label>歌手<input name="artist" maxlength="100" placeholder="未知创作者"></label>
-                <label>封面 URL<input name="coverUrl" maxlength="500" placeholder="可留空（自动兜底）"></label>
-                <label>B 站 BV 号<input name="bvid" maxlength="40" required placeholder="BV1xx411c7mD"></label>
-                <label>B 站链接<input name="biliUrl" maxlength="300" required placeholder="https://www.bilibili.com/video/BV…"></label>
-                <button class="button button-primary" type="submit">＋ 直接收录</button>
+                <label>BV 号 / 链接<input name="bvid" maxlength="120" required placeholder="BV1xx411c7mD"></label>
+                <label>作者名<input name="artist" maxlength="100" placeholder="未知创作者"></label>
+                <label>视频名<input name="title" maxlength="100" required placeholder="视频标题"></label>
+                <button class="button button-primary" type="submit">＋ 直接上架</button>
               </form>
             </section>
           </div>
 
-          <!-- 投稿审核 -->
           <div id="admin-view-submissions" class="admin-view hidden">
             <section class="admin-card">
-              <div class="admin-card-title"><div><span class="mini-label">PENDING REVIEW</span><h3>待审核投稿</h3><p class="admin-card-subtitle">通过后进入收藏列表并可投票；拒绝则不显示。</p></div><span id="submissions-count-pill" class="admin-card-badge">0 待处理</span></div>
+              <div class="admin-card-title"><div><span class="mini-label">PENDING REVIEW</span><h3>待审核投稿</h3><p class="admin-card-subtitle">通过后上架（计入复制）；拒绝则不显示、不复制。</p></div><span id="submissions-count-pill" class="admin-card-badge">0 待处理</span></div>
               <div id="admin-submissions-list" class="submission-list"></div>
             </section>
           </div>
 
-          <!-- 歌曲管理 -->
           <div id="admin-view-songs" class="admin-view hidden">
             <section class="admin-card">
-              <div class="admin-card-title"><div><span class="mini-label">ALL TRACKS</span><h3>收藏歌曲管理</h3><p class="admin-card-subtitle">删除后前端列表会立即刷新，相关票数一并清除。</p></div><div class="table-tools"><input id="admin-song-search" type="search" placeholder="搜索歌名 / BV号"></div></div>
+              <div class="admin-card-title"><div><span class="mini-label">ALL TRACKS</span><h3>本周作品管理</h3><p class="admin-card-subtitle">删除后立即从榜单与复制清单移除。</p></div><div class="table-tools"><input id="admin-song-search" type="search" placeholder="搜索视频名 / BV号"></div></div>
               <div id="admin-songs-table" class="admin-table-wrap"></div>
-            </section>
-          </div>
-
-          <!-- 批量导入 -->
-          <div id="admin-view-import" class="admin-view hidden">
-            <section class="admin-card">
-              <div class="admin-card-title"><div><span class="mini-label">BATCH IMPORT</span><h3>批量导入歌曲（直接通过）</h3><p class="admin-card-subtitle">支持 .json 或 .txt 文件；也可粘贴内容。TXT 每行：歌名,歌手,封面URL,BV号,B站链接。</p></div></div>
-              <div class="import-row">
-                <label class="file-drop">
-                  <input id="import-file" type="file" accept=".json,.txt,application/json,text/plain">
-                  <span id="import-file-name">选择 .json / .txt 文件</span>
-                </label>
-                <select id="import-format" aria-label="导入格式"><option value="auto">自动识别格式</option><option value="json">JSON</option><option value="txt">TXT</option></select>
-                <button id="import-run" class="button button-primary">⇪ 开始导入</button>
-              </div>
-              <label class="import-label">粘贴内容 <span>选填</span><textarea id="import-content" rows="8" placeholder='JSON 示例：
-[{"title":"歌名","artist":"歌手","coverUrl":"","bvid":"BV1xx411c7mD","biliUrl":"https://www.bilibili.com/video/BV1xx411c7mD"}]
-
-TXT 示例：
-歌名,歌手,封面URL,BV号,B站链接'></textarea></label>
-              <div id="import-result" class="import-result hidden"></div>
             </section>
           </div>
         </div>
