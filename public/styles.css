@@ -427,3 +427,21 @@ input, textarea, select { -webkit-backdrop-filter: blur(8px); backdrop-filter: b
 .ip-none { color: #6b6e82; font-size: 10px; }
 .admin-ip-actions { flex: 0 0 auto; }
 .admin-ip-actions .tiny-button.danger { color: #ff9abf; border-color: rgba(255,128,191,.13); }
+
+/* ============================================================
+   收件箱（右上角 📬）+ 拒绝理由弹窗
+   ============================================================ */
+.inbox-btn { position: relative; }
+.inbox-badge { position: absolute; top: -6px; right: -6px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 9px; background: var(--pink); color: #fff; font-size: 9px; font-weight: 700; display: grid; place-items: center; line-height: 1; box-shadow: 0 0 10px rgba(255,128,191,.5); }
+.inbox-list { display: flex; flex-direction: column; gap: 9px; max-height: 340px; overflow: auto; }
+.inbox-item { padding: 12px 13px; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.03); border-radius: 11px; }
+.inbox-item.is-read { opacity: .62; }
+.inbox-head { display: flex; align-items: center; gap: 8px; }
+.inbox-head strong { font-size: 11px; }
+.inbox-head small { margin-left: auto; color: #6d7085; font-size: 8px; }
+.inbox-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pink); box-shadow: 0 0 8px rgba(255,128,191,.6); flex: 0 0 8px; }
+.inbox-item p { margin: 8px 0 0; color: #a4a6ba; font-size: 10px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+.modal-actions .button { min-height: 40px; }
+textarea { width: 100%; border: 1px solid rgba(255,255,255,.1); border-radius: 10px; padding: 10px 12px; color: #f7f4ff; background: rgba(255,255,255,.035); outline: 0; font-size: 11px; resize: vertical; font-family: inherit; }
+textarea:focus { border-color: rgba(168,139,255,.45); box-shadow: 0 0 0 3px rgba(168,139,255,.08); }
