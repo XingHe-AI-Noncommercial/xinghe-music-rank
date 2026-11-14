@@ -13,6 +13,9 @@
     adminTab: 'overview',
     adminSidebarOpen: false,
   };
+  // 开发者会话令牌：登录后存于 sessionStorage，后台请求带 Authorization 头（Cookie 之外的兜底）
+  let adminToken = '';
+  try { adminToken = sessionStorage.getItem('xh_admin_token') || ''; } catch { /* 某些环境禁用 storage */ }
 
   // ---------- 本地预览数据（后端未连接时展示） ----------
   const demoTracks = [
@@ -52,6 +55,8 @@
   async function api(url, options = {}) {
     const init = { credentials: 'same-origin', ...options };
     init.headers = { ...(options.body ? { 'content-type': 'application/json' } : {}), ...(options.headers || {}) };
+    // 后台接口额外带会话令牌（Cookie 之外的双保险）
+    if (adminToken && url.startsWith('/api/admin')) init.headers['authorization'] = 'Bearer ' + adminToken;
     const response = await fetch(url, init);
     let payload;
     try { payload = await response.json(); } catch { payload = { error: `服务器返回了无法识别的响应（${response.status}）。` }; }
@@ -200,8 +205,11 @@
     const password = new FormData(form).get('password');
     button.disabled = true; button.textContent = '验证中…';
     try {
-      await api('/api/admin/login', { method: 'POST', body: JSON.stringify({ password }) });
-      state.adminLoggedIn = true; form.reset(); hideModal('admin-login-modal'); showModal('admin-modal');
+      const res = await api('/api/admin/login', { method: 'POST', body: JSON.stringify({ password }) });
+      state.adminLoggedIn = true;
+      adminToken = res?.token || '';
+      try { sessionStorage.setItem('xh_admin_token', adminToken); } catch { /* 忽略 */ }
+      form.reset(); hideModal('admin-login-modal'); showModal('admin-modal');
       await loadAdminData(); showToast('已进入开发者模式。', 'success');
     } catch (error) { showToast(error.message, 'error'); }
     finally { button.disabled = false; button.innerHTML = '安全登录 <span>→</span>'; }
@@ -242,6 +250,8 @@
   $('#admin-refresh').addEventListener('click', loadAdminData);
   $('#admin-logout').addEventListener('click', async () => {
     try { await api('/api/admin/logout', { method: 'POST', body: JSON.stringify({}) }); } catch { /* 忽略 */ }
+    adminToken = '';
+    try { sessionStorage.removeItem('xh_admin_token'); } catch { /* 忽略 */ }
     state.adminLoggedIn = false; state.adminData = null; hideModal('admin-modal'); showToast('已退出开发者模式。');
   });
 
