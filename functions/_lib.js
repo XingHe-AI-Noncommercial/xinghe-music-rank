@@ -254,9 +254,14 @@ async function hmac(secret, message) {
   return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+// 读取密钥配置：优先 SYSTEM_*，兜底 ADMIN_*（兼容两种命名）
+export function resolveSecret(env, primary, fallback) {
+  return String(env[primary] || env[fallback] || '');
+}
+
 export async function makeAdminCookie(env, options = {}) {
-  const secret = String(env.ADMIN_SESSION_SECRET || '');
-  if (!secret) throw new Error('未配置 ADMIN_SESSION_SECRET（请在 Cloudflare Secret 中设置）。');
+  const secret = resolveSecret(env, 'SYSTEM_SESSION_SECRET', 'ADMIN_SESSION_SECRET');
+  if (!secret) throw new Error('未配置会话密钥（SYSTEM_SESSION_SECRET / ADMIN_SESSION_SECRET，请在 Cloudflare Secret 中设置）。');
   const ttlSeconds = options.ttlSeconds || 6 * 3600;
   const secure = options.secure === true;
   const payload = `${Date.now()}|${Math.random().toString(36).slice(2)}`;
@@ -265,7 +270,7 @@ export async function makeAdminCookie(env, options = {}) {
 }
 
 export async function isAdmin(request, env) {
-  const secret = String(env.ADMIN_SESSION_SECRET || '');
+  const secret = resolveSecret(env, 'SYSTEM_SESSION_SECRET', 'ADMIN_SESSION_SECRET');
   if (!secret) return false;
   // 1) 首选：xh_admin Cookie
   const cookie = request.headers.get('cookie') || '';
