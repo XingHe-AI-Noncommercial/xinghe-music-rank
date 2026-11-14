@@ -33,9 +33,9 @@ export async function onRequestPost(context) {
   let until = 0;
   if (body?.permanent === true) until = 0;
   else {
-    const hours = Number(body?.hours || 0);
-    if (!(hours > 0)) return fail('请选择封禁时效。', 400);
-    until = Date.now() + Math.min(hours, 24 * 365) * 3600 * 1000;
+    const seconds = Number(body?.seconds || 0);
+    if (!(seconds > 0)) return fail('请选择封禁时效（秒）。', 400);
+    until = Date.now() + Math.min(seconds, 365 * 24 * 3600) * 1000;
   }
   try {
     const item = await addBan(DB, ip, until, body?.reason);
