@@ -1,6 +1,7 @@
 // ============================================================================
 // POST /api/admin/submissions/:id   { action: 'approve' | 'reject' }
-// 审核一首待审核歌曲。需管理员登录，同样限流。
+// 开发者审核一首待审核投稿：通过后上架（计入一键复制），拒绝则不显示。
+// 需开发者登录，同样限流。
 // ============================================================================
 import { enforceRateLimit, fail, isAdmin, isoNow, json, rateLimitFailed, readBody } from '../../../_lib.js';
 
@@ -24,12 +25,12 @@ export async function onRequestPost(context) {
 
     const now = isoNow();
     if (action === 'reject') {
-      await DB.prepare("UPDATE songs SET status = 'rejected', reviewed_at = ?, reviewed_by = '星河' WHERE id = ? AND status = 'pending'").bind(now, id).run();
-      return json({ ok: true, message: `已拒绝「${song.title}」。` });
+      await DB.prepare("UPDATE songs SET status = 'rejected', reviewed_at = ?, reviewed_by = '开发者' WHERE id = ? AND status = 'pending'").bind(now, id).run();
+      return json({ ok: true, message: `已拒绝「${song.title}」，不会显示也不会被复制。` });
     }
 
-    await DB.prepare("UPDATE songs SET status = 'approved', reviewed_at = ?, reviewed_by = '星河' WHERE id = ? AND status = 'pending'").bind(now, id).run();
-    return json({ ok: true, message: `已通过「${song.title}」，现在可以投票了。` });
+    await DB.prepare("UPDATE songs SET status = 'approved', reviewed_at = ?, reviewed_by = '开发者' WHERE id = ? AND status = 'pending'").bind(now, id).run();
+    return json({ ok: true, message: `已通过「${song.title}」，已上架本周榜单并计入一键复制。` });
   } catch (error) {
     return fail(error?.message || '审核失败。', 500);
   }
