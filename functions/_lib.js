@@ -96,6 +96,59 @@ export async function removeAnnouncement(DB, id) {
   return true;
 }
 
+// ---------- IP 封禁（复用 settings 表存 JSON；until=0 表示永久，到点自动失效） ----------
+export async function getBans(DB) {
+  const raw = await getSetting(DB, 'bans', '[]');
+  try { const arr = JSON.parse(raw); return Array.isArray(arr) ? arr : []; } catch { return []; }
+}
+
+export async function setBans(DB, list) {
+  await setSetting(DB, 'bans', JSON.stringify(list.slice(0, 500)));
+}
+
+export async function addBan(DB, ip, until, reason = '') {
+  const now = Date.now();
+  const list = (await getBans(DB)).filter(b => b.ip !== ip && (b.until === 0 || b.until > now));
+  const item = { ip: String(ip || '').trim(), until: Number(until) || 0, reason: String(reason || '').slice(0, 200), createdAt: isoNow() };
+  if (!item.ip) return null;
+  list.unshift(item);
+  await setBans(DB, list);
+  return item;
+}
+
+export async function removeBan(DB, ip) {
+  const list = await getBans(DB);
+  const next = list.filter(b => b.ip !== ip);
+  if (next.length === list.length) return false;
+  await setBans(DB, next);
+  return true;
+}
+
+export async function getBan(DB, ip) {
+  const now = Date.now();
+  return (await getBans(DB)).find(b => b.ip === ip && (b.until === 0 || b.until > now)) || null;
+}
+
+// ---------- 全局 60 秒请求计数：超过 60 次自动开启维护 ----------
+export async function bumpRequestCounter(DB) {
+  try {
+    const raw = await getSetting(DB, 'req_counter', '{"count":0,"start":0}');
+    let o = { count: 0, start: Date.now() };
+    try { const p = JSON.parse(raw); if (p && typeof p.count === 'number') o = p; } catch {}
+    const now = Date.now();
+    if (now - o.start > 60000) { o.count = 0; o.start = now; }
+    o.count += 1;
+    await setSetting(DB, 'req_counter', JSON.stringify({ count: o.count, start: o.start }));
+    if (o.count > 60) { await setSetting(DB, 'maintenance', '1'); return true; }
+    return false;
+  } catch { return false; }
+}
+
+// ---------- 访客国家码（Cloudflare CF-IPCountry 头） ----------
+export function countryCode(request) {
+  return String(request.headers.get('CF-IPCountry') || '').toUpperCase();
+}
+
 // ---------- 响应工具 ----------
 // 注意：set-cookie 必须直接放在 Response 构造函数的 headers 对象里（Cloudflare
 // 官方可靠写法）；不要用 new Headers() 再 append('set-cookie')，部分运行时会把
