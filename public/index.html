@@ -43,6 +43,11 @@
       <article class="metric-card"><div class="metric-top"><span>今日可投</span><span class="metric-icon">⌁</span></div><strong id="metric-submit" class="metric-tier">—</strong><div class="metric-bottom"><span id="metric-submit-sub">每天每 IP 1 个</span><span class="metric-accent">TODAY</span></div></article>
     </section>
 
+    <section id="announcement-board" class="announcement-board hidden" aria-label="公告栏">
+      <div class="announcement-head"><div class="eyebrow"><span class="eyebrow-line"></span> NOTICE BOARD</div><h3>公告栏</h3><span id="announcement-count" class="top-tag">0 条</span></div>
+      <div id="announcement-list" class="announcement-list"></div>
+    </section>
+
     <section id="submit" class="add-section">
       <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> SUBMIT A VIDEO</div><h2>投稿一个视频 <span class="top-tag">待审核</span></h2><p>填 BV 号、作者名、视频名。每天每 IP 限投 1 个，提交后由开发者审核。</p></div></div>
       <form id="submit-form" class="submit-form">
@@ -148,6 +153,16 @@
                 <button id="clear-rejected" class="button button-outline">🗑 清除已拒绝投稿</button>
                 <span id="clear-rejected-count" class="copy-count">已拒绝 0 个</span>
               </div>
+            </section>
+
+            <!-- 公告栏：管理员发布公告 -->
+            <section class="admin-card">
+              <div class="admin-card-title"><div><span class="mini-label">NOTICE BOARD</span><h3>公告栏</h3><p class="admin-card-subtitle">发布后显示在网站首页公告栏，所有访客可见；新公告排最前。</p></div><span id="admin-announcement-count" class="admin-card-badge">0 条</span></div>
+              <form id="admin-announcement-form" class="admin-add-form">
+                <label class="wide">公告内容<textarea id="admin-announcement-text" name="text" maxlength="500" rows="2" placeholder="写一条公告，例如：本周榜单已更新，欢迎查看。" required></textarea></label>
+                <button class="button button-primary" type="submit">＋ 发布公告</button>
+              </form>
+              <div id="admin-announcement-list" class="admin-announcement-list"></div>
             </section>
           </div>
 
