@@ -4,7 +4,7 @@
 // 被拒绝（rejected）不占用当日额度，可重新提交；BV 号 / 链接 / 视频名手动填写。
 // 强制 10 秒 / 10 次 IP 限流。
 // ============================================================================
-import { beijingDay, enforceRateLimit, ensureWeek, fail, getClientIp, insertSong, isMaintenanceOn, json, rateLimitFailed, readBody } from '../_lib.js';
+import { beijingDay, enforceRateLimit, ensureWeek, fail, getBan, getClientIp, insertSong, isMaintenanceOn, json, rateLimitFailed, readBody } from '../_lib.js';
 
 export async function onRequestPost(context) {
   const { DB } = context.env;
@@ -19,10 +19,14 @@ export async function onRequestPost(context) {
   try {
     await ensureWeek(DB); // 周一清空（幂等）
 
+    const ip = getClientIp(context.request);
+    // IP 封禁：命中则拒绝投稿
+    const ban = await getBan(DB, ip);
+    if (ban) return fail('您当前的 IP 已被封禁，暂时无法投稿。', 403);
+
     // 网站维护中：暂停公众投稿（开发者仍可进入后台关闭维护）
     if (await isMaintenanceOn(DB)) return fail('网站维护中，暂时停止投稿，请稍后再来。', 503);
 
-    const ip = getClientIp(context.request);
     const day = beijingDay();
 
     // 每天每 IP 最多 1 个（pending / approved 占用额度）
