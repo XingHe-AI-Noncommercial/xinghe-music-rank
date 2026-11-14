@@ -204,7 +204,8 @@
     else showModal('admin-login-modal');
   }
   // 维护页右上角“开发者模式”：未登录走密码登录，仅真正的开发者可进
-  $('#maintenance-dev').addEventListener('click', openAdmin);
+  const maintenanceDev = $('#maintenance-dev');
+  if (maintenanceDev) maintenanceDev.addEventListener('click', openAdmin);
 
   $('#login-form').addEventListener('submit', async event => {
     event.preventDefault();
@@ -287,11 +288,11 @@
 
     // 站点工具：维护状态 + 清除已拒绝
     const mnt = Boolean(data.maintenance);
-    $('#maintenance-toggle').textContent = mnt ? '关闭网站维护' : '开始网站维护';
-    $('#maintenance-state').textContent = mnt ? '维护开启中' : '维护关闭';
-    $('#maintenance-toggle').classList.toggle('button-primary', !mnt);
-    $('#clear-rejected-count').textContent = `已拒绝 ${number(s.rejected || 0)} 个`;
-    $('#clear-rejected').disabled = !(s.rejected > 0);
+    const mToggle = $('#maintenance-toggle'), mState = $('#maintenance-state'), mCount = $('#clear-rejected-count'), cRej = $('#clear-rejected');
+    if (mToggle) { mToggle.textContent = mnt ? '关闭网站维护' : '开始网站维护'; mToggle.classList.toggle('button-primary', !mnt); }
+    if (mState) mState.textContent = mnt ? '维护开启中' : '维护关闭';
+    if (mCount) mCount.textContent = `已拒绝 ${number(s.rejected || 0)} 个`;
+    if (cRej) cRej.disabled = !(s.rejected > 0);
   }
 
   // 一键复制
@@ -303,7 +304,8 @@
   });
 
   // 网站维护开关
-  $('#maintenance-toggle').addEventListener('click', async () => {
+  const mToggleBtn = $('#maintenance-toggle');
+  if (mToggleBtn) mToggleBtn.addEventListener('click', async () => {
     const cur = Boolean(state.adminData?.maintenance);
     const button = $('#maintenance-toggle');
     button.disabled = true;
@@ -318,7 +320,8 @@
   });
 
   // 清除已拒绝投稿
-  $('#clear-rejected').addEventListener('click', async () => {
+  const clearRejBtn = $('#clear-rejected');
+  if (clearRejBtn) clearRejBtn.addEventListener('click', async () => {
     const button = $('#clear-rejected');
     button.disabled = true;
     try {
