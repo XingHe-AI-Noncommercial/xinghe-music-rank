@@ -131,6 +131,20 @@
     $('#list-total').textContent = `${number(data.songs?.length || 0)} 个`;
     renderList();
     renderSubmitStatus(submit);
+    renderAnnouncements(data.announcements || []);
+  }
+
+  // 公众页公告栏
+  function renderAnnouncements(list) {
+    const board = $('#announcement-board');
+    if (!board) return;
+    const arr = Array.isArray(list) ? list : [];
+    board.classList.toggle('hidden', arr.length === 0);
+    $('#announcement-count').textContent = `${arr.length} 条`;
+    $('#announcement-list').innerHTML = arr.map(a => `<article class="announcement-item">
+      <span class="announcement-icon">✦</span>
+      <div class="announcement-copy"><p>${escapeHtml(a.text)}</p><small>${fmtDate(a.createdAt)}</small></div>
+    </article>`).join('');
   }
 
   function renderSubmitStatus(submit) {
@@ -285,6 +299,7 @@
 
     renderAdminSubmissions(data.pending || []);
     renderAdminSongs(data.songs || []);
+    renderAdminAnnouncements(data.announcements || []);
 
     // 站点工具：维护状态 + 清除已拒绝
     const mnt = Boolean(data.maintenance);
@@ -359,6 +374,16 @@
         <td><button class="inline-action danger" data-song-delete="${escapeHtml(s.id)}">删除</button></td>
       </tr>`).join('')}</tbody></table>`;
   }
+  function renderAdminAnnouncements(list) {
+    const holder = $('#admin-announcement-list'); if (!holder) return;
+    const arr = Array.isArray(list) ? list : [];
+    const count = $('#admin-announcement-count'); if (count) count.textContent = `${arr.length} 条`;
+    if (!arr.length) { holder.innerHTML = '<div class="empty-table">还没有公告。</div>'; return; }
+    holder.innerHTML = arr.map(a => `<div class="admin-announcement-row">
+      <div class="admin-announcement-copy"><p>${escapeHtml(a.text)}</p><small>${fmtDate(a.createdAt)} · ${escapeHtml(a.author || '管理员')}</small></div>
+      <button class="inline-action danger" data-announcement-delete="${escapeHtml(a.id)}">删除</button>
+    </div>`).join('');
+  }
   $('#admin-song-search').addEventListener('input', () => { if (state.adminData) renderAdminSongs(state.adminData.songs || []); });
 
   $('#admin-add-form').addEventListener('submit', async event => {
@@ -391,6 +416,39 @@
       showToast(result.message, 'success'); await loadAdminData(); await refreshState();
     } catch (error) { showToast(error.message, 'error'); button.disabled = false; }
   });
+
+  // ---------- 公告栏 ----------
+  $('#admin-announcement-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const text = form.querySelector('#admin-announcement-text').value.trim();
+    if (!text) { showToast('公告内容不能为空。', 'error'); return; }
+    const button = form.querySelector('button[type="submit"]');
+    button.disabled = true; button.textContent = '发布中…';
+    try {
+      const result = await api('/api/admin/announcements', { method: 'POST', body: JSON.stringify({ text }) });
+      showToast(result.message, 'success');
+      form.reset();
+      await loadAdminData(); await refreshState();
+    } catch (error) { showToast(error.message, 'error'); }
+    finally { button.disabled = false; button.textContent = '＋ 发布公告'; }
+  });
+
+  $('#admin-announcement-list').addEventListener('click', async event => {
+    const button = event.target.closest('[data-announcement-delete]'); if (!button) return;
+    if (!confirm('确定删除这条公告吗？')) return;
+    button.disabled = true;
+    try {
+      const result = await api(`/api/admin/announcements/${encodeURIComponent(button.dataset.announcementDelete)}`, { method: 'DELETE' });
+      showToast(result.message, 'success'); await loadAdminData(); await refreshState();
+    } catch (error) { showToast(error.message, 'error'); button.disabled = false; }
+  });
+
+  // ---------- 体验优化：BV 输入自动转大写并去空格 ----------
+  $$('input[name="bvid"]').forEach(input => input.addEventListener('input', () => {
+    const cleaned = input.value.toUpperCase().replace(/\s+/g, '');
+    if (cleaned !== input.value) input.value = cleaned;
+  }));
 
   // ---------- 启动 ----------
   refreshState();
