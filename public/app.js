@@ -208,11 +208,20 @@
   });
 
   // ---------- 开发者后台 ----------
+  let adminRetry = 0;
   async function loadAdminData() {
     try {
       state.adminData = await api('/api/admin/state', { method: 'GET' });
+      adminRetry = 0;
       renderAdmin();
     } catch (error) {
+      // 刚登录后第一次请求可能因 Cookie 尚未就位而瞬时 401：重试一次再判定
+      if (state.adminLoggedIn && adminRetry < 1 && /登录|会话|登录开发者/.test(error.message)) {
+        adminRetry += 1;
+        await loadAdminData();
+        return;
+      }
+      adminRetry = 0;
       showToast(error.message, 'error');
       if (/登录|会话|登录开发者/.test(error.message)) { state.adminLoggedIn = false; hideModal('admin-modal'); showModal('admin-login-modal'); }
     }
