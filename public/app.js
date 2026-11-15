@@ -716,9 +716,11 @@
     } catch (error) { showToast(error.message, 'error'); }
   });
 
-  // ---------- 体验优化：BV 输入自动转大写并去空格 ----------
+  // ---------- 体验优化：BV 输入去空格，仅规范前缀为 BV，保留其余大小写（B站BV区分大小写） ----------
   $$('input[name="bvid"]').forEach(input => input.addEventListener('input', () => {
-    const cleaned = input.value.toUpperCase().replace(/\s+/g, '');
+    const raw = input.value.replace(/\s+/g, '');
+    let cleaned = raw;
+    if (/^bv/i.test(raw)) cleaned = 'BV' + raw.slice(2); // bv1xx411c7mD → BV1xx411c7mD（前缀大写，其余保留）
     if (cleaned !== input.value) input.value = cleaned;
   }));
 
