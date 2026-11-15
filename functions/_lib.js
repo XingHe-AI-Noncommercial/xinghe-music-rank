@@ -252,8 +252,9 @@ export function rateLimitFailed(result, limit = RATE_LIMIT_MAX) {
 // 从任意输入中提取 BV 号（兼容直接 BV 号或含 BV 的 B 站链接）
 export function normalizeBvid(input) {
   const s = String(input || '').trim();
-  const m = s.match(/BV[0-9A-Za-z]+/);
-  return m ? m[0] : '';
+  const m = s.match(/bv[0-9a-z]+/i); // 前缀 bv/BV 均可，大小写不敏感
+  if (!m) return '';
+  return 'BV' + m[0].slice(2); // 前缀规范为 BV，其余字符（含小写）保留
 }
 
 export function normalizeBiliUrl(bvid) {
