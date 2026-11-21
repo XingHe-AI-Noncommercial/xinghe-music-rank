@@ -772,14 +772,15 @@
   };
 
   // ---------- 选择面板 ----------
-  const openGamesBtn = $('#open-games');
-  if (openGamesBtn) openGamesBtn.addEventListener('click', () => {
+  function renderGames() {
     const grid = $('#games-grid');
     if (grid && !grid.childElementCount) {
       grid.innerHTML = Object.entries(GAMES).map(([id, g]) => `<button class="game-card" data-game="${id}"><span class="game-card-icon">${g.icon}</span><strong>${g.name}</strong><small>${g.desc}</small></button>`).join('');
     }
-    showModal('games-modal');
-  });
+  }
+  window.renderGames = renderGames;
+  const openGamesBtn = $('#open-games');
+  if (openGamesBtn) openGamesBtn.addEventListener('click', () => { renderGames(); location.hash = '#/games'; });
   const gridEl = $('#games-grid');
   if (gridEl) gridEl.addEventListener('click', e => {
     const b = e.target.closest('[data-game]'); if (!b) return;
