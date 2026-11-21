@@ -1036,3 +1036,6 @@ input.birthday-upload { border: 2px dashed var(--line); background: #fff; paddin
 .admin-bday-row.is-off { opacity: .62; background: #f3f0e8; }
 .admin-bday-row.is-off .admin-bday-copy b { color: #8a8574; }
 .bday-off { display: inline-block; font-size: 10px; font-weight: 700; color: #fff; background: #e23b2e; padding: 1px 6px; margin-left: 4px; vertical-align: 2px; letter-spacing: .05em; }
+.birthday-panel-toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.birthday-panel-toolbar .button.danger { color: #e23b2e; border-color: #e23b2e; }
+.birthday-panel-stats { font-size: 12px; color: var(--muted); }
