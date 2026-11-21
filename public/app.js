@@ -778,31 +778,34 @@
     state.birthdayTheme = null;
     const up = $('#birthday-upload'); if (up) up.value = '';
     const ust = $('#birthday-upload-status'); if (ust) { ust.textContent = ''; ust.className = 'ai-status'; }
-    const ast = $('#ai-status'); if (ast) { ast.textContent = ''; ast.className = 'ai-status'; }
+    const bst = $('#birthday-bg-status'); if (bst) { bst.textContent = ''; bst.className = 'ai-status'; }
+    const bu = $('#birthday-bg-upload'); if (bu) bu.value = '';
+    const iu = $('#birthday-image-url'); if (iu) iu.value = '';
     showModal('birthday-modal');
   });
-  // 风格选择
+  // 风格选择 + 颜色联动
+  const BDAY_STYLES = {
+    classic: { bg: '#f2eee2', paper: '#fffdf7', accent: '#e23b2e', secondary: '#ffb800' },
+    starry:  { bg: '#0d1124', paper: '#1a2140', accent: '#ffcf4d', secondary: '#7aa2ff' },
+    pastel:  { bg: '#fdeef3', paper: '#fff8fa', accent: '#ff7ba9', secondary: '#ffd166' },
+    forest:  { bg: '#10251a', paper: '#16301f', accent: '#ffd166', secondary: '#7ec8a3' },
+    ocean:   { bg: '#0e2a38', paper: '#12384a', accent: '#ffd166', secondary: '#4fc3f7' },
+    neon:    { bg: '#120a20', paper: '#1c1030', accent: '#ff4ea0', secondary: '#4df3ff' },
+  };
+  function applyStyleColors(style) {
+    const s = BDAY_STYLES[style] || BDAY_STYLES.classic;
+    const set = (id, v) => { const el = $(id); if (el) el.value = v; };
+    set('#c-bg', s.bg); set('#c-paper', s.paper); set('#c-accent', s.accent); set('#c-secondary', s.secondary);
+  }
   state.birthdayStyle = 'classic';
   $$('#birthday-style-picker .style-opt').forEach(btn => btn.addEventListener('click', () => {
     $$('#birthday-style-picker .style-opt').forEach(b => b.classList.remove('is-active'));
     btn.classList.add('is-active');
     state.birthdayStyle = btn.dataset.style;
+    applyStyleColors(btn.dataset.style);
   }));
-  // AI 定制：key 经本站中转临时转发（不落库/不记录/不共享），绕开浏览器跨域；复古提示词 + 不侵权
+  applyStyleColors('classic');
   state.birthdayTheme = null;
-  const AI_SAVE = 'xh_ai_config_v1';
-  function loadAiConfig() { try { return JSON.parse(localStorage.getItem(AI_SAVE)) || {}; } catch { return {}; } }
-  function saveAiConfig(cfg) { try { localStorage.setItem(AI_SAVE, JSON.stringify(cfg)); } catch {} }
-  async function aiProxy(payload) {
-    try {
-      const res = await fetch('/api/ai', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
-      const text = await res.text();
-      let data; try { data = JSON.parse(text); } catch { data = {}; }
-      return { status: res.status, data };
-    } catch (e) {
-      return { status: 0, data: { error: '无法连接中转接口，请强刷页面（清缓存）后重试。' } };
-    }
-  }
   function compressImage(dataUrl) {
     return new Promise(resolve => {
       const img = new Image();
@@ -839,80 +842,6 @@
   }
   bindImageUpload('#birthday-upload', '#birthday-upload-status', 'image', '✅ 已上传，将作为贺图（请确保你对该图有使用权）');
   bindImageUpload('#birthday-bg-upload', '#birthday-bg-status', 'bgImage', '✅ 已导入，将作为祝福页底图');
-  const aiGenerate = $('#ai-generate');
-  if (aiGenerate) aiGenerate.addEventListener('click', async () => {
-    const name = $('#birthday-name').value.trim();
-    const interest = $('#ai-interest').value.trim();
-    const base = ($('#ai-base').value.trim() || 'https://api.deepseek.com/v1').replace(/\/+$/, '');
-    const key = $('#ai-key').value.trim();
-    const model = $('#ai-model').value.trim() || 'deepseek-chat';
-    const status = $('#ai-status');
-    const sleep = ms => new Promise(r => setTimeout(r, ms));
-    if (!key) { status.textContent = '请填写你的 API Key（仅存本机）'; status.className = 'ai-status err'; return; }
-    saveAiConfig({ base, model, interest });
-    const setStatus = (text, err) => { status.textContent = text; status.className = 'ai-status' + (err ? ' err' : ''); };
-    const callAI = async (messages) => {
-      const r = await aiProxy({ base, key, model, messages, temperature: 0.9, response_format: { type: 'json_object' } });
-      if (r.status === 0) { setStatus('⚠ ' + (r.data.error || '中转请求失败'), true); return null; }
-      if (r.status === 401) { setStatus('⚠ 已连接，但 Key 无权限（无效）——网络通了，请填正确 Key', true); return null; }
-      if (r.status === 502) { setStatus('⚠ 连接失败：接口不可达或网络受限', true); return null; }
-      if (r.status !== 200) { setStatus('⚠ AI 返回 ' + r.status + '，请检查地址/Key/模型', true); return null; }
-      const content = r.data?.choices?.[0]?.message?.content || '';
-      const m = content.match(/\{[\s\S]*\}/);
-      if (!m) { setStatus('⚠ AI 未返回有效内容，请重试', true); return null; }
-      try { return JSON.parse(m[0]); } catch { setStatus('⚠ AI 返回格式不完整', true); return null; }
-    };
-    const prompt1 = [
-      '你是一位资深生日贺卡设计总监，兼版权顾问。请为「' + (name || '寿星') + '」设计一张原创、有品质感的复古生日贺卡，主题围绕「' + (interest || '无') + '」。',
-      '请先深度思考版式与氛围，不要敷衍、不要一个词居中。',
-      '1. 版式：有明确视觉层级（主标题 / 副标题 / 正文 / 装饰），复古方正纸质。',
-      '2. 氛围：根据兴趣定抽象氛围（配色/纹样/元素），如喜欢蓝色星星→蓝金+星+音符。',
-      '3. 细节：主标题（短、动人）、副标题（一句有诗意的描述）、装饰符号、祝福语。',
-      '4. 二创：判断「' + (interest || '无') + '」相关 IP 官方是否通常允许非商业个人二创（一般允许有限度，但禁商用与直接搬运官方图），给出一句 reason。',
-      '铁律：绝不复制、模仿或使用任何真实角色/品牌/版权形象的外观、面部、服装、标志或名称；不出现具体角色名；只做原创抽象主题。',
-      '只返回一个 JSON 对象，不要任何其他文字：{"palette":{"bg":"#RRGGBB","paper":"#RRGGBB","ink":"#RRGGBB","accent":"#RRGGBB","secondary":"#RRGGBB","glow":"#RRGGBB"},"motif":"1个符号","ornament":"1个符号","title":"主标题≤12字","subtitle":"副标题≤24字","message":"一句原创中文生日祝福≤40字","allowed":true,"reason":"二创判断一句话"}'
-    ].join('\n');
-    try {
-      // 第一轮：深度设计概念
-      setStatus('① 深度理解与版式设计…');
-      const concept = await callAI([{ role: 'system', content: prompt1 }]);
-      if (!concept) return;
-      if (!concept.palette || !concept.message) { setStatus('⚠ 设计概念不完整，请重试', true); return; }
-      await sleep(600);
-      // 第二轮：打磨成品
-      setStatus('② 打磨细节与文案…');
-      let theme = concept;
-      const polished = await callAI([{ role: 'system', content: '你是一位资深设计师，正在打磨下面这张生日贺卡设计。请做最后润色：确保配色协调、版式平衡、文案动人。输入概念：' + JSON.stringify(concept) + '。只返回同样的 JSON 结构（可微调配色与文案），不要任何其他文字。' }]);
-      if (polished && polished.palette && polished.message) theme = polished;
-      theme.interest = interest || name || '';
-      theme.allowed = theme.allowed === true || theme.allowed === 'true';
-      theme.reason = theme.reason || '';
-      // 图片：优先粘贴的网址，其次 AI 生图
-      const urlImg = ($('#ai-image-url') ? $('#ai-image-url').value.trim() : '');
-      if (urlImg && /^https?:\/\/\S+\.(png|jpe?g|webp|gif|avif)(\?\S*)?$/i.test(urlImg)) {
-        theme.image = urlImg;
-      } else if ($('#ai-image').checked) {
-        setStatus('③ 生成主题插画中…');
-        const imgModel = $('#ai-image-model').value.trim() || 'gpt-image-1';
-        const imgPrompt = '一张复古纸艺风格的原创生日贺图，氛围与「' + (interest || name || '寿星') + '」相关。要求：原创抽象设计，只用配色、音符、星星、彩带、年份等抽象元素表达氛围，绝对不要出现或模仿任何真实角色、动漫角色、虚拟歌手、品牌的具体形象、面部、服装、标志或名称。';
-        const img = await aiProxy({ base, key, model: imgModel, image: true, prompt: imgPrompt, size: '1024x1024' });
-        if (img.status === 200 && img.data?.data?.[0]) {
-          const d = img.data.data[0];
-          theme.image = d.url || (d.b64_json ? await compressImage('data:image/png;base64,' + d.b64_json) : '');
-        } else {
-          setStatus('⚠ 主题已生成，但插画失败（' + (img.status || '') + '），可稍后再试', true);
-          state.birthdayTheme = theme; if (theme.message) $('#birthday-message').value = theme.message;
-          return;
-        }
-      }
-      state.birthdayTheme = theme;
-      setStatus('✅ 深度定制完成（' + (theme.allowed ? '二创允许' : '二创受限') + '）· ' + (theme.reason || '已应用原创主题'));
-      if (theme.message) $('#birthday-message').value = theme.message;
-    } catch (error) {
-      state.birthdayTheme = null;
-      setStatus('⚠ ' + (error.message || '生成失败'), true);
-    }
-  });
   const birthdayCreate = $('#birthday-create');
   if (birthdayCreate) birthdayCreate.addEventListener('click', async () => {
     const name = $('#birthday-name').value.trim();
@@ -920,8 +849,20 @@
     if (!name) { showToast('请填写寿星名字', 'error'); return; }
     birthdayCreate.disabled = true; birthdayCreate.textContent = '生成中…';
     try {
+      // 组装主题：用户自定义颜色（默认选中风格）+ 贺图/底图/图片网址
+      const theme = {};
+      const val = id => ($(id) ? $(id).value : '');
+      const col = { bg: val('#c-bg'), paper: val('#c-paper'), accent: val('#c-accent'), secondary: val('#c-secondary') };
+      const hasColor = Object.values(col).some(v => /^#[0-9a-fA-F]{6}$/.test(v));
+      if (hasColor) theme.palette = col;
+      const urlImg = val('#birthday-image-url').trim();
+      if (urlImg && /^https?:\/\/\S+\.(png|jpe?g|webp|gif|avif)(\?\S*)?$/i.test(urlImg)) theme.image = urlImg;
+      if (state.birthdayTheme) {
+        if (state.birthdayTheme.image) theme.image = state.birthdayTheme.image;
+        if (state.birthdayTheme.bgImage) theme.bgImage = state.birthdayTheme.bgImage;
+      }
       const body = { name, message, style: state.birthdayStyle };
-      if (state.birthdayTheme) body.theme = state.birthdayTheme;
+      if (theme.palette || theme.image || theme.bgImage) body.theme = theme;
       const res = await api('/api/admin/birthdays', { method: 'POST', body: JSON.stringify(body) });
       const link = location.origin + '/birthday/' + res.token;
       $('#birthday-link').textContent = link;
