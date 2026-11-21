@@ -199,7 +199,7 @@ export async function addBirthday(DB, { name, message, style, theme }) {
     name: String(name || '').slice(0, 20),
     message: String(message || '').slice(0, 80),
     style: ['classic', 'starry', 'pastel', 'forest', 'ocean', 'neon'].includes(style) ? style : 'classic',
-    theme: theme && typeof theme === 'object' ? JSON.stringify(theme).slice(0, 1200) : '',
+    theme: theme && typeof theme === 'object' ? JSON.stringify(theme).slice(0, 500000) : '',
     createdAt: isoNow(), visits: 0,
   };
   list.unshift(item);
