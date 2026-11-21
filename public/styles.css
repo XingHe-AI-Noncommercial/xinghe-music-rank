@@ -620,3 +620,40 @@ html[data-theme="retro"] .maintenance-icon { border-radius:var(--r-sm); border:2
 .track-bv { font-family:"Courier New",monospace; font-size:11px; color:var(--accent); background:var(--bg2); border:var(--border); border-radius:8px; padding:3px 9px; width:fit-content; }
 .track-open { position:relative; flex:none; width:34px; height:34px; border-radius:50%; background:var(--card2); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:16px; }
 .track-card .fav-btn { position:absolute; top:12px; right:12px; }
+
+/* ---------- 后台 / 收件箱 组件（app.js 渲染） ---------- */
+.admin-table { width:100%; border-collapse:collapse; font-size:13px; }
+.admin-table th { text-align:left; color:var(--muted); font-size:11px; letter-spacing:.08em; padding:8px 10px; border-bottom:var(--border); }
+.admin-table td { padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
+.change-pill, .state-pill { display:inline-block; font-size:11px; font-weight:800; border-radius:999px; padding:3px 10px; background:var(--card2); color:var(--muted); }
+html[data-theme="retro"] .change-pill, html[data-theme="retro"] .state-pill { border-radius:var(--r-sm); border:var(--border); }
+.change-pill.new, .state-pill.approved { background:color-mix(in srgb, var(--accent) 20%, var(--card)); color:var(--accent); }
+.change-pill.down, .state-pill.pending { background:color-mix(in srgb, var(--accent2) 22%, var(--card)); color:var(--accent2); }
+.inline-action { border:0; background:transparent; color:var(--muted); font-size:12px; cursor:pointer; padding:4px 8px; border-radius:7px; }
+.inline-action:hover { color:var(--accent); background:var(--card2); }
+.inline-action.danger { color:#ff8f8f; }
+.inline-action.danger:hover { color:#ff8f8f; background:color-mix(in srgb, #ff6b6b 14%, transparent); }
+.tiny-button { border:0; border-radius:8px; padding:6px 12px; font-size:12px; font-weight:800; cursor:pointer; }
+.tiny-button.approve { background:var(--grad); color:var(--accent-ink); }
+.tiny-button.reject { background:transparent; border:var(--border); color:var(--muted); }
+.tiny-button.reject:hover { color:#ff8f8f; border-color:rgba(255,107,107,.5); }
+.submission-item { display:flex; align-items:center; gap:13px; background:var(--card2); border-radius:var(--r-sm); padding:12px 14px; flex-wrap:wrap; }
+.submission-cover { width:46px; height:46px; border-radius:12px; background:var(--grad); color:var(--accent-ink); display:flex; align-items:center; justify-content:center; font-size:20px; flex:none; }
+.submission-copy { flex:1; min-width:120px; } .submission-copy strong { font-size:14px; }
+.submission-copy p { color:var(--muted); font-size:12px; margin:2px 0; } .submission-copy small { color:var(--muted); font-size:10px; }
+.submission-actions { display:flex; gap:7px; }
+.admin-announcement-row, .admin-ban-row, .admin-ip-row { display:flex; align-items:center; gap:12px; background:var(--card2); border-radius:var(--r-sm); padding:12px 14px; flex-wrap:wrap; }
+.admin-announcement-copy, .admin-ban-copy, .admin-ip-main { flex:1; min-width:150px; }
+.admin-announcement-copy p { margin:0; font-size:13px; } .admin-announcement-copy small { color:var(--muted); font-size:11px; }
+.admin-ban-copy b { font-size:14px; } .admin-ban-copy small { display:block; color:var(--muted); font-size:11px; margin-top:2px; }
+.admin-ip-ip { font-family:"Courier New",monospace; color:var(--accent); font-size:13px; font-weight:800; }
+.admin-ip-main small { color:var(--muted); font-size:11px; display:block; margin-top:2px; }
+.admin-ip-songs { display:flex; gap:5px; flex-wrap:wrap; }
+.ip-song { font-size:10px; background:var(--bg2); border:var(--border); border-radius:6px; padding:2px 7px; color:var(--muted); }
+.ip-song-status { color:var(--accent); }
+.ip-none { color:var(--muted); font-size:11px; }
+.admin-ip-actions { display:flex; gap:6px; }
+.announcement-icon { font-size:22px; }
+.announcement-copy { flex:1; } .announcement-copy p { margin:0; }
+.inbox-head { display:flex; align-items:center; gap:8px; }
+.inbox-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); }
