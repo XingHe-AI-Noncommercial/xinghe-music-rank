@@ -179,18 +179,27 @@ export function makeBirthdayToken() {
 }
 export async function getBirthdays(DB) {
   const raw = await getSetting(DB, 'birthdays', '[]');
-  try { const arr = JSON.parse(raw); return Array.isArray(arr) ? arr : []; } catch { return []; }
+  let arr; try { arr = JSON.parse(raw); } catch { arr = []; }
+  if (!Array.isArray(arr)) arr = [];
+  // 每日自动清理：保留“今天（北京时间）”创建的，清掉之前所有天的（第二天自动清除前一天）
+  const today = beijingDay(new Date());
+  const before = arr.length;
+  const kept = arr.filter(b => beijingDay(new Date(b.createdAt)) === today);
+  if (kept.length !== before) await setSetting(DB, 'birthdays', JSON.stringify(kept.slice(0, 200)));
+  return kept;
 }
 export async function setBirthdays(DB, list) {
   await setSetting(DB, 'birthdays', JSON.stringify(list.slice(0, 200)));
 }
-export async function addBirthday(DB, { name, message }) {
+export async function addBirthday(DB, { name, message, style, theme }) {
   const list = await getBirthdays(DB);
   let token; do { token = makeBirthdayToken(); } while (list.some(b => b.token === token));
   const item = {
     id: makeId(), token,
     name: String(name || '').slice(0, 20),
     message: String(message || '').slice(0, 80),
+    style: ['classic', 'starry', 'pastel', 'forest', 'ocean', 'neon'].includes(style) ? style : 'classic',
+    theme: theme && typeof theme === 'object' ? JSON.stringify(theme).slice(0, 1200) : '',
     createdAt: isoNow(), visits: 0,
   };
   list.unshift(item);
