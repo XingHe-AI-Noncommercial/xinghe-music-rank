@@ -10,8 +10,8 @@ export async function onRequestPost(context) {
   const auth = await adminOnly(context);
   if (auth) return auth;
   const body = await readBody(context.request);
-  const item = await addBirthday(DB, { name: body?.name, message: body?.message });
-  return json({ ok: true, token: item.token, name: item.name });
+  const item = await addBirthday(DB, { name: body?.name, message: body?.message, style: body?.style, theme: body?.theme });
+  return json({ ok: true, token: item.token, name: item.name, style: item.style });
 }
 
 export async function onRequestGet(context) {
