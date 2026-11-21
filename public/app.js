@@ -288,6 +288,7 @@
   async function loadAdminData() {
     try {
       state.adminData = await api('/api/admin/state', { method: 'GET' });
+      try { const b = await api('/api/admin/birthdays', { method: 'GET' }); state.adminData.birthdays = b.list || []; } catch {}
       adminRetry = 0;
       renderAdmin();
       await loadIps();
@@ -347,6 +348,7 @@
     renderAdminSongs(data.songs || []);
     renderAdminAnnouncements(data.announcements || []);
     renderAdminBans(data.bans || []);
+    renderAdminBirthdays(data.birthdays || []);
 
     // 站点工具：维护状态 + 清除已拒绝
     const mnt = Boolean(data.maintenance);
@@ -443,6 +445,35 @@
         <button class="inline-action danger" data-ban-unban="${escapeHtml(b.ip)}">解封</button>
       </div>`;
     }).join('');
+  }
+
+  // 生日祝福管理：列出全部（含历史），可复制 / 打开 / 删除
+  function renderAdminBirthdays(list) {
+    const holder = $('#admin-birthday-list'); if (!holder) return;
+    const arr = Array.isArray(list) ? list : [];
+    const count = $('#admin-birthday-count'); if (count) count.textContent = `${arr.length} 条`;
+    if (!arr.length) { holder.innerHTML = '<div class="empty-table">暂无生日祝福。点击左侧「🎂 创建生日」生成。</div>'; return; }
+    holder.innerHTML = arr.map(b => {
+      const link = location.origin + '/birthday/' + b.token;
+      return `<div class="admin-bday-row" data-id="${escapeHtml(b.id)}">
+        <div class="admin-bday-copy"><b>${escapeHtml(b.name || '未命名')}</b><code>${escapeHtml(String(b.token).slice(0, 6))}…</code><small>${fmtDate(b.createdAt)} · ${escapeHtml(b.style || 'classic')}</small></div>
+        <div class="admin-bday-actions">
+          <button class="inline-action" data-bday-copy="${escapeHtml(link)}">复制</button>
+          <button class="inline-action" data-bday-open="${escapeHtml(link)}">打开</button>
+          <button class="inline-action danger" data-bday-del="${escapeHtml(b.id)}">删除</button>
+        </div>
+      </div>`;
+    }).join('');
+    holder.querySelectorAll('[data-bday-copy]').forEach(btn => btn.addEventListener('click', () => copyText(btn.dataset.bdayCopy)));
+    holder.querySelectorAll('[data-bday-open]').forEach(btn => btn.addEventListener('click', () => window.open(btn.dataset.bdayOpen, '_blank')));
+    holder.querySelectorAll('[data-bday-del]').forEach(btn => btn.addEventListener('click', async () => {
+      if (!confirm('确定删除这条生日祝福？')) return;
+      try {
+        await api('/api/admin/birthdays?id=' + encodeURIComponent(btn.dataset.bdayDel), { method: 'DELETE' });
+        showToast('已删除生日祝福', 'success');
+        await loadAdminData();
+      } catch (e) { showToast(e.message, 'error'); }
+    }));
   }
 
   // 访客公网 IP 列表：每个进入/投稿过的 IP + 其活动/投稿，点「封禁」自动填入表单
@@ -763,10 +794,14 @@
   function loadAiConfig() { try { return JSON.parse(localStorage.getItem(AI_SAVE)) || {}; } catch { return {}; } }
   function saveAiConfig(cfg) { try { localStorage.setItem(AI_SAVE, JSON.stringify(cfg)); } catch {} }
   async function aiProxy(payload) {
-    const res = await fetch('/api/ai', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
-    const text = await res.text();
-    let data; try { data = JSON.parse(text); } catch { data = {}; }
-    return { status: res.status, data };
+    try {
+      const res = await fetch('/api/ai', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+      const text = await res.text();
+      let data; try { data = JSON.parse(text); } catch { data = {}; }
+      return { status: res.status, data };
+    } catch (e) {
+      return { status: 0, data: { error: '无法连接中转接口，请强刷页面（清缓存）后重试。' } };
+    }
   }
   function compressImage(dataUrl) {
     return new Promise(resolve => {
@@ -782,23 +817,28 @@
       img.src = dataUrl;
     });
   }
-  const birthdayUpload = $('#birthday-upload');
-  if (birthdayUpload) birthdayUpload.addEventListener('change', async () => {
-    const file = birthdayUpload.files && birthdayUpload.files[0];
-    const st = $('#birthday-upload-status');
-    if (!file) return;
-    if (!file.type.startsWith('image/')) { st.textContent = '⚠ 请选择图片文件'; st.className = 'ai-status err'; return; }
-    if (file.size > 6 * 1024 * 1024) { st.textContent = '⚠ 图片过大（≤6MB）'; st.className = 'ai-status err'; return; }
-    st.textContent = '处理中…'; st.className = 'ai-status';
-    try {
-      const dataUrl = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); });
-      const compressed = await compressImage(dataUrl);
-      if (!compressed) throw new Error('图片处理失败');
-      if (!state.birthdayTheme) state.birthdayTheme = {};
-      state.birthdayTheme.image = compressed;
-      st.textContent = '✅ 已上传，将作为贺图（请确保你对该图有使用权）'; st.className = 'ai-status';
-    } catch (e) { st.textContent = '⚠ ' + (e.message || '处理失败'); st.className = 'ai-status err'; }
-  });
+  function bindImageUpload(inputId, statusId, key, msg) {
+    const el = $(inputId);
+    if (!el) return;
+    el.addEventListener('change', async () => {
+      const file = el.files && el.files[0];
+      const st = $(statusId);
+      if (!file) return;
+      if (!file.type.startsWith('image/')) { st.textContent = '⚠ 请选择图片文件'; st.className = 'ai-status err'; return; }
+      if (file.size > 6 * 1024 * 1024) { st.textContent = '⚠ 图片过大（≤6MB）'; st.className = 'ai-status err'; return; }
+      st.textContent = '处理中…'; st.className = 'ai-status';
+      try {
+        const dataUrl = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); });
+        const compressed = await compressImage(dataUrl);
+        if (!compressed) throw new Error('图片处理失败');
+        if (!state.birthdayTheme) state.birthdayTheme = {};
+        state.birthdayTheme[key] = compressed;
+        st.textContent = msg; st.className = 'ai-status';
+      } catch (e) { st.textContent = '⚠ ' + (e.message || '处理失败'); st.className = 'ai-status err'; }
+    });
+  }
+  bindImageUpload('#birthday-upload', '#birthday-upload-status', 'image', '✅ 已上传，将作为贺图（请确保你对该图有使用权）');
+  bindImageUpload('#birthday-bg-upload', '#birthday-bg-status', 'bgImage', '✅ 已导入，将作为祝福页底图');
   const aiGenerate = $('#ai-generate');
   if (aiGenerate) aiGenerate.addEventListener('click', async () => {
     const name = $('#birthday-name').value.trim();
@@ -820,6 +860,7 @@
     ].join('\n');
     try {
       const r = await aiProxy({ base, key, model, messages: [{ role: 'system', content: prompt }], temperature: 0.9, response_format: { type: 'json_object' } });
+      if (r.status === 0) { setStatus('⚠ ' + (r.data.error || '中转请求失败'), true); return; }
       if (r.status === 401) { setStatus('⚠ 已连接，但 Key 无权限（无效）——网络通了，请填正确 Key', true); return; }
       if (r.status === 502) { setStatus('⚠ 连接失败：接口不可达或网络受限', true); return; }
       if (r.status !== 200) { setStatus('⚠ AI 返回 ' + r.status + '，请检查地址/Key/模型', true); return; }
