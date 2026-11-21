@@ -1,7 +1,8 @@
 // ============================================================================
 // GET /birthday/[token]
 // 公开分享的「生日快乐」祝福页：每个访客看到不同的祝福语（JS 随机抽取）。
-// 支持 6 种风格 + AI 生成的原创主题（配色/emoji/纹样/祝福），不复制任何版权形象。
+// 支持 6 种风格 + AI 深度定制的原创主题（配色/版式/纹样/祝福/贺图/底图）。
+// 真版式渲染：装饰构图 + 图文框 + 引言块，绝非"一个词放中间"。
 // 16 位随机 token 不可猜测；每日自动清理保留当天创建的链接。
 // ============================================================================
 import { bumpBirthdayVisit, getBirthdayByToken } from '../_lib.js';
@@ -25,7 +26,6 @@ const WISHES = [
   '祝你生日快乐，愿你被爱包围，被好运眷顾。',
 ];
 
-// 六种风格（浅/深通用）：生成时站长选择；AI 主题可在其上覆盖配色
 const STYLES = {
   classic: { bg: '#f2eee2', paper: '#fffdf7', ink: '#1f2430', accent: '#e23b2e', secondary: '#ffb800', glow: '#716eff', motif: '✦', dark: false },
   starry:  { bg: '#0d1124', paper: '#1a2140', ink: '#eef0ff', accent: '#ffcf4d', secondary: '#7aa2ff', glow: '#b388ff', motif: '⭐', dark: true },
@@ -56,6 +56,9 @@ function renderPage(wish, found) {
     motif: String(theme.motif || st.motif).slice(0, 4), dark: st.dark,
   };
   const aiMessage = String(theme.message || '').slice(0, 120);
+  const aiTitle = String(theme.title || '').slice(0, 40);
+  const aiSubtitle = String(theme.subtitle || '').slice(0, 80);
+  const aiOrnament = String(theme.ornament || c.motif).slice(0, 4);
   const aiImage = found && theme.image && String(theme.image).length < 500000 ? String(theme.image) : '';
   const aiAllowed = theme.allowed === true || theme.allowed === 'true';
   const aiReason = String(theme.reason || '').slice(0, 120);
@@ -69,6 +72,9 @@ function renderPage(wish, found) {
   const dotLine = c.dark ? 'rgba(255,255,255,.09)' : 'rgba(31,36,48,.08)';
   const title = found ? `生日快乐，${name}！` : '生日快乐';
   const balloons = '🎈🎈🎈🎈🎈🎈';
+  const heroTitle = found ? aiTitle || ('生日快乐，' + name + '！') : '生日快乐！';
+  const heroSub = found ? (aiSubtitle || (name ? 'TO · ' + name : '')) : '';
+  const interestLine = aiInterest && aiInterest !== name ? aiInterest : '';
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -94,7 +100,7 @@ function renderPage(wish, found) {
   .motif-water { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; font-size:min(46vw,320px); opacity:.05; pointer-events:none; z-index:0; transform:rotate(-8deg); }
   .card {
     position:relative; z-index:2; width:min(460px,94vw); background:${c.paper};
-    border:2px solid ${c.ink}; border-radius:0; padding:30px 26px 26px; text-align:center;
+    border:2px solid ${c.ink}; border-radius:0; padding:28px 24px 24px; text-align:center;
     box-shadow:6px -6px 0 ${c.ink},12px -12px 0 ${c.ink}22;
   }
   .card:before { content:""; position:absolute; inset:7px; border:1px solid ${c.ink}33; pointer-events:none; }
@@ -103,27 +109,35 @@ function renderPage(wish, found) {
   .corner.tr { top:-8px; right:-8px; border-left:none; border-bottom:none; }
   .corner.bl { bottom:-8px; left:-8px; border-right:none; border-top:none; }
   .corner.br { bottom:-8px; right:-8px; border-left:none; border-top:none; }
-  .balloons { position:relative; height:64px; margin-bottom:2px; font-size:30px; letter-spacing:6px; }
+  .balloons { position:relative; height:56px; margin-bottom:0; font-size:28px; letter-spacing:6px; }
   .balloons span { display:inline-block; animation:sway 3.4s ease-in-out infinite; }
   .balloons span:nth-child(2n){ animation-delay:.5s; } .balloons span:nth-child(3n){ animation-delay:1s; }
   .balloons span:nth-child(4n){ animation-delay:1.5s; }
   @keyframes sway { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-9px) rotate(3deg)} }
-  .cake { font-size:52px; line-height:1; display:inline-block; animation:bounce 2.4s ease-in-out infinite; filter:drop-shadow(0 8px 12px ${c.ink}33); }
+  .cake { font-size:46px; line-height:1; display:inline-block; animation:bounce 2.4s ease-in-out infinite; filter:drop-shadow(0 8px 12px ${c.ink}33); }
   @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-  .eyebrow { font-family:"Courier New",monospace; letter-spacing:.22em; font-size:11px; color:${c.ink}99; margin-top:10px; font-weight:700; }
-  h1 { font-family:Impact,"Microsoft YaHei",sans-serif; font-weight:800; font-size:33px; margin:6px 0 2px; letter-spacing:.02em; }
-  .name { color:${c.accent}; }
-  .to-line { font-family:"Courier New",monospace; font-size:12px; color:${c.ink}88; letter-spacing:.12em; }
-  .wish { font-size:16px; line-height:1.8; margin:16px auto 6px; min-height:3.2em; transition:opacity .4s; }
-  .wish.fade { opacity:0; }
+  .eyebrow { font-family:"Courier New",monospace; letter-spacing:.22em; font-size:11px; color:${c.ink}99; margin-top:8px; font-weight:700; }
+  .bday-hero { font-family:Impact,"Microsoft YaHei",sans-serif; font-weight:800; font-size:30px; margin:6px 0 2px; letter-spacing:.02em; line-height:1.25; }
+  .bday-hero .orn { color:${c.accent}; font-size:.8em; vertical-align:middle; }
+  .bday-hero .name { color:${c.accent}; }
+  .bday-sub { font-family:"Courier New",monospace; font-size:12px; color:${c.ink}88; letter-spacing:.12em; margin-top:2px; }
+  .bday-divider { display:flex; align-items:center; gap:10px; margin:12px auto; max-width:220px; }
+  .bday-divider:before, .bday-divider:after { content:""; flex:1; height:2px; background:${c.ink}33; }
+  .bday-divider span { color:${c.accent}; font-size:14px; }
+  .bday-img { margin:8px 0 12px; padding:8px; border:2px solid ${c.ink}; background:${c.paper}; box-shadow:5px -5px 0 ${c.ink}cc; position:relative; }
+  .bday-img img { width:100%; max-height:270px; object-fit:cover; display:block; }
+  .bday-img:after { content:"✦"; position:absolute; top:-9px; left:-9px; color:${c.accent}; font-size:15px; background:${c.paper}; padding:0 3px; }
+  .bday-banner { margin:8px 0 12px; padding:20px 16px 18px; border:2px solid ${c.ink}; position:relative; overflow:hidden; background:repeating-linear-gradient(45deg, ${c.accent}12 0 12px, transparent 12px 24px), repeating-linear-gradient(-45deg, ${c.secondary}12 0 12px, transparent 12px 24px); }
+  .bday-banner:after { content:"${c.motif}"; position:absolute; font-size:96px; right:-14px; bottom:-30px; opacity:.13; transform:rotate(-14deg); }
+  .bb-emblem { width:56px; height:56px; margin:0 auto 8px; display:flex; align-items:center; justify-content:center; font-size:28px; border:2px solid ${c.ink}; background:${c.paper}; box-shadow:3px -3px 0 ${c.ink}; position:relative; }
+  .bb-title { display:flex; align-items:center; justify-content:center; gap:10px; font-family:Impact,sans-serif; font-size:22px; color:${c.accent}; position:relative; }
+  .bb-title i { width:26px; height:2px; background:${c.ink}; display:inline-block; }
+  .bb-tag { font-family:"Courier New",monospace; font-size:10px; letter-spacing:.22em; color:${c.ink}88; margin-top:8px; position:relative; }
+  .bday-message { margin:12px auto 6px; padding:12px 14px; border-left:4px solid ${c.accent}; background:${c.accent}10; text-align:left; }
+  .bday-message .q { font-family:Georgia,serif; font-size:30px; color:${c.accent}; line-height:.4; display:block; }
+  .bday-message p { font-size:15px; line-height:1.8; margin:4px 0 0; min-height:2.5em; transition:opacity .4s; }
+  .bday-message p.fade { opacity:0; }
   .custom { margin-top:10px; padding:10px 12px; border:2px solid ${c.secondary}; background:${c.secondary}18; font-size:14px; line-height:1.7; }
-  .bday-img { margin:4px 0 14px; }
-  .bday-img img { width:100%; max-height:250px; object-fit:cover; border:2px solid ${c.ink}; display:block; background:${c.paper}; }
-  .bday-banner { margin:4px 0 14px; padding:18px 14px 16px; border:2px solid ${c.ink}; background:linear-gradient(135deg, ${c.accent}22, ${c.secondary}22 55%, ${c.glow}22); position:relative; overflow:hidden; text-align:center; }
-  .bday-banner:before { content:"${c.motif}"; position:absolute; inset:-30px; font-size:64px; opacity:.12; display:flex; flex-wrap:wrap; gap:40px; align-content:center; justify-content:center; transform:rotate(-12deg); }
-  .banner-tag { font-family:"Courier New",monospace; letter-spacing:.24em; font-size:10px; color:${c.ink}99; font-weight:700; }
-  .banner-title { font-family:Impact,sans-serif; font-weight:800; font-size:30px; color:${c.accent}; margin:6px 0 2px; position:relative; }
-  .banner-sub { font-size:12px; color:${c.ink}aa; letter-spacing:.1em; position:relative; }
   .copyright-note { margin-top:10px; font-size:11px; line-height:1.6; padding:8px 10px; border:1px dashed ${c.ink}55; color:${c.ink}99; text-align:left; }
   .btn { margin-top:14px; border:2px solid ${c.ink}; background:${c.paper}; color:${c.ink}; font-weight:900; font-size:13px; padding:9px 16px; cursor:pointer; box-shadow:3px -3px 0 ${c.ink},6px -6px 0 ${c.ink}22; font-family:inherit; }
   .btn:hover { transform:translate(-1px,1px); }
@@ -131,7 +145,6 @@ function renderPage(wish, found) {
   .foot { margin-top:16px; font-family:"Courier New",monospace; font-size:10px; letter-spacing:.14em; color:${c.ink}88; }
   .confetti { position:fixed; top:-12px; width:9px; height:15px; opacity:.9; animation:fall linear infinite; z-index:1; }
   @keyframes fall { to { transform:translateY(110vh) rotate(720deg); } }
-  .notfound { color:${c.ink}88; }
 </style>
 </head>
 <body>
@@ -142,11 +155,12 @@ function renderPage(wish, found) {
     <div class="balloons" aria-hidden="true">${found ? balloons : ''}</div>
     <span class="cake">🎂</span>
     <div class="eyebrow">HAPPY BIRTHDAY</div>
-    <h1>${found ? '生日快乐，<span class="name">' + safeName + '</span>！' : '生日快乐！'}</h1>
-    ${found ? '<div class="to-line">TO · ' + safeName + '</div>' : ''}
-    ${aiImage ? '<div class="bday-img"><img src="' + esc(aiImage) + '" alt="生日贺图" loading="lazy" onerror="this.parentNode.remove()"></div>' : '<div class="bday-banner"><div class="banner-tag">HAPPY ANNIVERSARY</div><div class="banner-title">✦ ' + esc(aiInterest || '生日快乐') + ' ✦</div><div class="banner-sub">' + c.motif + ' · 生日快乐 · ' + c.motif + '</div></div>'}
+    <h1 class="bday-hero">${found ? '<span class="orn">' + aiOrnament + '</span> ' + esc(heroTitle).replace(safeName, '<span class="name">' + safeName + '</span>') + ' <span class="orn">' + aiOrnament + '</span>' : '生日快乐！'}</h1>
+    ${heroSub ? '<div class="bday-sub">' + esc(heroSub) + '</div>' : ''}
+    <div class="bday-divider"><span>${aiOrnament}</span></div>
+    ${aiImage ? '<div class="bday-img"><img src="' + esc(aiImage) + '" alt="生日贺图" loading="lazy" onerror="this.parentNode.remove()"></div>' : '<div class="bday-banner"><div class="bb-emblem">🎂</div><div class="bb-title"><i></i><span>' + esc(interestLine || '生日快乐') + '</span><i></i></div><div class="bb-tag">HAPPY ANNIVERSARY · ' + c.motif + ' ✦ ' + c.motif + '</div></div>'}
     ${found && aiReason ? '<div class="copyright-note">🔍 二创判断：' + esc(aiReason) + (aiAllowed ? '' : '（已用原创抽象贺图，未使用任何角色形象）') + '</div>' : ''}
-    <p id="wish" class="wish">${found ? (aiMessage ? safeAi : '祝你生日快乐，愿你所有美好都如期而至。') : '这条祝福不存在或已失效。'}</p>
+    <div class="bday-message"><span class="q">“</span><p id="wish">${found ? (aiMessage ? safeAi : '祝你生日快乐，愿你所有美好都如期而至。') : '这条祝福不存在或已失效。'}</p></div>
     ${found && safeCustom ? '<div class="custom">✦ ' + safeCustom + '</div>' : ''}
     ${found ? '<button id="again" class="btn primary">再换一句祝福 ✦</button>' : ''}
     <div class="foot">${found ? 'FROM · XINGHE MUSIC CHART' : 'XINGHE MUSIC CHART'}</div>
