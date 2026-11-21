@@ -16,7 +16,7 @@
         <span class="brand-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 3.5 29 18l15.5 6-15.5 5L24 44.5 19 29 3.5 24 19 18z" fill="currentColor"/><circle cx="24" cy="24" r="4" fill="#0b0c13"/></svg></span>
         <span class="brand-text"><strong>星河音浪榜</strong><small>XINGHE MUSIC CHART · LITE</small></span>
       </a>
-      <button class="version-chip" id="version-chip" type="button" title="查看更新日志"><b>v1.12.1</b><span>更新日志</span></button>
+      <button class="version-chip" id="version-chip" type="button" title="查看更新日志"><b>v1.13.0</b><span>更新日志</span></button>
     </div>
     <nav class="main-nav"><a class="nav-active" href="#list">本周榜单</a><a href="#submit">投稿</a><a href="#about">规则说明</a></nav>
     <div class="header-actions"><span id="header-live" class="live-pill"><i></i>正在连接</span><button class="button button-quiet inbox-btn" id="open-inbox" aria-label="收件箱">📬<span id="inbox-badge" class="inbox-badge hidden">0</span></button><button class="button button-quiet" id="open-games">🎮 小游戏</button><button class="button button-quiet" id="open-admin">开发者模式 ↗</button></div>
@@ -171,6 +171,12 @@
               </div>
             </section>
 
+            <!-- 生日祝福管理 -->
+            <section class="admin-card">
+              <div class="admin-card-title"><div><span class="mini-label">BIRTHDAY WISHES</span><h3>生日祝福管理</h3><p class="admin-card-subtitle">管理已生成的生日祝福链接；每天自动清理昨天的、保留今天的。可复制或删除任意一条（含此功能之前的）。</p></div><span id="admin-birthday-count" class="admin-card-badge">0 条</span></div>
+              <div id="admin-birthday-list" class="admin-birthday-list"></div>
+            </section>
+
             <!-- 公告栏：管理员发布公告 -->
             <section class="admin-card">
               <div class="admin-card-title"><div><span class="mini-label">NOTICE BOARD</span><h3>公告栏</h3><p class="admin-card-subtitle">发布后显示在网站首页公告栏，所有访客可见；新公告排最前。</p></div><span id="admin-announcement-count" class="admin-card-badge">0 条</span></div>
@@ -319,7 +325,8 @@
       <h2 id="changelog-title">更新日志</h2>
       <p class="modal-description">星河音浪榜 · 版本记录</p>
       <div class="changelog-list">
-        <div class="changelog-item is-current"><code>v1.12.1</code><div><b>复古大改版</b><p>方正复古界面、红/白按钮、右上偏移立体感、快捷按键、左上角版本号；新增「创建生日」分享祝福链接。</p></div></div>
+        <div class="changelog-item is-current"><code>v1.13.0</code><div><b>生日升级</b><p>生日每日自动清理（保留今天）；6 种可选风格；更美装饰；AI 按兴趣定制（私有 API 不泄露、二创判断、不强制生图模型）；导入底图 / 上传贺图；总览可删除生日。</p></div></div>
+        <div class="changelog-item"><code>v1.12.1</code><div><b>复古大改版</b><p>方正复古界面、红/白按钮、右上偏移立体感、快捷按键、左上角版本号；新增「创建生日」分享祝福链接。</p></div></div>
         <div class="changelog-item"><code>v1.12.0</code><div><b>收件箱与通知</b><p>右上角收件箱；审核拒绝可填理由、删除投稿通知；BV 号保留大小写。</p></div></div>
         <div class="changelog-item"><code>v1.11.0</code><div><b>小游戏与公告</b><p>新增 14 款小游戏、公告栏、封禁管理、单设备登录。</p></div></div>
         <div class="changelog-item"><code>v1.10.0</code><div><b>榜单功能</b><p>每周一清空、每日每 IP 限投、BV 掩码公开、维护模式。</p></div></div>
@@ -350,6 +357,9 @@
         <label>上传你自己的贺图（可选）<span>有授权的官方/角色图可放，自动压缩；不上传则用 AI 原创贺图或主题横幅</span></label>
         <input id="birthday-upload" type="file" accept="image/*" class="birthday-upload">
         <span id="birthday-upload-status" class="ai-status"></span>
+        <label>导入底图（可选）<span>AI 弄不了就直接导入底图做祝福页背景，自动压缩</span></label>
+        <input id="birthday-bg-upload" type="file" accept="image/*" class="birthday-upload">
+        <span id="birthday-bg-status" class="ai-status"></span>
         <details class="ai-custom">
           <summary><span>🤖 用 AI 定制专属主题</span><small>你的 API 只存在本机，绝不外传 · 每个人用自己的</small></summary>
           <div class="ai-custom-body">
