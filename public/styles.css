@@ -211,15 +211,13 @@ html[data-theme="retro"] .hero-copy h1 em { -webkit-text-fill-color:var(--accent
 .hero-footnote { margin-top:22px; font-size:12px; color:var(--muted); display:flex; align-items:center; gap:8px; }
 .tiny-spark { color:var(--accent); }
 .hero-art { position:relative; height:340px; display:flex; align-items:center; justify-content:center; }
-.door-glow { position:absolute; width:270px; height:270px; border-radius:50%; background:radial-gradient(circle, var(--glow), transparent 70%); animation:breathe 4s ease-in-out infinite; }
+.hero-glow { position:absolute; width:270px; height:270px; border-radius:50%; background:radial-gradient(circle, var(--glow), transparent 70%); animation:breathe 4s ease-in-out infinite; }
 @keyframes breathe { 0%,100%{transform:scale(1); opacity:.8} 50%{transform:scale(1.08); opacity:1} }
-.portal-door { position:relative; width:190px; height:250px; }
-.door-arch { position:absolute; inset:0; border-radius:95px 95px 14px 14px; background:var(--grad); border:4px solid var(--ink); box-shadow:var(--card-sh), inset 0 0 0 6px color-mix(in srgb, var(--accent-ink) 24%, transparent); }
-html[data-theme="retro"] .door-arch { border-radius:var(--r-sm); border:4px solid var(--ink); box-shadow:8px -8px 0 var(--ink); }
-.door-panel { position:absolute; top:16px; bottom:16px; width:40%; background:color-mix(in srgb, var(--accent-ink) 30%, transparent); border-radius:70px 70px 8px 8px; }
-.door-panel-a { left:12px; } .door-panel-b { right:12px; }
-.door-handle { position:absolute; left:52%; top:55%; width:18px; height:18px; border-radius:50%; background:var(--accent-ink); box-shadow:0 0 0 4px color-mix(in srgb, var(--ink) 24%, transparent); }
-.door-sign { position:absolute; left:50%; top:14px; transform:translateX(-50%); font-size:13px; font-weight:900; letter-spacing:.2em; color:var(--accent-ink); }
+.hero-star { position:relative; width:150px; height:150px; border-radius:50%; background:var(--grad); display:flex; align-items:center; justify-content:center; box-shadow:var(--card-sh), 0 0 60px var(--glow); border:4px solid var(--ink); }
+.hero-star::before { content:""; position:absolute; inset:8px; border:var(--frame); border-radius:50%; opacity:.6; }
+.hero-star::after { content:""; position:absolute; inset:-14px; border:2px dashed color-mix(in srgb, var(--accent) 50%, transparent); border-radius:50%; animation:spin 22s linear infinite; }
+html[data-theme="retro"] .hero-star::after { border-style:solid; opacity:.4; }
+.hero-star span { font-size:58px; color:var(--accent-ink); text-shadow:0 3px 0 color-mix(in srgb, var(--accent-ink) 40%, transparent); }
 .orbit { position:absolute; border:1px dashed color-mix(in srgb, var(--accent) 40%, transparent); border-radius:50%; }
 html[data-theme="retro"] .orbit { border-color:var(--accent); border-style:solid; opacity:.4; }
 .orbit-1 { width:250px; height:250px; animation:spin 26s linear infinite; }
@@ -236,6 +234,19 @@ html[data-theme="retro"] .orbit { border-color:var(--accent); border-style:solid
 .label-top { top:2px; left:0; } .label-bottom { bottom:2px; right:0; }
 .hero-index { display:flex; align-items:center; gap:10px; font-family:"Courier New",monospace; color:var(--muted); font-size:11px; position:absolute; bottom:8px; left:0; }
 .index-line { width:44px; height:1px; background:var(--line); }
+
+/* ---------- 两栏布局（左投稿 / 右榜单） ---------- */
+.content-grid { display:grid; grid-template-columns:minmax(0,5fr) minmax(0,7fr); gap:22px; align-items:start; }
+.content-side { display:flex; flex-direction:column; gap:22px; }
+.content-main { display:flex; flex-direction:column; gap:22px; min-width:0; }
+.side-card { margin-bottom:0; position:sticky; top:80px; }
+.content-side .quick-strip { margin-bottom:0; }
+.content-side .quick-grid { grid-template-columns:repeat(3,1fr); }
+.content-side .submit-form { grid-template-columns:1fr; }
+.content-side .submit-form .button { grid-column:auto; }
+.content-main .metrics-grid { margin:0; }
+.content-main .collection-grid { grid-template-columns:repeat(2,1fr); }
+.content-main .ranking-section { margin-bottom:0; }
 
 /* ---------- 指标卡 ---------- */
 .metrics-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:6px 0 24px; }
@@ -584,7 +595,11 @@ html[data-theme="retro"] .maintenance-icon { border-radius:var(--r-sm); border:2
 /* ---------- 响应式 ---------- */
 @media (max-width: 900px) {
   .hero-panel { grid-template-columns:1fr; } .hero-art { height:280px; }
-  .collection-grid, .rules-grid { grid-template-columns:repeat(2,1fr); }
+  .content-grid { grid-template-columns:1fr; }
+  .side-card { position:static; }
+  .content-side .quick-grid { grid-template-columns:repeat(3,1fr); }
+  .content-main .collection-grid { grid-template-columns:repeat(2,1fr); }
+  .rules-grid { grid-template-columns:repeat(2,1fr); }
   .quick-grid { grid-template-columns:repeat(3,1fr); }
   .admin-kpi-grid { grid-template-columns:repeat(2,1fr); }
   .admin-sidebar { position:fixed; left:0; top:0; bottom:0; z-index:60; transform:translateX(-100%); transition:.25s; }
@@ -594,8 +609,8 @@ html[data-theme="retro"] .maintenance-icon { border-radius:var(--r-sm); border:2
 }
 @media (max-width: 600px) {
   .metrics-grid { grid-template-columns:1fr; }
-  .collection-grid, .rules-grid { grid-template-columns:1fr; }
-  .quick-grid { grid-template-columns:repeat(2,1fr); }
+  .collection-grid, .content-main .collection-grid, .rules-grid { grid-template-columns:1fr; }
+  .quick-grid, .content-side .quick-grid { grid-template-columns:repeat(2,1fr); }
   .games-grid { grid-template-columns:repeat(2,1fr); }
   .submit-form, .admin-add-form { grid-template-columns:1fr; }
   .submit-form .button, .admin-add-form .button { grid-column:auto; }
@@ -603,7 +618,7 @@ html[data-theme="retro"] .maintenance-icon { border-radius:var(--r-sm); border:2
   .header-actions { width:100%; justify-content:flex-start; }
   .brand-text small { display:none; }
   .contact-dev { left:10px; bottom:10px; font-size:11px; }
-  .hero-art { height:240px; } .portal-door { transform:scale(.85); }
+  .hero-art { height:240px; } .hero-star { transform:scale(.85); }
   .search-input { width:100%; }
   .ranking-tools { width:100%; }
 }
