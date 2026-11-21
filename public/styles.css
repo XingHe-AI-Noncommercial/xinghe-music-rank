@@ -729,3 +729,21 @@ body:not(.entered) .header-actions { display:none; }
 .about-card > p { color:var(--muted); font-size:13px; line-height:1.7; margin:10px 0; }
 .about-actions { display:flex; align-items:center; gap:12px; margin-top:14px; flex-wrap:wrap; }
 .about-foot { margin-top:18px; color:var(--muted); font-size:11px; letter-spacing:.05em; }
+
+/* ---------- 开发者后台：平板模式（默认）/ 手机模式 ---------- */
+.admin-shell.mode-phone .admin-sidebar { position:fixed; left:0; top:0; bottom:0; z-index:60; transform:translateX(-100%); transition:.25s; }
+.admin-shell.mode-phone.sidebar-open .admin-sidebar { transform:translateX(0); }
+.admin-shell.mode-phone .admin-menu-button { display:inline-flex; width:34px; height:34px; align-items:center; justify-content:center; background:var(--card); border:var(--border); border-radius:9px; color:var(--ink); cursor:pointer; margin-right:8px; }
+.admin-shell.mode-phone .admin-kpi-grid { grid-template-columns:repeat(2,1fr); }
+.admin-shell.mode-phone .admin-welcome { flex-direction:column; align-items:flex-start; gap:12px; }
+.admin-shell.mode-phone .admin-content { padding:14px; }
+.admin-shell.mode-phone .admin-card { padding:14px; }
+.admin-shell.mode-phone .admin-add-form { grid-template-columns:1fr; }
+.admin-shell.mode-phone .admin-add-form .button { grid-column:auto; }
+.admin-shell.mode-phone .admin-top-actions { gap:8px; }
+.admin-shell.mode-phone .admin-refresh { width:100%; }
+.admin-shell.mode-phone .copy-row { flex-wrap:wrap; }
+.admin-shell.mode-phone .batch-bar { flex-wrap:wrap; }
+.admin-shell.mode-phone .table-tools, .admin-shell.mode-phone .admin-add-form .wide { width:100%; }
+.admin-shell.mode-phone .birthday-panel-toolbar { flex-wrap:wrap; }
+.admin-shell.mode-phone .ban-presets { display:flex; flex-wrap:wrap; gap:4px; }
