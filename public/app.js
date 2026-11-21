@@ -366,8 +366,8 @@
     $('#admin-kpi-grid').innerHTML = [
       ['已上架', number(s.approved), '审核通过的视频', '◈'],
       ['待审核', number(s.pending), '等待开发者处理', '⏳'],
-      ['已拒绝', number(s.rejected), '未通过的投稿', '×'],
       ['本周周期', data.week || '—', '周一 00:00 清空', '⟳'],
+      ['访问统计', number((data.visits && data.visits.total) || 0), `今日 ${number((data.visits && data.visits.today) || 0)} 次`, '👁'],
     ].map(([label, value, desc, icon]) => `<article class="admin-kpi"><div class="admin-kpi-top"><span>${label}</span><span>${icon}</span></div><strong>${value}</strong><small>${desc}</small></article>`).join('');
 
     // 一键复制
@@ -434,11 +434,54 @@
     const holder = $('#admin-submissions-list'); if (!holder) return;
     if (!pending.length) { holder.innerHTML = '<div class="empty-table">没有待审核的投稿。</div>'; return; }
     holder.innerHTML = pending.map(s => `<article class="submission-item">
+      <label class="inline-check"><input type="checkbox" class="batch-check" value="${escapeHtml(s.id)}"></label>
       <span class="submission-cover"><span class="cover-fallback">♪</span></span>
       <div class="submission-copy"><strong>${escapeHtml(s.title)}</strong><p>${escapeHtml(s.artist || '未知创作者')}</p><small>BV：${escapeHtml(s.bvid)} · 提交：${fmtDate(s.createdAt)}</small></div>
       <div class="submission-actions"><button class="tiny-button approve" data-review="approve" data-id="${escapeHtml(s.id)}">通过</button><button class="tiny-button reject" data-review="reject" data-id="${escapeHtml(s.id)}">拒绝</button></div>
     </article>`).join('');
+    syncBatchUI();
   }
+  function syncBatchUI() {
+    const boxes = $$('.batch-check');
+    const selected = boxes.filter(b => b.checked);
+    const selCount = $('#batch-selected-count'); if (selCount) selCount.textContent = `已选 ${selected.length} 条`;
+    const all = $('#batch-check-all'); if (all && boxes.length) all.checked = selected.length === boxes.length;
+  }
+  $('#batch-check-all')?.addEventListener('change', e => { $$('.batch-check').forEach(b => { b.checked = e.target.checked; }); syncBatchUI(); });
+  $('#admin-submissions-list')?.addEventListener('change', syncBatchUI);
+  async function runBatch(action) {
+    const ids = $$('.batch-check').filter(b => b.checked).map(b => b.value);
+    if (!ids.length) { showToast('请先勾选要操作的投稿。', 'error'); return; }
+    const reason = $('#batch-reason')?.value || '';
+    try {
+      const res = await api('/api/admin/batch', { method: 'POST', body: JSON.stringify({ action, ids, reason }) });
+      showToast(res.message, 'success');
+      await loadAdminData(); await refreshState();
+    } catch (error) { showToast(error.message, 'error'); }
+  }
+  $('#batch-approve')?.addEventListener('click', () => runBatch('approve'));
+  $('#batch-reject')?.addEventListener('click', () => runBatch('reject'));
+  // 导出完整备份
+  $('#export-backup')?.addEventListener('click', async () => {
+    try {
+      const res = await api('/api/admin/export');
+      const blob = new Blob([JSON.stringify(res, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'xinghe-backup.json'; a.click();
+      URL.revokeObjectURL(url);
+      showToast('备份已下载（xinghe-backup.json）。', 'success');
+    } catch (error) { showToast(error.message, 'error'); }
+  });
+  // 站内广播
+  $('#broadcast-form')?.addEventListener('submit', async event => {
+    event.preventDefault();
+    const text = new FormData(event.currentTarget).get('text') || '';
+    try {
+      const res = await api('/api/admin/broadcast', { method: 'POST', body: JSON.stringify({ text }) });
+      showToast(res.message, 'success');
+      event.currentTarget.reset();
+    } catch (error) { showToast(error.message, 'error'); }
+  });
 
   function renderAdminSongs(songs) {
     const holder = $('#admin-songs-table'); if (!holder) return;
@@ -956,4 +999,11 @@
   // ---------- 启动 ----------
   refreshState();
   loadInbox().then(maybeShowInboxAlert); // 进入网页：有未读消息则全屏提示
+  // 访问统计：每会话只计一次
+  try {
+    if (!sessionStorage.getItem('xh_visit_tracked')) {
+      sessionStorage.setItem('xh_visit_tracked', '1');
+      fetch('/api/visit', { method: 'POST' }).catch(() => {});
+    }
+  } catch { /* 某些环境禁用 sessionStorage，跳过埋点 */ }
 })();
