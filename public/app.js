@@ -888,7 +888,7 @@
       const hasColor = Object.values(col).some(v => /^#[0-9a-fA-F]{6}$/.test(v));
       if (hasColor) theme.palette = col;
       const urlImg = val('#birthday-image-url').trim();
-      if (urlImg && /^https?:\/\/\S+\.(png|jpe?g|webp|gif|avif)(\?\S*)?$/i.test(urlImg)) theme.image = urlImg;
+      if (urlImg && /^https?:\/\/[^\s"<>]+$/i.test(urlImg)) theme.image = urlImg;
       if (state.birthdayTheme) {
         if (state.birthdayTheme.image) theme.image = state.birthdayTheme.image;
         if (state.birthdayTheme.bgImage) theme.bgImage = state.birthdayTheme.bgImage;
