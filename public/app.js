@@ -724,6 +724,57 @@
     if (cleaned !== input.value) input.value = cleaned;
   }));
 
+  // ---------- 版本号 + 更新日志（左上角） ----------
+  const versionChip = $('#version-chip');
+  if (versionChip) versionChip.addEventListener('click', () => showModal('changelog-modal'));
+
+  // ---------- 快捷按键 ----------
+  const quickAnnouncement = $('#quick-announcement');
+  if (quickAnnouncement) quickAnnouncement.addEventListener('click', () => {
+    const board = $('#announcement-board');
+    if (board) { board.classList.remove('hidden'); board.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  });
+  const quickGames = $('#quick-games');
+  if (quickGames) quickGames.addEventListener('click', () => showModal('games-modal'));
+  const quickInbox = $('#quick-inbox');
+  if (quickInbox) quickInbox.addEventListener('click', async () => { showModal('inbox-modal'); await loadInbox(); });
+
+  // ---------- 创建生日祝福 ----------
+  const openBirthday = $('#open-birthday');
+  if (openBirthday) openBirthday.addEventListener('click', () => {
+    $('#birthday-result')?.classList.add('hidden');
+    $('#birthday-link').textContent = '';
+    showModal('birthday-modal');
+  });
+  const birthdayCreate = $('#birthday-create');
+  if (birthdayCreate) birthdayCreate.addEventListener('click', async () => {
+    const name = $('#birthday-name').value.trim();
+    const message = $('#birthday-message').value.trim();
+    if (!name) { showToast('请填写寿星名字', 'error'); return; }
+    birthdayCreate.disabled = true; birthdayCreate.textContent = '生成中…';
+    try {
+      const res = await api('/api/admin/birthdays', { method: 'POST', body: JSON.stringify({ name, message }) });
+      const link = location.origin + '/birthday/' + res.token;
+      $('#birthday-link').textContent = link;
+      $('#birthday-result').classList.remove('hidden');
+      state.birthdayLink = link;
+      showToast('生日祝福已生成，可转发链接');
+    } catch (error) { showToast(error.message, 'error'); }
+    finally { birthdayCreate.disabled = false; birthdayCreate.textContent = '生成生日祝福'; }
+  });
+  const birthdayCopy = $('#birthday-copy');
+  if (birthdayCopy) birthdayCopy.addEventListener('click', async () => {
+    const link = $('#birthday-link').textContent;
+    if (!link) return;
+    try { await navigator.clipboard.writeText(link); showToast('链接已复制'); }
+    catch { showToast('复制失败，请手动复制', 'error'); }
+  });
+  const birthdayOpen = $('#birthday-open');
+  if (birthdayOpen) birthdayOpen.addEventListener('click', () => {
+    const link = $('#birthday-link').textContent;
+    if (link) window.open(link, '_blank');
+  });
+
   // ---------- 启动 ----------
   refreshState();
   loadInbox().then(maybeShowInboxAlert); // 进入网页：有未读消息则全屏提示
