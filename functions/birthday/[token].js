@@ -60,6 +60,8 @@ function renderPage(wish, found) {
   const aiAllowed = theme.allowed === true || theme.allowed === 'true';
   const aiReason = String(theme.reason || '').slice(0, 120);
   const aiInterest = String(theme.interest || name || '').slice(0, 40);
+  const aiBg = found && theme.bgImage && String(theme.bgImage).length < 500000 ? String(theme.bgImage) : '';
+  const bgStyle = aiBg ? `background-image:linear-gradient(${c.paper}e6, ${c.paper}e6),url("${esc(aiBg)}");background-size:cover;background-position:center;` : '';
   const safeName = esc(name);
   const safeCustom = esc(custom);
   const safeAi = esc(aiMessage);
@@ -135,7 +137,7 @@ function renderPage(wish, found) {
 <body>
   <div class="motif-water" aria-hidden="true">${c.motif}</div>
   <div id="confetti" aria-hidden="true"></div>
-  <div class="card">
+  <div class="card" style="${bgStyle}">
     <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
     <div class="balloons" aria-hidden="true">${found ? balloons : ''}</div>
     <span class="cake">🎂</span>
