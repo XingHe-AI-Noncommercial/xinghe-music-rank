@@ -744,6 +744,10 @@
   if (openBirthday) openBirthday.addEventListener('click', () => {
     $('#birthday-result')?.classList.add('hidden');
     $('#birthday-link').textContent = '';
+    state.birthdayTheme = null;
+    const up = $('#birthday-upload'); if (up) up.value = '';
+    const ust = $('#birthday-upload-status'); if (ust) { ust.textContent = ''; ust.className = 'ai-status'; }
+    const ast = $('#ai-status'); if (ast) { ast.textContent = ''; ast.className = 'ai-status'; }
     showModal('birthday-modal');
   });
   // 风格选择
@@ -764,7 +768,7 @@
     let data; try { data = JSON.parse(text); } catch { data = {}; }
     return { status: res.status, data };
   }
-  function compressImage(b64) {
+  function compressImage(dataUrl) {
     return new Promise(resolve => {
       const img = new Image();
       img.onload = () => {
@@ -775,9 +779,26 @@
         try { resolve(c.toDataURL('image/jpeg', 0.8)); } catch { resolve(''); }
       };
       img.onerror = () => resolve('');
-      img.src = 'data:image/png;base64,' + b64;
+      img.src = dataUrl;
     });
   }
+  const birthdayUpload = $('#birthday-upload');
+  if (birthdayUpload) birthdayUpload.addEventListener('change', async () => {
+    const file = birthdayUpload.files && birthdayUpload.files[0];
+    const st = $('#birthday-upload-status');
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { st.textContent = '⚠ 请选择图片文件'; st.className = 'ai-status err'; return; }
+    if (file.size > 6 * 1024 * 1024) { st.textContent = '⚠ 图片过大（≤6MB）'; st.className = 'ai-status err'; return; }
+    st.textContent = '处理中…'; st.className = 'ai-status';
+    try {
+      const dataUrl = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); });
+      const compressed = await compressImage(dataUrl);
+      if (!compressed) throw new Error('图片处理失败');
+      if (!state.birthdayTheme) state.birthdayTheme = {};
+      state.birthdayTheme.image = compressed;
+      st.textContent = '✅ 已上传，将作为贺图（请确保你对该图有使用权）'; st.className = 'ai-status';
+    } catch (e) { st.textContent = '⚠ ' + (e.message || '处理失败'); st.className = 'ai-status err'; }
+  });
   const aiGenerate = $('#ai-generate');
   if (aiGenerate) aiGenerate.addEventListener('click', async () => {
     const name = $('#birthday-name').value.trim();
@@ -791,12 +812,11 @@
     const setStatus = (text, err) => { status.textContent = text; status.className = 'ai-status' + (err ? ' err' : ''); };
     setStatus('AI 生成中…');
     const prompt = [
-      '你是一个复古纸艺生日贺卡设计助手。请为「' + (name || '寿星') + '」的生日页面设计一个原创主题。',
-      '要求：',
-      '1. 风格复古、方正、纸质；配色偏红白，除非寿星兴趣另有明显偏好。',
-      '2. 根据寿星兴趣/关键词「' + (interest || '无') + '」营造氛围，只用抽象配色、纹样符号、emoji 表达，例如喜欢蓝色与星星就用蓝金+⭐。',
-      '3. 绝对不要复制、模仿或使用任何真实角色/品牌/版权形象的外观、名称或商标（如具体动漫角色、虚拟歌手形象、品牌 logo）。只做原创抽象主题，不出现任何具体角色名字。',
-      '4. 只返回一个 JSON 对象，不要任何其他文字：{"palette":{"bg":"#RRGGBB","paper":"#RRGGBB","ink":"#RRGGBB","accent":"#RRGGBB","secondary":"#RRGGBB","glow":"#RRGGBB"},"motif":"1个符号","message":"一句原创中文生日祝福，不超过40字"}'
+      '你是复古纸艺生日贺卡设计助手，兼版权顾问。请为「' + (name || '寿星') + '」的生日页面设计原创主题。',
+      '步骤一（二创判断）：判断「' + (interest || '无') + '」相关的角色/作品/IP 官方是否通常允许粉丝二创。一般官方允许有限度非商业个人二创，但禁止商用与直接搬运官方图。用你的知识判断，给出结论与一句理由。',
+      '步骤二（原创主题）：复古、方正、纸质；配色偏红白，除非兴趣另有明显偏好。只用抽象配色、纹样符号、emoji 营造氛围（如喜欢蓝色星星→蓝金+⭐）。',
+      '铁律：绝不复制、模仿或使用任何真实角色/品牌/版权形象的外观、面部、服装、标志或名称；也不用官方图。只做原创抽象主题。',
+      '只返回一个 JSON 对象，不要任何其他文字：{"palette":{"bg":"#RRGGBB","paper":"#RRGGBB","ink":"#RRGGBB","accent":"#RRGGBB","secondary":"#RRGGBB","glow":"#RRGGBB"},"motif":"1个符号","message":"一句原创中文生日祝福，不超过40字","allowed":true,"reason":"二创判断一句话，如：官方通常允许非商业个人二创，但不建议直接使用官方图"}'
     ].join('\n');
     try {
       const r = await aiProxy({ base, key, model, messages: [{ role: 'system', content: prompt }], temperature: 0.9, response_format: { type: 'json_object' } });
@@ -808,6 +828,10 @@
       if (!m) { setStatus('⚠ AI 未返回有效主题，请重试', true); return; }
       const theme = JSON.parse(m[0]);
       if (!theme.palette || !theme.message) { setStatus('⚠ AI 返回格式不完整', true); return; }
+      theme.interest = interest || name || '';
+      theme.allowed = theme.allowed === true || theme.allowed === 'true';
+      theme.reason = theme.reason || '';
+      setStatus((theme.allowed ? '✅ 二创允许：' : 'ℹ 二创受限：') + (theme.reason || '已用原创抽象主题'));
       // 可选：生成原创插画（不侵权，仅抽象氛围）
       if ($('#ai-image').checked) {
         setStatus('生成主题插画中…');
@@ -816,7 +840,7 @@
         const img = await aiProxy({ base, key, model: imgModel, image: true, prompt: imgPrompt, size: '1024x1024' });
         if (img.status === 200 && img.data?.data?.[0]) {
           const d = img.data.data[0];
-          theme.image = d.url || (d.b64_json ? await compressImage(d.b64_json) : '');
+          theme.image = d.url || (d.b64_json ? await compressImage('data:image/png;base64,' + d.b64_json) : '');
           if (!theme.image) { setStatus('⚠ 主题已生成，但插画无法读取', true); state.birthdayTheme = theme; if (theme.message) $('#birthday-message').value = theme.message; return; }
         } else {
           setStatus('⚠ 主题已生成，但插画失败（' + (img.status || '') + '），可稍后再试', true);
