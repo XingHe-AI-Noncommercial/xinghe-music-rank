@@ -746,6 +746,58 @@
     $('#birthday-link').textContent = '';
     showModal('birthday-modal');
   });
+  // 风格选择
+  state.birthdayStyle = 'classic';
+  $$('#birthday-style-picker .style-opt').forEach(btn => btn.addEventListener('click', () => {
+    $$('#birthday-style-picker .style-opt').forEach(b => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    state.birthdayStyle = btn.dataset.style;
+  }));
+  // AI 定制：API 只存本机 localStorage，绝不发送到服务器；复古提示词 + 不侵权指令
+  state.birthdayTheme = null;
+  const AI_SAVE = 'xh_ai_config_v1';
+  function loadAiConfig() { try { return JSON.parse(localStorage.getItem(AI_SAVE)) || {}; } catch { return {}; } }
+  function saveAiConfig(cfg) { try { localStorage.setItem(AI_SAVE, JSON.stringify(cfg)); } catch {} }
+  const aiGenerate = $('#ai-generate');
+  if (aiGenerate) aiGenerate.addEventListener('click', async () => {
+    const name = $('#birthday-name').value.trim();
+    const interest = $('#ai-interest').value.trim();
+    const base = ($('#ai-base').value.trim() || 'https://api.openai.com/v1').replace(/\/+$/, '');
+    const key = $('#ai-key').value.trim();
+    const model = $('#ai-model').value.trim() || 'gpt-4o-mini';
+    const status = $('#ai-status');
+    if (!key) { status.textContent = '请填写你的 API Key（仅存本机）'; status.className = 'ai-status err'; return; }
+    saveAiConfig({ base, model, interest });
+    status.textContent = 'AI 生成中…'; status.className = 'ai-status';
+    const prompt = [
+      '你是一个复古纸艺生日贺卡设计助手。请为「' + (name || '寿星') + '」的生日页面设计一个原创主题。',
+      '要求：',
+      '1. 风格复古、方正、纸质；配色偏红白，除非寿星兴趣另有明显偏好。',
+      '2. 根据寿星兴趣/关键词「' + (interest || '无') + '」营造氛围，只用抽象配色、纹样符号、emoji 表达，例如喜欢蓝色与星星就用蓝金+⭐。',
+      '3. 绝对不要复制、模仿或使用任何真实角色/品牌/版权形象的外观、名称或商标（如具体动漫角色、虚拟歌手形象、品牌 logo）。只做原创抽象主题，不出现任何具体角色名字。',
+      '4. 只返回一个 JSON 对象，不要任何其他文字：{"palette":{"bg":"#RRGGBB","paper":"#RRGGBB","ink":"#RRGGBB","accent":"#RRGGBB","secondary":"#RRGGBB","glow":"#RRGGBB"},"motif":"1个符号","message":"一句原创中文生日祝福，不超过40字"}'
+    ].join('\n');
+    try {
+      const res = await fetch(base + '/chat/completions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'authorization': 'Bearer ' + key },
+        body: JSON.stringify({ model, messages: [{ role: 'system', content: prompt }], temperature: 0.9 }),
+      });
+      if (!res.ok) throw new Error('AI 请求失败（' + res.status + '）。检查地址/Key/模型，部分接口需支持跨域。');
+      const data = await res.json();
+      const content = data?.choices?.[0]?.message?.content || '';
+      const m = content.match(/\{[\s\S]*\}/);
+      if (!m) throw new Error('AI 未返回有效主题，请重试。');
+      const theme = JSON.parse(m[0]);
+      if (!theme.palette || !theme.message) throw new Error('AI 返回格式不完整。');
+      state.birthdayTheme = theme;
+      status.textContent = '✅ 主题已生成，将应用到祝福页'; status.className = 'ai-status';
+      if (theme.message) $('#birthday-message').value = theme.message;
+    } catch (error) {
+      state.birthdayTheme = null;
+      status.textContent = '⚠ ' + error.message; status.className = 'ai-status err';
+    }
+  });
   const birthdayCreate = $('#birthday-create');
   if (birthdayCreate) birthdayCreate.addEventListener('click', async () => {
     const name = $('#birthday-name').value.trim();
@@ -753,7 +805,9 @@
     if (!name) { showToast('请填写寿星名字', 'error'); return; }
     birthdayCreate.disabled = true; birthdayCreate.textContent = '生成中…';
     try {
-      const res = await api('/api/admin/birthdays', { method: 'POST', body: JSON.stringify({ name, message }) });
+      const body = { name, message, style: state.birthdayStyle };
+      if (state.birthdayTheme) body.theme = state.birthdayTheme;
+      const res = await api('/api/admin/birthdays', { method: 'POST', body: JSON.stringify(body) });
       const link = location.origin + '/birthday/' + res.token;
       $('#birthday-link').textContent = link;
       $('#birthday-result').classList.remove('hidden');
