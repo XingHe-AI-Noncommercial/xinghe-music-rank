@@ -59,7 +59,6 @@
         <button class="hub-card" data-nav="theme" type="button"><span class="hub-icon">🎨</span><b>页面风格</b><small>THEMES</small></button>
         <button class="hub-card" data-nav="rules" type="button"><span class="hub-icon">§</span><b>规则说明</b><small>HOW IT WORKS</small></button>
         <button class="hub-card" data-nav="about" type="button"><span class="hub-icon">❓</span><b>关于 / 更新日志</b><small>ABOUT</small></button>
-        <button class="hub-card" id="hub-birthday" type="button"><span class="hub-icon">🎂</span><b>生日祝福</b><small>BIRTHDAY</small></button>
         <button class="hub-card hub-admin" id="hub-admin" type="button"><span class="hub-icon">🛠</span><b>开发者模式</b><small>DEV CONSOLE</small></button>
       </div>
       <div class="quote-bar" aria-hidden="true"><span class="quote-label">✦ 音浪语录</span><div class="quote-marquee"><div class="quote-track" id="quote-track"></div></div></div>
@@ -183,7 +182,7 @@
 
   <!-- 开发者后台弹窗 -->
   <div id="admin-modal" class="modal-backdrop hidden admin-backdrop" role="dialog" aria-modal="true" aria-labelledby="admin-title">
-    <div class="admin-shell">
+    <div class="admin-shell mode-tablet">
       <aside class="admin-sidebar">
         <div class="admin-side-brand"><span class="brand-mark small-mark">✦</span><span><strong>开发者控制台</strong><small>DEV SYSTEM</small></span></div>
         <div class="admin-profile"><div class="profile-avatar">星</div><div><strong>开发者</strong><small>审核 · 上架 · 复制</small></div><span class="profile-online"></span></div>
@@ -199,7 +198,7 @@
       <section class="admin-main">
         <header class="admin-topbar">
           <div><button id="admin-mobile-menu" class="admin-menu-button">☰</button><span class="admin-breadcrumb">工作空间 <span>›</span> <strong id="admin-current-tab">总览面板</strong></span></div>
-          <div class="admin-top-actions"><span class="admin-secure-tag">● 安全会话</span><button class="modal-close admin-close" data-close="admin-modal" aria-label="关闭开发者后台">×</button></div>
+          <div class="admin-top-actions"><button id="admin-mode-toggle" class="button button-outline" title="切换平板 / 手机显示模式">📱 手机模式</button><span class="admin-secure-tag">● 安全会话</span><button class="modal-close admin-close" data-close="admin-modal" aria-label="关闭开发者后台">×</button></div>
         </header>
         <div class="admin-content">
           <div class="admin-welcome"><div><div class="modal-eyebrow">REVIEW / LIST / COPY</div><h2 id="admin-title">总览面板</h2><p id="admin-page-desc">审核投稿、上架作品、一键复制 BV 号。</p></div><button id="admin-refresh" class="button button-outline admin-refresh">⟳ 刷新数据</button></div>
