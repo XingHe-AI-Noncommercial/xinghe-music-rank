@@ -61,6 +61,25 @@ export async function setSetting(DB, key, value) {
     .bind(key, String(value)).run();
 }
 
+// ---------- 访问统计（settings 键：visit_total / visit_day / visit_today） ----------
+export async function getVisitStats(DB) {
+  const total = Number(await getSetting(DB, 'visit_total', '0')) || 0;
+  const day = await getSetting(DB, 'visit_day', '');
+  const today = day === beijingDay() ? (Number(await getSetting(DB, 'visit_today', '0')) || 0) : 0;
+  return { total, today, day };
+}
+
+export async function incrementVisit(DB) {
+  const total = Number(await getSetting(DB, 'visit_total', '0')) || 0;
+  const day = await getSetting(DB, 'visit_day', '');
+  const today = day === beijingDay() ? (Number(await getSetting(DB, 'visit_today', '0')) || 0) : 0;
+  const nextToday = (day === beijingDay() ? today : 0) + 1;
+  await setSetting(DB, 'visit_total', String(total + 1));
+  await setSetting(DB, 'visit_day', beijingDay());
+  await setSetting(DB, 'visit_today', String(nextToday));
+  return { total: total + 1, today: nextToday };
+}
+
 export async function isMaintenanceOn(DB) {
   return (await getSetting(DB, 'maintenance', '0')) === '1';
 }
