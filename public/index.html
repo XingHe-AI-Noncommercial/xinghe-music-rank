@@ -11,10 +11,13 @@
 <body>
   <div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
   <header class="site-header">
-    <a class="brand" href="#top" aria-label="星河音浪榜主页">
-      <span class="brand-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 3.5 29 18l15.5 6-15.5 5L24 44.5 19 29 3.5 24 19 18z" fill="currentColor"/><circle cx="24" cy="24" r="4" fill="#0b0c13"/></svg></span>
-      <span class="brand-text"><strong>星河音浪榜</strong><small>XINGHE MUSIC CHART · LITE</small></span>
-    </a>
+    <div class="brand-left">
+      <a class="brand" href="#top" aria-label="星河音浪榜主页">
+        <span class="brand-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 3.5 29 18l15.5 6-15.5 5L24 44.5 19 29 3.5 24 19 18z" fill="currentColor"/><circle cx="24" cy="24" r="4" fill="#0b0c13"/></svg></span>
+        <span class="brand-text"><strong>星河音浪榜</strong><small>XINGHE MUSIC CHART · LITE</small></span>
+      </a>
+      <button class="version-chip" id="version-chip" type="button" title="查看更新日志"><b>v1.12.1</b><span>更新日志</span></button>
+    </div>
     <nav class="main-nav"><a class="nav-active" href="#list">本周榜单</a><a href="#submit">投稿</a><a href="#about">规则说明</a></nav>
     <div class="header-actions"><span id="header-live" class="live-pill"><i></i>正在连接</span><button class="button button-quiet inbox-btn" id="open-inbox" aria-label="收件箱">📬<span id="inbox-badge" class="inbox-badge hidden">0</span></button><button class="button button-quiet" id="open-games">🎮 小游戏</button><button class="button button-quiet" id="open-admin">开发者模式 ↗</button></div>
   </header>
@@ -41,6 +44,18 @@
       <article class="metric-card metric-feature"><div class="metric-top"><span>本周上架</span><span class="metric-icon">◈</span></div><strong id="metric-approved">—</strong><div class="metric-bottom"><span>审核通过的视频</span><span class="metric-accent">LISTED</span></div></article>
       <article class="metric-card"><div class="metric-top"><span>待审核</span><span class="metric-icon">⏳</span></div><strong id="metric-pending">—</strong><div class="metric-bottom"><span>等待开发者处理</span><span class="metric-accent">PENDING</span></div></article>
       <article class="metric-card"><div class="metric-top"><span>今日可投</span><span class="metric-icon">⌁</span></div><strong id="metric-submit" class="metric-tier">—</strong><div class="metric-bottom"><span id="metric-submit-sub">每天每 IP 1 个</span><span class="metric-accent">TODAY</span></div></article>
+    </section>
+
+    <section class="quick-strip" aria-label="快捷操作">
+      <div class="eyebrow"><span class="eyebrow-line"></span> QUICK ACCESS</div>
+      <div class="quick-grid">
+        <a class="quick-btn quick-primary" href="#submit"><span class="quick-icon">✎</span><b>立即投稿</b><small>SUBMIT</small></a>
+        <a class="quick-btn" href="#list"><span class="quick-icon">♛</span><b>本周榜单</b><small>RANKING</small></a>
+        <a class="quick-btn" href="#about"><span class="quick-icon">§</span><b>规则说明</b><small>RULES</small></a>
+        <button class="quick-btn" id="quick-announcement" type="button"><span class="quick-icon">✦</span><b>公告栏</b><small>NOTICE</small></button>
+        <button class="quick-btn" id="quick-games" type="button"><span class="quick-icon">🎮</span><b>小游戏</b><small>GAMES</small></button>
+        <button class="quick-btn" id="quick-inbox" type="button"><span class="quick-icon">📬</span><b>收件箱</b><small>INBOX</small></button>
+      </div>
     </section>
 
     <section id="announcement-board" class="announcement-board hidden" aria-label="公告栏">
@@ -109,6 +124,7 @@
         <button class="admin-nav active" data-admin-tab="overview"><span>◫</span> 总览面板</button>
         <button class="admin-nav" data-admin-tab="submissions"><span>⏳</span> 投稿审核 <b id="admin-pending-badge">0</b></button>
         <button class="admin-nav" data-admin-tab="songs"><span>♫</span> 作品管理</button>
+        <button class="admin-nav" id="open-birthday"><span>🎂</span> 创建生日</button>
         <div class="sidebar-spacer"></div>
         <button id="admin-logout" class="admin-logout">↪ 退出开发者模式</button>
         <div class="admin-side-foot">XINGHE MUSIC CHART<br>LITE BUILD 4.0</div>
@@ -293,6 +309,42 @@
       <p class="modal-description">填写拒绝理由，将发送到该投稿人的收件箱。</p>
       <textarea id="reject-reason" rows="3" placeholder="例如：视频名不符合本周主题、BV 号无效…"></textarea>
       <div class="modal-actions"><button class="button button-outline" data-close="reject-modal">取消</button><button class="button button-primary" id="reject-confirm">发送拒绝理由并拒绝</button></div>
+    </div>
+  </div>
+
+  <div id="changelog-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="changelog-title">
+    <div class="modal-card modal-narrow">
+      <button class="modal-close" data-close="changelog-modal" aria-label="关闭">×</button>
+      <div class="modal-eyebrow"><span class="eyebrow-line"></span> CHANGELOG</div>
+      <h2 id="changelog-title">更新日志</h2>
+      <p class="modal-description">星河音浪榜 · 版本记录</p>
+      <div class="changelog-list">
+        <div class="changelog-item is-current"><code>v1.12.1</code><div><b>复古大改版</b><p>方正复古界面、红/白按钮、右上偏移立体感、快捷按键、左上角版本号；新增「创建生日」分享祝福链接。</p></div></div>
+        <div class="changelog-item"><code>v1.12.0</code><div><b>收件箱与通知</b><p>右上角收件箱；审核拒绝可填理由、删除投稿通知；BV 号保留大小写。</p></div></div>
+        <div class="changelog-item"><code>v1.11.0</code><div><b>小游戏与公告</b><p>新增 14 款小游戏、公告栏、封禁管理、单设备登录。</p></div></div>
+        <div class="changelog-item"><code>v1.10.0</code><div><b>榜单功能</b><p>每周一清空、每日每 IP 限投、BV 掩码公开、维护模式。</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="birthday-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="birthday-title">
+    <div class="modal-card modal-narrow">
+      <button class="modal-close" data-close="birthday-modal" aria-label="关闭">×</button>
+      <div class="modal-eyebrow"><span class="eyebrow-line"></span> HAPPY BIRTHDAY</div>
+      <h2 id="birthday-title">创建生日祝福</h2>
+      <p class="modal-description">生成一条祝福链接，转发给寿星；每个人打开看到的祝福语都不一样。</p>
+      <div class="stack-form">
+        <label>寿星名字 <em>*</em><span>显示在祝福页上</span></label>
+        <input id="birthday-name" type="text" maxlength="20" placeholder="例如：小星">
+        <label>祝福语（可选）<span>留空则自动从祝福库随机</span></label>
+        <textarea id="birthday-message" rows="2" maxlength="80" placeholder="写一句你的祝福…"></textarea>
+      </div>
+      <div id="birthday-result" class="birthday-result hidden">
+        <label>生成成功 · 转发这条链接</label>
+        <div class="bv-preview" id="birthday-link"></div>
+        <div class="modal-actions"><button class="button button-outline" id="birthday-copy">复制链接</button><button class="button button-outline" id="birthday-open" target="_blank">打开预览 ↗</button></div>
+      </div>
+      <div class="modal-actions"><button class="button button-outline" data-close="birthday-modal">关闭</button><button class="button button-primary" id="birthday-create">生成生日祝福</button></div>
     </div>
   </div>
 
