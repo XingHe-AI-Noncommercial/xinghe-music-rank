@@ -338,6 +338,32 @@
         <input id="birthday-name" type="text" maxlength="20" placeholder="例如：小星">
         <label>祝福语（可选）<span>留空则自动从祝福库随机</span></label>
         <textarea id="birthday-message" rows="2" maxlength="80" placeholder="写一句你的祝福…"></textarea>
+        <label>页面风格 <span>生成时选定，页面完全按此风格渲染</span></label>
+        <div id="birthday-style-picker" class="style-picker">
+          <button class="style-opt is-active" data-style="classic" title="经典红金"><i style="background:#f2eee2"></i><i style="background:#fffdf7"></i><i style="background:#e23b2e"></i><b>经典红金</b></button>
+          <button class="style-opt" data-style="starry" title="星空蓝紫"><i style="background:#0d1124"></i><i style="background:#1a2140"></i><i style="background:#ffcf4d"></i><b>星空蓝紫</b></button>
+          <button class="style-opt" data-style="pastel" title="粉彩少女"><i style="background:#fdeef3"></i><i style="background:#fff8fa"></i><i style="background:#ff7ba9"></i><b>粉彩少女</b></button>
+          <button class="style-opt" data-style="forest" title="墨绿复古"><i style="background:#10251a"></i><i style="background:#16301f"></i><i style="background:#ffd166"></i><b>墨绿复古</b></button>
+          <button class="style-opt" data-style="ocean" title="海盐蓝"><i style="background:#0e2a38"></i><i style="background:#12384a"></i><i style="background:#ffd166"></i><b>海盐蓝</b></button>
+          <button class="style-opt" data-style="neon" title="霓虹紫"><i style="background:#120a20"></i><i style="background:#1c1030"></i><i style="background:#ff4ea0"></i><b>霓虹紫</b></button>
+        </div>
+        <details class="ai-custom">
+          <summary><span>🤖 用 AI 定制专属主题</span><small>你的 API 只存在本机，绝不外传 · 每个人用自己的</small></summary>
+          <div class="ai-custom-body">
+            <label>AI 接口地址（OpenAI 兼容）<span>留空用默认</span></label>
+            <input id="ai-base" type="url" placeholder="https://api.openai.com/v1">
+            <label>API Key <em>*</em><span>仅存本机 localStorage，不发送到服务器</span></label>
+            <input id="ai-key" type="password" placeholder="sk-…" autocomplete="off">
+            <label>模型名</label>
+            <input id="ai-model" type="text" placeholder="gpt-4o-mini">
+            <label>寿星兴趣 / 关键词<span>例如：洛天依、蓝色、喜欢星星</span></label>
+            <input id="ai-interest" type="text" maxlength="80" placeholder="例如：洛天依 · 蓝色 · 星星">
+            <div class="ai-actions">
+              <button class="button button-outline" id="ai-generate" type="button">✨ AI 生成主题</button>
+              <span id="ai-status" class="ai-status"></span>
+            </div>
+          </div>
+        </details>
       </div>
       <div id="birthday-result" class="birthday-result hidden">
         <label>生成成功 · 转发这条链接</label>
