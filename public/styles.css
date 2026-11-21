@@ -672,3 +672,60 @@ html[data-theme="retro"] .change-pill, html[data-theme="retro"] .state-pill { bo
 .announcement-copy { flex:1; } .announcement-copy p { margin:0; }
 .inbox-head { display:flex; align-items:center; gap:8px; }
 .inbox-dot { width:8px; height:8px; border-radius:50%; background:var(--accent); }
+
+/* ---------- 视图路由 / 入口页 / 主页 / 功能页 ---------- */
+.view { padding-bottom:24px; animation:fadeIn .22s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+body:not(.entered) .header-actions { display:none; }
+
+/* 入口页 */
+.landing-wrap { min-height:72vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:14px; padding:24px 0; }
+.landing-star { position:relative; width:96px; height:96px; border-radius:50%; background:var(--grad); display:flex; align-items:center; justify-content:center; border:3px solid var(--ink); box-shadow:var(--card-sh),0 0 50px var(--glow); }
+.landing-star::after { content:""; position:absolute; inset:-12px; border:2px dashed color-mix(in srgb, var(--accent) 50%, transparent); border-radius:50%; animation:spin 22s linear infinite; }
+.landing-star span { font-size:40px; color:var(--accent-ink); text-shadow:0 3px 0 color-mix(in srgb, var(--accent-ink) 40%, transparent); }
+.landing-eyebrow { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:11px; letter-spacing:.18em; }
+.landing-wrap h1 { font-size:clamp(30px,6vw,46px); margin:0; }
+.landing-wrap h1 em { color:var(--accent); }
+.landing-sub { color:var(--muted); max-width:430px; line-height:1.7; margin:0; }
+.button-xl { padding:16px 36px; font-size:17px; }
+.landing-foot { color:var(--muted); font-size:12px; letter-spacing:.04em; }
+
+/* 主页 */
+.hub-header { text-align:center; padding:18px 0 6px; }
+.hub-header h2 { font-size:clamp(24px,5vw,34px); margin:6px 0 4px; }
+.hub-header p { color:var(--muted); margin:0; font-size:13px; }
+.hub-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; padding:16px 0; }
+@media (min-width:640px) { .hub-grid { grid-template-columns:repeat(3,1fr); } }
+@media (min-width:960px) { .hub-grid { grid-template-columns:repeat(4,1fr); } }
+.hub-card { display:flex; flex-direction:column; align-items:flex-start; gap:4px; background:var(--card); border:var(--border); border-radius:var(--r); box-shadow:var(--card-sh); padding:16px; cursor:pointer; text-align:left; transition:.15s; }
+.hub-card:hover { transform:translate(1px,-1px); border-color:var(--accent); }
+.hub-card b { font-size:15px; color:var(--ink); }
+.hub-card small { color:var(--muted); font-size:10px; letter-spacing:.08em; }
+.hub-icon { font-size:24px; }
+.hub-admin { border-color:color-mix(in srgb, var(--accent) 60%, var(--ink)); }
+.home-foot { display:flex; justify-content:space-between; color:var(--muted); font-size:11px; padding:8px 2px; flex-wrap:wrap; gap:6px; }
+.home-foot .quote-bar { margin:16px 0 6px; }
+
+/* 功能页头 */
+.page-head { margin:16px 0 18px; display:flex; flex-direction:column; gap:10px; }
+.page-head h2 { font-size:clamp(22px,5vw,30px); margin:0; }
+.page-head p { color:var(--muted); font-size:13px; margin:4px 0 0; max-width:560px; }
+.back-link { align-self:flex-start; background:var(--card2); border:var(--border); border-radius:999px; color:var(--muted); font-size:12px; padding:7px 16px; cursor:pointer; }
+.back-link:hover { color:var(--ink); border-color:var(--accent); }
+
+/* 风格页 */
+.theme-swatches-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+@media (min-width:640px) { .theme-swatches-grid { grid-template-columns:repeat(3,1fr); } }
+.theme-swatch { display:flex; align-items:center; gap:10px; background:var(--card); border:var(--border); border-radius:var(--r); box-shadow:var(--card-sh); padding:12px 14px; cursor:pointer; }
+.theme-swatch i { width:26px; height:26px; border-radius:8px; border:2px solid var(--ink); flex:none; }
+.theme-swatch b { font-size:13px; color:var(--ink); }
+.theme-swatch.is-active { outline:3px solid var(--accent); outline-offset:2px; }
+
+/* 关于页 */
+.about-card { background:var(--card); border:var(--border); border-radius:var(--r); box-shadow:var(--card-sh); padding:22px; }
+.about-brand { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.about-brand strong { font-size:16px; }
+.about-brand small { color:var(--muted); font-size:11px; display:block; }
+.about-card > p { color:var(--muted); font-size:13px; line-height:1.7; margin:10px 0; }
+.about-actions { display:flex; align-items:center; gap:12px; margin-top:14px; flex-wrap:wrap; }
+.about-foot { margin-top:18px; color:var(--muted); font-size:11px; letter-spacing:.05em; }
