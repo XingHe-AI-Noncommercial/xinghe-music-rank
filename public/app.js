@@ -1004,9 +1004,24 @@
   $$('.hub-card[data-nav]').forEach(card => card.addEventListener('click', () => go(card.dataset.nav)));
   $$('[data-back]').forEach(btn => btn.addEventListener('click', () => go(btn.dataset.back)));
   $('#hub-admin')?.addEventListener('click', openAdmin);
-  $('#hub-birthday')?.addEventListener('click', () => showModal('birthday-modal'));
   // 进入网站前，品牌 logo 不能绕过入口
   document.querySelector('.brand')?.addEventListener('click', e => { if (!document.body.classList.contains('entered')) e.preventDefault(); });
+
+  // ---------- 开发者后台：平板模式（默认）/ 手机模式 ----------
+  function applyAdminMode(mode) {
+    const shell = document.querySelector('#admin-modal .admin-shell');
+    if (shell) { shell.classList.toggle('mode-phone', mode === 'phone'); shell.classList.toggle('mode-tablet', mode !== 'phone'); }
+    const btn = $('#admin-mode-toggle');
+    if (btn) btn.textContent = mode === 'phone' ? '📱 平板模式' : '📱 手机模式';
+  }
+  let adminMode = 'tablet';
+  try { adminMode = localStorage.getItem('xh-admin-mode') || 'tablet'; } catch {}
+  $('#admin-mode-toggle')?.addEventListener('click', () => {
+    adminMode = adminMode === 'phone' ? 'tablet' : 'phone';
+    try { localStorage.setItem('xh-admin-mode', adminMode); } catch {}
+    applyAdminMode(adminMode);
+  });
+  applyAdminMode(adminMode);
 
   // ---------- 启动 ----------
   route();
