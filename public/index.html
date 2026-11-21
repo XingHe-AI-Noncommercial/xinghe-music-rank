@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN" data-theme="netease">
+<html lang="zh-CN" data-theme="huanghong">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -26,6 +26,7 @@
         <button id="theme-toggle" class="theme-toggle" title="切换页面风格" aria-label="切换页面风格">🎨</button>
         <div id="theme-menu" class="theme-menu hidden">
           <p class="theme-menu-title">选择页面风格</p>
+          <button class="theme-swatch is-active" data-theme="huanghong"><i style="background:linear-gradient(135deg,#ff3d2e,#ffc233)"></i><b>黄红 · 默认</b></button>
           <button class="theme-swatch" data-theme="netease"><i style="background:linear-gradient(135deg,#1f8a5f,#5fd9a4)"></i><b>网易青绿</b></button>
           <button class="theme-swatch" data-theme="tencent"><i style="background:linear-gradient(135deg,#1f6feb,#63b3ff)"></i><b>腾讯蓝</b></button>
           <button class="theme-swatch" data-theme="classic"><i style="background:linear-gradient(135deg,#ff5a4e,#ffb800)"></i><b>经典红金</b></button>
@@ -45,15 +46,23 @@
     <section class="hero-panel">
       <div class="hero-copy">
         <div class="eyebrow"><span class="eyebrow-line"></span> WEEKLY BILIBILI COLLECTION <span id="week-label" class="week-chip">本周</span></div>
-        <h1>每周一颗星，<br>为 <em>这一周</em> 而亮。</h1>
+        <h1>推开 <em>任意门</em>，<br>为这一周留一颗星。</h1>
         <p class="hero-subtitle">投稿你喜欢的 B 站视频（BV 号 / 作者名 / 视频名）。每天每 IP 限投 1 个，开发者审核通过后才上架；开发者可一键复制全部 BV 号。</p>
         <div class="hero-cta"><a class="button button-primary" href="#submit">立即投稿 <span>↓</span></a><button class="button button-outline" id="open-admin-dev">开发者模式</button></div>
         <div class="hero-footnote"><span class="tiny-spark">✦</span> 每周一 00:00 清空 · 每天每 IP 限 1 个 · 通过审核才上架 · 不上传音频</div>
       </div>
       <div class="hero-art" aria-hidden="true">
-        <div class="orbit orbit-1"></div><div class="orbit orbit-2"></div><div class="orbit orbit-3"></div>
-        <div class="orbit-core"><span class="core-star">♫</span><span class="core-caption">WEEK<br>RESET</span></div>
-        <div class="floating-note note-a">♫</div><div class="floating-note note-b">♪</div><div class="floating-note note-c">✧</div>
+        <div class="door-glow"></div>
+        <div class="orbit orbit-1"></div><div class="orbit orbit-2"></div>
+        <div class="portal-door">
+          <span class="door-arch"></span>
+          <span class="door-panel door-panel-a"></span>
+          <span class="door-panel door-panel-b"></span>
+          <span class="door-handle"></span>
+          <span class="door-sign">XH · DOOR</span>
+        </div>
+        <span class="float-note n1">♫</span><span class="float-note n2">♪</span><span class="float-note n3">✦</span>
+        <span class="star s1">✧</span><span class="star s2">✧</span><span class="star s3">✧</span>
         <div class="art-label label-top">XH / LITE</div><div class="art-label label-bottom">SUBMIT · REVIEW · COPY</div>
       </div>
       <div class="hero-index"><span>01</span><span class="index-line"></span><span>03</span></div>
