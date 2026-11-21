@@ -56,6 +56,7 @@ function renderPage(wish, found) {
     motif: String(theme.motif || st.motif).slice(0, 4), dark: st.dark,
   };
   const aiMessage = String(theme.message || '').slice(0, 120);
+  const aiImage = found && theme.image && String(theme.image).length < 500000 ? String(theme.image) : '';
   const safeName = esc(name);
   const safeCustom = esc(custom);
   const safeAi = esc(aiMessage);
@@ -111,6 +112,8 @@ function renderPage(wish, found) {
   .wish { font-size:16px; line-height:1.8; margin:16px auto 6px; min-height:3.2em; transition:opacity .4s; }
   .wish.fade { opacity:0; }
   .custom { margin-top:10px; padding:10px 12px; border:2px solid ${c.secondary}; background:${c.secondary}18; font-size:14px; line-height:1.7; }
+  .bday-img { margin:4px 0 14px; }
+  .bday-img img { width:100%; max-height:250px; object-fit:cover; border:2px solid ${c.ink}; display:block; background:${c.paper}; }
   .btn { margin-top:14px; border:2px solid ${c.ink}; background:${c.paper}; color:${c.ink}; font-weight:900; font-size:13px; padding:9px 16px; cursor:pointer; box-shadow:3px -3px 0 ${c.ink},6px -6px 0 ${c.ink}22; font-family:inherit; }
   .btn:hover { transform:translate(-1px,1px); }
   .btn.primary { background:${c.accent}; color:${c.dark ? '#1a1020' : '#fff'}; border-color:${c.accent}; box-shadow:3px -3px 0 ${c.accent}cc,6px -6px 0 ${c.ink}22; }
@@ -130,6 +133,7 @@ function renderPage(wish, found) {
     <div class="eyebrow">HAPPY BIRTHDAY</div>
     <h1>${found ? '生日快乐，<span class="name">' + safeName + '</span>！' : '生日快乐！'}</h1>
     ${found ? '<div class="to-line">TO · ' + safeName + '</div>' : ''}
+    ${aiImage ? '<div class="bday-img"><img src="' + esc(aiImage) + '" alt="生日贺图" loading="lazy" onerror="this.parentNode.remove()"></div>' : ''}
     <p id="wish" class="wish">${found ? (aiMessage ? safeAi : '祝你生日快乐，愿你所有美好都如期而至。') : '这条祝福不存在或已失效。'}</p>
     ${found && safeCustom ? '<div class="custom">✦ ' + safeCustom + '</div>' : ''}
     ${found ? '<button id="again" class="btn primary">再换一句祝福 ✦</button>' : ''}
