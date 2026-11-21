@@ -11,124 +11,155 @@
 </head>
 <body>
   <div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
+
   <header class="site-header">
     <div class="brand-left">
-      <a class="brand" href="#top" aria-label="星河音浪榜主页">
+      <a class="brand" href="#/home" aria-label="星河音浪榜主页">
         <span class="brand-mark">✦</span>
         <span class="brand-text"><strong>星河音浪榜</strong><small>XINGHE MUSIC CHART · LITE</small></span>
       </a>
-      <button class="version-chip" id="version-chip" type="button" title="查看更新日志"><b>v1.14.1</b><span>更新日志</span></button>
+      <button class="version-chip" id="version-chip" type="button" title="查看更新日志"><b>v1.14.3</b><span>更新日志</span></button>
     </div>
-    <nav class="main-nav"><a class="nav-active" href="#list">本周榜单</a><a href="#submit">投稿</a><a href="#about">规则说明</a></nav>
     <div class="header-actions">
       <span id="header-live" class="live-pill"><i></i>正在连接</span>
-      <div class="theme-wrap">
-        <button id="theme-toggle" class="theme-toggle" title="切换页面风格" aria-label="切换页面风格">🎨</button>
-        <div id="theme-menu" class="theme-menu hidden">
-          <p class="theme-menu-title">选择页面风格</p>
-          <button class="theme-swatch is-active" data-theme="retro"><i style="background:linear-gradient(135deg,#d5342a,#e07b1f)"></i><b>复古 · 默认</b></button>
-          <button class="theme-swatch" data-theme="huanghong"><i style="background:linear-gradient(135deg,#ff3d2e,#ffc233)"></i><b>黄红</b></button>
-          <button class="theme-swatch" data-theme="netease"><i style="background:linear-gradient(135deg,#1f8a5f,#5fd9a4)"></i><b>网易青绿</b></button>
-          <button class="theme-swatch" data-theme="tencent"><i style="background:linear-gradient(135deg,#1f6feb,#63b3ff)"></i><b>腾讯蓝</b></button>
-          <button class="theme-swatch" data-theme="classic"><i style="background:linear-gradient(135deg,#ff5a4e,#ffb800)"></i><b>经典红金</b></button>
-          <button class="theme-swatch" data-theme="starry"><i style="background:linear-gradient(135deg,#7c5cff,#b388ff)"></i><b>星空紫</b></button>
-          <button class="theme-swatch" data-theme="pastel"><i style="background:linear-gradient(135deg,#ff7ba9,#ffd166)"></i><b>粉彩</b></button>
-          <button class="theme-swatch" data-theme="neon"><i style="background:linear-gradient(135deg,#ff4ea0,#4df3ff)"></i><b>霓虹</b></button>
-          <button class="theme-swatch" data-theme="ocean"><i style="background:linear-gradient(135deg,#2196c9,#4fc3f7)"></i><b>海盐蓝</b></button>
-        </div>
-      </div>
+      <button id="theme-toggle" class="theme-toggle" title="切换页面风格" aria-label="切换页面风格">🎨</button>
       <button class="button button-quiet inbox-btn" id="open-inbox" aria-label="收件箱">📬<span id="inbox-badge" class="inbox-badge hidden">0</span></button>
       <button class="button button-quiet" id="open-games">🎮 小游戏</button>
       <button class="button button-quiet" id="open-admin">开发者模式 ↗</button>
     </div>
   </header>
 
-  <div class="quote-bar" aria-hidden="true"><span class="quote-label">✦ 音浪语录</span><div class="quote-marquee"><div class="quote-track" id="quote-track"></div></div></div>
-
   <main id="top" class="page-shell">
-    <section class="hero-panel">
-      <div class="hero-copy">
-        <div class="eyebrow"><span class="eyebrow-line"></span> WEEKLY BILIBILI COLLECTION <span id="week-label" class="week-chip">本周</span></div>
-        <h1>为这一周，<br>留一颗 <em>星</em>。</h1>
-        <p class="hero-subtitle">投稿你喜欢的 B 站视频（BV 号 / 作者名 / 视频名）。每天每 IP 限投 1 个，开发者审核通过后才上架。</p>
-        <div class="hero-cta"><a class="button button-primary" href="#submit">立即投稿 <span>↓</span></a><a class="button button-outline" href="#list">看本周榜单</a></div>
-        <div class="hero-footnote"><span class="tiny-spark">✦</span> 每周一 00:00 清空 · 每天每 IP 限 1 个 · 通过审核才上架 · 不上传音频</div>
+
+    <!-- ① 入口页：进入网站 -->
+    <section class="view" data-view="landing">
+      <div class="landing-wrap">
+        <div class="landing-star" aria-hidden="true"><span>♫</span></div>
+        <div class="landing-eyebrow"><span class="eyebrow-line"></span> XINGHE MUSIC CHART · LITE</div>
+        <h1>星河音浪榜</h1>
+        <p class="landing-sub">一个每周一清空的 B 站视频投稿榜单。投稿、审核、一键复制，都在里面。</p>
+        <button id="enter-site" class="button button-primary button-xl" type="button">进入网站 <span>→</span></button>
+        <div class="landing-foot"><span>✦</span> v1.14.3 · 每周重置 · 每天每 IP 1 个 · 通过审核才上架</div>
       </div>
-      <div class="hero-art" aria-hidden="true">
-        <div class="hero-glow"></div>
-        <div class="orbit orbit-1"></div><div class="orbit orbit-2"></div>
-        <div class="hero-star"><span>♫</span></div>
-        <span class="float-note n1">♪</span><span class="float-note n2">♩</span><span class="float-note n3">✦</span>
-        <span class="star s1">✧</span><span class="star s2">✧</span><span class="star s3">✧</span>
-        <div class="art-label label-top">XH / LITE</div><div class="art-label label-bottom">SUBMIT · REVIEW · LISTEN</div>
-      </div>
-      <div class="hero-index"><span>01</span><span class="index-line"></span><span>02</span></div>
     </section>
 
-    <div class="content-grid">
-      <!-- 左栏：投稿 / 公告 / 快捷 -->
-      <div class="content-side">
-        <section id="submit" class="add-section side-card">
-          <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> SUBMIT A VIDEO</div><h2>投稿一个视频 <span class="top-tag">待审核</span></h2><p>填 BV 号、作者名、视频名。每天每 IP 限投 1 个，提交后由开发者审核。</p></div></div>
-          <form id="submit-form" class="submit-form">
-            <label class="wide">B 站 BV 号（只填 BV 号，不要粘贴链接）<input name="bvid" maxlength="120" required placeholder="BVXXXXXXXXXX" autocomplete="off"></label>
-            <label>作者名<input name="artist" maxlength="100" placeholder="作者 / UP 主" autocomplete="off"></label>
-            <label>视频名<input name="title" maxlength="100" required placeholder="视频标题 / 歌名" autocomplete="off"></label>
-            <button class="button button-primary" type="submit">提交审核 <span>→</span></button>
-          </form>
-          <p id="submit-status" class="submit-status">还未投稿，今天可以投 1 个。</p>
-        </section>
-
-        <section id="announcement-board" class="announcement-board hidden" aria-label="公告栏">
-          <div class="announcement-head"><div class="eyebrow"><span class="eyebrow-line"></span> NOTICE BOARD</div><h3>公告栏</h3><span id="announcement-count" class="top-tag">0 条</span></div>
-          <div id="announcement-list" class="announcement-list"></div>
-        </section>
-
-        <section class="quick-strip" aria-label="快捷操作">
-          <div class="eyebrow"><span class="eyebrow-line"></span> QUICK ACCESS</div>
-          <div class="quick-grid">
-            <a class="quick-btn quick-primary" href="#submit"><span class="quick-icon">✎</span><b>立即投稿</b><small>SUBMIT</small></a>
-            <a class="quick-btn" href="#list"><span class="quick-icon">♛</span><b>本周榜单</b><small>RANKING</small></a>
-            <a class="quick-btn" href="#about"><span class="quick-icon">§</span><b>规则说明</b><small>RULES</small></a>
-            <button class="quick-btn" id="quick-announcement" type="button"><span class="quick-icon">✦</span><b>公告栏</b><small>NOTICE</small></button>
-            <button class="quick-btn" id="quick-games" type="button"><span class="quick-icon">🎮</span><b>小游戏</b><small>GAMES</small></button>
-            <button class="quick-btn" id="quick-inbox" type="button"><span class="quick-icon">📬</span><b>收件箱</b><small>INBOX</small></button>
-          </div>
-        </section>
+    <!-- ② 主页：功能指引，每个功能一个按钮 -->
+    <section class="view hidden" data-view="home">
+      <div class="hub-header">
+        <div class="eyebrow"><span class="eyebrow-line"></span> GUIDE <span id="week-label" class="week-chip">本周</span></div>
+        <h2>今天想做点什么？</h2>
+        <p>点一个功能，直接进入对应页面。</p>
       </div>
-
-      <!-- 右栏：指标 + 榜单 -->
-      <div class="content-main">
-        <section class="metrics-grid" aria-label="站点概况">
-          <article class="metric-card metric-feature"><div class="metric-top"><span>本周上架</span><span class="metric-icon">◈</span></div><strong id="metric-approved">—</strong><div class="metric-bottom"><span>审核通过的视频</span><span class="metric-accent">LISTED</span></div></article>
-          <article class="metric-card"><div class="metric-top"><span>待审核</span><span class="metric-icon">⏳</span></div><strong id="metric-pending">—</strong><div class="metric-bottom"><span>等待开发者处理</span><span class="metric-accent">PENDING</span></div></article>
-          <article class="metric-card"><div class="metric-top"><span>今日可投</span><span class="metric-icon">⌁</span></div><strong id="metric-submit" class="metric-tier">—</strong><div class="metric-bottom"><span id="metric-submit-sub">每天每 IP 1 个</span><span class="metric-accent">TODAY</span></div></article>
-        </section>
-
-        <section id="list" class="ranking-section">
-          <div class="ranking-header">
-            <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> THIS WEEK</div><h2>本周榜单 <span id="list-total" class="top-tag">0 个</span></h2><p>仅显示审核通过的作品；BV 号对外一律以掩码显示，不提供 B 站跳转。</p></div></div>
-            <div class="ranking-tools"><input id="search-box" class="search-input" type="text" placeholder="搜索歌曲 / 作者 / BV号…" aria-label="搜索榜单"><button id="share-list" class="chip-action">📤 分享本周</button><button id="fav-filter" class="chip-action">❤ 只看收藏</button><span id="week-chip" class="week-chip">本周周期：—</span><button id="refresh-button" class="icon-button" title="刷新榜单" aria-label="刷新榜单">⟳</button></div>
-          </div>
-          <div id="list-grid" class="collection-grid"><div class="loading-panel"><span class="loader"></span> 正在加载本周榜单…</div></div>
-          <div id="empty-list" class="empty-state hidden"><span>⌕</span><strong>本周还是空的</strong><p>投一个视频，或等开发者上架；每周一 00:00 清空。</p></div>
-          <div class="ranking-footer"><span><i class="tiny-dot"></i> 只有审核通过的作品才会被计入开发者的一键复制</span><span id="list-count">共 0 个</span></div>
-        </section>
+      <div class="hub-grid">
+        <button class="hub-card" data-nav="submit" type="button"><span class="hub-icon">📝</span><b>投稿</b><small>SUBMIT A VIDEO</small></button>
+        <button class="hub-card" data-nav="rank" type="button"><span class="hub-icon">🏆</span><b>本周榜单</b><small>THIS WEEK'S RANKING</small></button>
+        <button class="hub-card" data-nav="notices" type="button"><span class="hub-icon">📢</span><b>公告栏</b><small>NOTICE BOARD</small></button>
+        <button class="hub-card" data-nav="games" type="button"><span class="hub-icon">🎮</span><b>小游戏</b><small>MINI GAMES</small></button>
+        <button class="hub-card" data-nav="inbox" type="button"><span class="hub-icon">📬</span><b>收件箱</b><small>MESSAGES</small></button>
+        <button class="hub-card" data-nav="theme" type="button"><span class="hub-icon">🎨</span><b>页面风格</b><small>THEMES</small></button>
+        <button class="hub-card" data-nav="rules" type="button"><span class="hub-icon">§</span><b>规则说明</b><small>HOW IT WORKS</small></button>
+        <button class="hub-card" data-nav="about" type="button"><span class="hub-icon">❓</span><b>关于 / 更新日志</b><small>ABOUT</small></button>
+        <button class="hub-card" id="hub-birthday" type="button"><span class="hub-icon">🎂</span><b>生日祝福</b><small>BIRTHDAY</small></button>
+        <button class="hub-card hub-admin" id="hub-admin" type="button"><span class="hub-icon">🛠</span><b>开发者模式</b><small>DEV CONSOLE</small></button>
       </div>
-    </div>
-
-    <section id="about" class="rules-section">
-      <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> HOW IT WORKS</div><h2>规则说明</h2><p>一个每周重置的 B 站视频投稿榜。</p></div></div>
-      <div class="rules-grid">
-        <article class="rule-card"><span class="rule-number">01</span><span class="rule-icon">⟳</span><h3>每周一清空</h3><p>每周一北京时间 00:00，全部作品清空，重新开始新的一周。</p><div class="rule-example"><span>周期</span><strong>周一重置</strong></div></article>
-        <article class="rule-card"><span class="rule-number">02</span><span class="rule-icon">⌁</span><h3>每天每 IP 1 个</h3><p>同一 IP 每天最多投稿 1 个作品；被拒绝后当天可重新提交。</p><div class="rule-example"><span>限额</span><strong>1 / 天</strong></div></article>
-        <article class="rule-card"><span class="rule-number">03</span><span class="rule-icon">⏳</span><h3>需审核上架</h3><p>投稿先进待审核；开发者通过后才显示在榜单、才被复制。</p><div class="rule-example"><span>流程</span><strong>先审后上</strong></div></article>
-        <article class="rule-card"><span class="rule-number">04</span><span class="rule-icon">⧉</span><h3>一键复制 BV</h3><p>开发者模式可复制全部已上架作品的掩码 BV 号，中间用逗号分隔。</p><div class="rule-example"><span>仅含</span><strong>已上架</strong></div></article>
-      </div>
-      <div class="formula-strip"><span class="formula-icon">∑</span><div><strong>每周重置 · 投稿需审核 · 开发者一键复制</strong><small>周一 00:00 清空 · 每天每 IP 1 个 · 通过审核才上架 · BV 号对外掩码显示 · 不上传音频、不使用 R2。</small></div><span class="formula-eq">LITE ENGINE / XH</span></div>
+      <div class="quote-bar" aria-hidden="true"><span class="quote-label">✦ 音浪语录</span><div class="quote-marquee"><div class="quote-track" id="quote-track"></div></div></div>
+      <div class="home-foot"><span>星河音浪榜 · 为这一周留一颗星</span><span>© <span id="current-year">2026</span> · v1.14.3</span></div>
     </section>
 
-    <footer class="site-footer"><div class="footer-brand"><span class="footer-star">✦</span><span><strong>星河音浪榜 · 精简版</strong><small>XINGHE MUSIC CHART · LITE</small></span></div><p>为这一周，留一颗星的位置。</p><div class="footer-right"><span>WEEKLY COMMUNITY PROJECT</span><span>© <span id="current-year">2026</span> XINGHE · v1.14.1</span></div></footer>
+    <!-- ③ 投稿页 -->
+    <section class="view hidden" data-view="submit">
+      <div class="page-head"><button class="back-link" data-back="home" type="button">← 返回主页</button><div class="eyebrow"><span class="eyebrow-line"></span> SUBMIT A VIDEO</div><h2>投稿一个视频 <span class="top-tag">待审核</span></h2><p>填 BV 号、作者名、视频名。每天每 IP 限投 1 个，提交后由开发者审核。</p></div>
+      <section id="submit" class="add-section">
+        <form id="submit-form" class="submit-form">
+          <label class="wide">B 站 BV 号（只填 BV 号，不要粘贴链接）<input name="bvid" maxlength="120" required placeholder="BVXXXXXXXXXX" autocomplete="off"></label>
+          <label>作者名<input name="artist" maxlength="100" placeholder="作者 / UP 主" autocomplete="off"></label>
+          <label>视频名<input name="title" maxlength="100" required placeholder="视频标题 / 歌名" autocomplete="off"></label>
+          <button class="button button-primary" type="submit">提交审核 <span>→</span></button>
+        </form>
+        <p id="submit-status" class="submit-status">还未投稿，今天可以投 1 个。</p>
+      </section>
+    </section>
+
+    <!-- ④ 榜单页 -->
+    <section class="view hidden" data-view="rank">
+      <div class="page-head"><button class="back-link" data-back="home" type="button">← 返回主页</button><div class="eyebrow"><span class="eyebrow-line"></span> THIS WEEK</div><h2>本周榜单 <span id="list-total" class="top-tag">0 个</span></h2><p>仅显示审核通过的作品；BV 号对外一律以掩码显示，不提供 B 站跳转。</p></div>
+      <section class="metrics-grid" aria-label="站点概况">
+        <article class="metric-card metric-feature"><div class="metric-top"><span>本周上架</span><span class="metric-icon">◈</span></div><strong id="metric-approved">—</strong><div class="metric-bottom"><span>审核通过的视频</span><span class="metric-accent">LISTED</span></div></article>
+        <article class="metric-card"><div class="metric-top"><span>待审核</span><span class="metric-icon">⏳</span></div><strong id="metric-pending">—</strong><div class="metric-bottom"><span>等待开发者处理</span><span class="metric-accent">PENDING</span></div></article>
+        <article class="metric-card"><div class="metric-top"><span>今日可投</span><span class="metric-icon">⌁</span></div><strong id="metric-submit" class="metric-tier">—</strong><div class="metric-bottom"><span id="metric-submit-sub">每天每 IP 1 个</span><span class="metric-accent">TODAY</span></div></article>
+      </section>
+      <section id="list" class="ranking-section">
+        <div class="ranking-tools"><input id="search-box" class="search-input" type="text" placeholder="搜索歌曲 / 作者 / BV号…" aria-label="搜索榜单"><button id="share-list" class="chip-action">📤 分享本周</button><button id="fav-filter" class="chip-action">❤ 只看收藏</button><span id="week-chip" class="week-chip">本周周期：—</span><button id="refresh-button" class="icon-button" title="刷新榜单" aria-label="刷新榜单">⟳</button></div>
+        <div id="list-grid" class="collection-grid"><div class="loading-panel"><span class="loader"></span> 正在加载本周榜单…</div></div>
+        <div id="empty-list" class="empty-state hidden"><span>⌕</span><strong>本周还是空的</strong><p>投一个视频，或等开发者上架；每周一 00:00 清空。</p></div>
+        <div class="ranking-footer"><span><i class="tiny-dot"></i> 只有审核通过的作品才会被计入开发者的一键复制</span><span id="list-count">共 0 个</span></div>
+      </section>
+    </section>
+
+    <!-- ⑤ 公告页 -->
+    <section class="view hidden" data-view="notices">
+      <div class="page-head"><button class="back-link" data-back="home" type="button">← 返回主页</button><div class="eyebrow"><span class="eyebrow-line"></span> NOTICE BOARD</div><h2>公告栏 <span id="announcement-count" class="top-tag">0 条</span></h2><p>来自开发者的公告，所有访客可见。</p></div>
+      <section id="announcement-board" class="announcement-board">
+        <div id="announcement-list" class="announcement-list"></div>
+      </section>
+    </section>
+
+    <!-- ⑥ 小游戏页 -->
+    <section class="view hidden" data-view="games">
+      <div class="page-head"><button class="back-link" data-back="home" type="button">← 返回主页</button><div class="eyebrow"><span class="eyebrow-line"></span> MINI GAMES</div><h2>小游戏</h2><p>经典小游戏合集，点一个就能玩。手机支持点按 / 滑动操作。</p></div>
+      <div id="games-grid" class="games-grid"></div>
+    </section>
+
+    <!-- ⑦ 收件箱页 -->
+    <section class="view hidden" data-view="inbox">
+      <div class="page-head"><button class="back-link" data-back="home" type="button">← 返回主页</button><div class="eyebrow"><span class="eyebrow-line"></span> MESSAGES</div><h2>收件箱</h2><p>这里会收到投稿审核结果等消息，例如被拒绝时的理由。</p></div>
+      <div id="inbox-list" class="inbox-list"></div>
+      <div class="modal-actions"><button id="inbox-clear" class="button button-outline">全部标为已读</button></div>
+    </section>
+
+    <!-- ⑧ 风格页 -->
+    <section class="view hidden" data-view="theme">
+      <div class="page-head"><button class="back-link" data-back="home" type="button">← 返回主页</button><div class="eyebrow"><span class="eyebrow-line"></span> THEMES</div><h2>页面风格</h2><p>选一种喜欢的风格，整站立即切换并记住选择。</p></div>
+      <div id="theme-swatches" class="theme-swatches-grid">
+        <button class="theme-swatch is-active" data-theme="retro"><i style="background:linear-gradient(135deg,#d5342a,#e07b1f)"></i><b>复古 · 默认</b></button>
+        <button class="theme-swatch" data-theme="huanghong"><i style="background:linear-gradient(135deg,#ff3d2e,#ffc233)"></i><b>黄红</b></button>
+        <button class="theme-swatch" data-theme="netease"><i style="background:linear-gradient(135deg,#1f8a5f,#5fd9a4)"></i><b>网易青绿</b></button>
+        <button class="theme-swatch" data-theme="tencent"><i style="background:linear-gradient(135deg,#1f6feb,#63b3ff)"></i><b>腾讯蓝</b></button>
+        <button class="theme-swatch" data-theme="classic"><i style="background:linear-gradient(135deg,#ff5a4e,#ffb800)"></i><b>经典红金</b></button>
+        <button class="theme-swatch" data-theme="starry"><i style="background:linear-gradient(135deg,#7c5cff,#b388ff)"></i><b>星空紫</b></button>
+        <button class="theme-swatch" data-theme="pastel"><i style="background:linear-gradient(135deg,#ff7ba9,#ffd166)"></i><b>粉彩</b></button>
+        <button class="theme-swatch" data-theme="neon"><i style="background:linear-gradient(135deg,#ff4ea0,#4df3ff)"></i><b>霓虹</b></button>
+        <button class="theme-swatch" data-theme="ocean"><i style="background:linear-gradient(135deg,#2196c9,#4fc3f7)"></i><b>海盐蓝</b></button>
+      </div>
+    </section>
+
+    <!-- ⑨ 规则页 -->
+    <section class="view hidden" data-view="rules">
+      <div class="page-head"><button class="back-link" data-back="home" type="button">← 返回主页</button><div class="eyebrow"><span class="eyebrow-line"></span> HOW IT WORKS</div><h2>规则说明</h2><p>一个每周重置的 B 站视频投稿榜。</p></div>
+      <section id="about" class="rules-section">
+        <div class="rules-grid">
+          <article class="rule-card"><span class="rule-number">01</span><span class="rule-icon">⟳</span><h3>每周一清空</h3><p>每周一北京时间 00:00，全部作品清空，重新开始新的一周。</p><div class="rule-example"><span>周期</span><strong>周一重置</strong></div></article>
+          <article class="rule-card"><span class="rule-number">02</span><span class="rule-icon">⌁</span><h3>每天每 IP 1 个</h3><p>同一 IP 每天最多投稿 1 个作品；被拒绝后当天可重新提交。</p><div class="rule-example"><span>限额</span><strong>1 / 天</strong></div></article>
+          <article class="rule-card"><span class="rule-number">03</span><span class="rule-icon">⏳</span><h3>需审核上架</h3><p>投稿先进待审核；开发者通过后才显示在榜单、才被复制。</p><div class="rule-example"><span>流程</span><strong>先审后上</strong></div></article>
+          <article class="rule-card"><span class="rule-number">04</span><span class="rule-icon">⧉</span><h3>一键复制 BV</h3><p>开发者模式可复制全部已上架作品的掩码 BV 号，中间用逗号分隔。</p><div class="rule-example"><span>仅含</span><strong>已上架</strong></div></article>
+        </div>
+        <div class="formula-strip"><span class="formula-icon">∑</span><div><strong>每周重置 · 投稿需审核 · 开发者一键复制</strong><small>周一 00:00 清空 · 每天每 IP 1 个 · 通过审核才上架 · BV 号对外掩码显示 · 不上传音频、不使用 R2。</small></div><span class="formula-eq">LITE ENGINE / XH</span></div>
+      </section>
+    </section>
+
+    <!-- ⑩ 关于 / 更新日志页 -->
+    <section class="view hidden" data-view="about">
+      <div class="page-head"><button class="back-link" data-back="home" type="button">← 返回主页</button><div class="eyebrow"><span class="eyebrow-line"></span> ABOUT</div><h2>关于 · 更新日志</h2><p>星河音浪榜 · 版本记录。</p></div>
+      <section class="about-card">
+        <div class="about-brand"><span class="brand-mark">✦</span><span><strong>星河音浪榜 · 精简版</strong><small>XINGHE MUSIC CHART · LITE</small></span></div>
+        <p>一个每周一清空的 B 站视频投稿榜：投稿 → 开发者审核 → 上架 → 一键复制 BV 号。每天每 IP 限投 1 个，通过审核才显示。</p>
+        <div class="changelog-list">
+          <div class="changelog-item is-current"><code>v1.14.3</code><div><b>本次更新</b><p>修复了已知 bug，优化了使用体验，新增了若干功能。</p></div></div>
+        </div>
+        <div class="about-actions"><a class="button button-outline" href="mailto:xinghe-ai@outlook.com">✉ 联系开发者</a><span class="copy-count">xinghe-ai@outlook.com</span></div>
+        <div class="about-foot">© <span id="current-year-2">2026</span> XINGHE · v1.14.3 · WEEKLY COMMUNITY PROJECT</div>
+      </section>
+    </section>
   </main>
 
   <!-- 左下角：联系开发者 -->
@@ -175,15 +206,11 @@
 
           <div id="admin-view-overview" class="admin-view">
             <div id="admin-kpi-grid" class="admin-kpi-grid"></div>
-
-            <!-- 一键复制（只含已审核通过） -->
             <section class="admin-card copy-card">
               <div class="admin-card-title"><div><span class="mini-label">COPY BV NUMBERS</span><h3>一键复制全部 BV 号</h3><p class="admin-card-subtitle">只复制<b>已审核通过（上架）</b>的作品；待审核 / 已拒绝的不包含在内。这里复制的是<b>真实 BV 号</b>（仅开发者后台可见），中间用逗号分隔。</p></div></div>
               <div class="copy-row"><button id="copy-bv" class="button button-primary">⧉ 复制全部 BV 号</button><span id="copy-bv-count" class="copy-count">已上架 0 个</span></div>
               <pre id="bv-preview" class="bv-preview">（暂无已上架作品）</pre>
             </section>
-
-            <!-- 快速上架（不限次数） -->
             <section class="admin-card">
               <div class="admin-card-title"><div><span class="mini-label">QUICK LIST</span><h3>开发者快速上架（不限次数）</h3><p class="admin-card-subtitle">开发者上架 = 已同意审核，直接通过，不受每天 1 个限制。</p></div></div>
               <form id="admin-add-form" class="admin-add-form">
@@ -193,8 +220,6 @@
                 <button class="button button-primary" type="submit">＋ 直接上架</button>
               </form>
             </section>
-
-            <!-- 站点工具：维护开关 + 清除已拒绝 -->
             <section class="admin-card">
               <div class="admin-card-title"><div><span class="mini-label">SITE TOOLS</span><h3>站点工具</h3><p class="admin-card-subtitle">一键开启 / 关闭网站维护；清除已拒绝投稿。</p></div></div>
               <div class="copy-row">
@@ -216,8 +241,6 @@
                 </form>
               </div>
             </section>
-
-            <!-- 公告栏：管理员发布公告 -->
             <section class="admin-card">
               <div class="admin-card-title"><div><span class="mini-label">NOTICE BOARD</span><h3>公告栏</h3><p class="admin-card-subtitle">发布后显示在网站首页公告栏，所有访客可见；新公告排最前。</p></div><span id="admin-announcement-count" class="admin-card-badge">0 条</span></div>
               <form id="admin-announcement-form" class="admin-add-form">
@@ -226,8 +249,6 @@
               </form>
               <div id="admin-announcement-list" class="admin-announcement-list"></div>
             </section>
-
-            <!-- IP 封禁：显示访客公网 IP + 进入/投稿，可选中封禁；支持模拟封禁预览 -->
             <section class="admin-card">
               <div class="admin-card-title"><div><span class="mini-label">IP BAN</span><h3>IP 封禁</h3><p class="admin-card-subtitle">每个用户进入网站或投稿都会记录他的公网 IP。在下方列表中选中一个 IP，点「封禁」填好时效即可封号；被封 IP 访问时看到封禁页。</p></div><span id="admin-ban-count" class="admin-card-badge">0 条</span></div>
               <div id="admin-ip-list" class="admin-ip-list"></div>
@@ -283,7 +304,7 @@
     </div>
   </div>
 
-  <!-- 网站维护中遮罩（默认隐藏；/api/state 返回 maintenance:true 时显示） -->
+  <!-- 网站维护中遮罩 -->
   <section id="maintenance-screen" class="maintenance-screen hidden" aria-label="网站维护中">
     <header class="maintenance-head">
       <span class="brand-mark">✦</span>
@@ -297,7 +318,7 @@
     </div>
   </section>
 
-  <!-- IP 封禁页（真实封禁命中或开发者模拟预览时显示）：动态下滑 + 中央三角警告 -->
+  <!-- IP 封禁页 -->
   <section id="ban-screen" class="ban-screen hidden" aria-label="IP 被封禁">
     <div class="ban-grid-bg" aria-hidden="true"></div>
     <div class="ban-slide">
@@ -318,17 +339,6 @@
 
   <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
   <button id="backtop" class="backtop" title="返回顶部" aria-label="返回顶部">↑</button>
-
-  <!-- 小游戏：选择面板 -->
-  <div id="games-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="games-title">
-    <div class="modal-card games-modal-card">
-      <button class="modal-close" data-close="games-modal" aria-label="关闭">×</button>
-      <div class="modal-eyebrow">MINI GAMES / CLASSICS</div>
-      <h2 id="games-title">小游戏</h2>
-      <p class="modal-description">经典小游戏合集，点一个就能玩。手机支持点按 / 滑动操作。</p>
-      <div id="games-grid" class="games-grid"></div>
-    </div>
-  </div>
 
   <!-- 小游戏：单个游戏舞台 -->
   <div id="game-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="game-title">
@@ -354,19 +364,7 @@
     </div>
   </section>
 
-  <!-- 收件箱：投稿审核结果等消息 -->
-  <div id="inbox-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="inbox-title">
-    <div class="modal-card modal-narrow">
-      <button class="modal-close" data-close="inbox-modal" aria-label="关闭">×</button>
-      <div class="modal-eyebrow">MESSAGES / INBOX</div>
-      <h2 id="inbox-title">收件箱</h2>
-      <p class="modal-description">这里会收到投稿审核结果等消息，例如被拒绝时的理由。</p>
-      <div id="inbox-list" class="inbox-list"></div>
-      <div class="modal-actions"><button id="inbox-clear" class="button button-outline">全部标为已读</button></div>
-    </div>
-  </div>
-
-  <!-- 后台拒绝投稿：填写理由（发送到投稿人收件箱） -->
+  <!-- 后台拒绝投稿：填写理由 -->
   <div id="reject-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="reject-title">
     <div class="modal-card modal-narrow">
       <button class="modal-close" data-close="reject-modal" aria-label="关闭">×</button>
@@ -378,6 +376,7 @@
     </div>
   </div>
 
+  <!-- 生日祝福 -->
   <div id="birthday-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="birthday-title">
     <div class="modal-card modal-narrow">
       <button class="modal-close" data-close="birthday-modal" aria-label="关闭">×</button>
@@ -416,19 +415,6 @@
       <div class="modal-actions"><button class="button button-outline" data-close="birthday-modal">关闭</button><button class="button button-primary" id="birthday-create">生成生日祝福</button></div>
     </div>
   </div>
-
-  <div id="changelog-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="changelog-title">
-    <div class="modal-card modal-narrow">
-      <button class="modal-close" data-close="changelog-modal" aria-label="关闭">×</button>
-      <div class="modal-eyebrow"><span class="eyebrow-line"></span> CHANGELOG</div>
-      <h2 id="changelog-title">更新日志</h2>
-      <p class="modal-description">星河音浪榜 · 版本记录</p>
-      <div class="changelog-list">
-        <div class="changelog-item is-current"><code>v1.14.1</code><div><b>本次更新</b><p>修复了已知 bug，优化了使用体验，新增了若干功能。</p></div></div>
-      </div>
-    </div>
-  </div>
-
 
   <script src="./app.js" defer></script>
   <script src="./games.js" defer></script>
