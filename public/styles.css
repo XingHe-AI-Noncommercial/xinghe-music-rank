@@ -768,3 +768,6 @@ body:not(.entered) .header-actions { display:none; }
 .seq-btns { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; max-width:280px; margin:0 auto; }
 .seq-btn { width:52px; height:52px; border-radius:12px; background:var(--card2); border:var(--border); font-size:20px; font-weight:900; color:var(--ink); cursor:pointer; }
 .seq-btn:disabled { opacity:.35; cursor:default; }
+
+/* 维护开启时，后台登录/控制台必须显示在维护屏（z:200）之上 */
+#admin-login-modal, #admin-modal { z-index:210; }
