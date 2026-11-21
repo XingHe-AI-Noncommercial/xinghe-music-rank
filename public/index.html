@@ -358,6 +358,9 @@
             <input id="ai-model" type="text" placeholder="gpt-4o-mini">
             <label>寿星兴趣 / 关键词<span>例如：洛天依、蓝色、喜欢星星</span></label>
             <input id="ai-interest" type="text" maxlength="80" placeholder="例如：洛天依 · 蓝色 · 星星">
+            <label class="ai-image-opt"><input id="ai-image" type="checkbox"> 包含主题插画<span>AI 生成原创贺图（不复制任何真实角色/版权形象）</span></label>
+            <label>插画模型名<span>仅勾选插画时用，如 gpt-image-1 / dall-e-3</span></label>
+            <input id="ai-image-model" type="text" placeholder="gpt-image-1">
             <div class="ai-actions">
               <button class="button button-outline" id="ai-generate" type="button">✨ AI 生成主题</button>
               <span id="ai-status" class="ai-status"></span>
