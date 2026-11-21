@@ -200,7 +200,7 @@ export async function addBirthday(DB, { name, message, style, theme }) {
     message: String(message || '').slice(0, 80),
     style: ['classic', 'starry', 'pastel', 'forest', 'ocean', 'neon'].includes(style) ? style : 'classic',
     theme: theme && typeof theme === 'object' ? JSON.stringify(theme).slice(0, 500000) : '',
-    createdAt: isoNow(), visits: 0,
+    createdAt: isoNow(), visits: 0, disabled: false,
   };
   list.unshift(item);
   await setBirthdays(DB, list);
@@ -208,7 +208,17 @@ export async function addBirthday(DB, { name, message, style, theme }) {
 }
 export async function getBirthdayByToken(DB, token) {
   const list = await getBirthdays(DB);
-  return list.find(b => b.token === token) || null;
+  const item = list.find(b => b.token === token) || null;
+  // 已关停的链接视为失效
+  return item && item.disabled ? null : item;
+}
+export async function setBirthdayDisabled(DB, id, disabled) {
+  const list = await getBirthdays(DB);
+  const item = list.find(b => b.id === id);
+  if (!item) return null;
+  item.disabled = disabled === true || disabled === 'true';
+  await setBirthdays(DB, list);
+  return item;
 }
 export async function bumpBirthdayVisit(DB, token) {
   const list = await getBirthdays(DB);
