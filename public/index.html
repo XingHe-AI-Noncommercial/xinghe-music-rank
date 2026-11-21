@@ -124,7 +124,7 @@
         <button class="admin-nav active" data-admin-tab="overview"><span>◫</span> 总览面板</button>
         <button class="admin-nav" data-admin-tab="submissions"><span>⏳</span> 投稿审核 <b id="admin-pending-badge">0</b></button>
         <button class="admin-nav" data-admin-tab="songs"><span>♫</span> 作品管理</button>
-        <button class="admin-nav" id="open-birthday"><span>🎂</span> 创建生日</button>
+        <button class="admin-nav" data-admin-tab="birthdays"><span>🎂</span> 生日祝福</button>
         <div class="sidebar-spacer"></div>
         <button id="admin-logout" class="admin-logout">↪ 退出开发者模式</button>
         <div class="admin-side-foot">XINGHE MUSIC CHART<br>LITE BUILD 4.0</div>
@@ -171,12 +171,6 @@
               </div>
             </section>
 
-            <!-- 生日祝福管理 -->
-            <section class="admin-card">
-              <div class="admin-card-title"><div><span class="mini-label">BIRTHDAY WISHES</span><h3>生日祝福管理</h3><p class="admin-card-subtitle">管理已生成的生日祝福链接；每天自动清理昨天的、保留今天的。可复制或删除任意一条（含此功能之前的）。</p></div><span id="admin-birthday-count" class="admin-card-badge">0 条</span></div>
-              <div id="admin-birthday-list" class="admin-birthday-list"></div>
-            </section>
-
             <!-- 公告栏：管理员发布公告 -->
             <section class="admin-card">
               <div class="admin-card-title"><div><span class="mini-label">NOTICE BOARD</span><h3>公告栏</h3><p class="admin-card-subtitle">发布后显示在网站首页公告栏，所有访客可见；新公告排最前。</p></div><span id="admin-announcement-count" class="admin-card-badge">0 条</span></div>
@@ -217,6 +211,18 @@
             <section class="admin-card">
               <div class="admin-card-title"><div><span class="mini-label">ALL TRACKS</span><h3>本周作品管理</h3><p class="admin-card-subtitle">删除后立即从榜单与复制清单移除。</p></div><div class="table-tools"><input id="admin-song-search" type="search" placeholder="搜索视频名 / BV号"></div></div>
               <div id="admin-songs-table" class="admin-table-wrap"></div>
+            </section>
+          </div>
+
+          <div id="admin-view-birthdays" class="admin-view hidden">
+            <section class="admin-card">
+              <div class="admin-card-title"><div><span class="mini-label">BIRTHDAY WISHES</span><h3>生日祝福总览</h3><p class="admin-card-subtitle">查看所有已创建的生日链接：复制网址、打开预览、关停或删除；也可一键清除全部。每天自动清理昨天的、保留今天的。</p></div><span id="admin-birthday-count" class="admin-card-badge">0 条</span></div>
+              <div class="birthday-panel-toolbar">
+                <button class="button button-primary" id="birthday-panel-create">＋ 创建生日</button>
+                <button class="button button-outline danger" id="birthday-panel-clear">🗑 一键清除所有</button>
+                <span id="birthday-panel-stats" class="birthday-panel-stats"></span>
+              </div>
+              <div id="admin-birthday-list" class="admin-birthday-list"></div>
             </section>
           </div>
         </div>
@@ -381,22 +387,6 @@
     </div>
   </div>
 
-  <!-- 生日祝福专门总览面板：点击「创建生日」进入；查看网址复制 / 删除 / 一键清除 / 关停 -->
-  <div id="birthday-panel-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="birthday-panel-title">
-    <div class="modal-card modal-wide">
-      <button class="modal-close" data-close="birthday-panel-modal" aria-label="关闭">×</button>
-      <div class="modal-eyebrow"><span class="eyebrow-line"></span> BIRTHDAY OVERVIEW</div>
-      <h2 id="birthday-panel-title">生日祝福总览</h2>
-      <p class="modal-description">查看所有已创建的生日链接：复制网址、打开预览、关停或删除；也可一键清除全部。</p>
-      <div class="birthday-panel-toolbar">
-        <button class="button button-primary" id="birthday-panel-create">＋ 创建生日</button>
-        <button class="button button-outline danger" id="birthday-panel-clear">🗑 一键清除所有</button>
-        <span id="birthday-panel-stats" class="birthday-panel-stats"></span>
-      </div>
-      <div id="birthday-panel-list" class="admin-bday-list"></div>
-      <div class="modal-actions"><button class="button button-outline" data-close="birthday-panel-modal">关闭</button></div>
-    </div>
-  </div>
 
   <script src="./app.js" defer></script>
   <script src="./games.js" defer></script>
