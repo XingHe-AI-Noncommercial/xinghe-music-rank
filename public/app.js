@@ -457,7 +457,7 @@
       const link = location.origin + '/birthday/' + b.token;
       const off = b.disabled === true || b.disabled === 'true';
       return `<div class="admin-bday-row${off ? ' is-off' : ''}" data-id="${escapeHtml(b.id)}">
-        <div class="admin-bday-copy"><b>${escapeHtml(b.name || '未命名')}${off ? ' <span class="bday-off">已关停</span>' : ''}</b><code>${escapeHtml(b.token)}</code><small>${fmtDate(b.createdAt)} · ${escapeHtml(b.style || 'classic')} · ${b.visits || 0} 次打开</small></div>
+        <div class="admin-bday-copy"><b>${escapeHtml(b.name || '未命名')}${off ? ' <span class="bday-off">已关停</span>' : ''}</b><code>${escapeHtml(b.token)}</code><small>${b.birthday ? '🎂 ' + b.birthday.slice(0, 2) + '月' + b.birthday.slice(3) + '日' : '未设置生日'} · ${escapeHtml(b.style || 'classic')} · ${b.visits || 0} 次打开</small></div>
         <div class="admin-bday-link" title="${escapeHtml(link)}">${escapeHtml(link)}</div>
         <div class="admin-bday-actions">
           <button class="inline-action" data-bday-copy="${escapeHtml(link)}">复制</button>
@@ -795,12 +795,7 @@
   function openCreateBirthday() {
     $('#birthday-result')?.classList.add('hidden');
     $('#birthday-link').textContent = '';
-    state.birthdayTheme = null;
-    const up = $('#birthday-upload'); if (up) up.value = '';
-    const ust = $('#birthday-upload-status'); if (ust) { ust.textContent = ''; ust.className = 'ai-status'; }
-    const bst = $('#birthday-bg-status'); if (bst) { bst.textContent = ''; bst.className = 'ai-status'; }
-    const bu = $('#birthday-bg-upload'); if (bu) bu.value = '';
-    const iu = $('#birthday-image-url'); if (iu) iu.value = '';
+    const dt = $('#birthday-date'); if (dt) dt.value = '';
     showModal('birthday-modal');
   }
   // 生日标签页：创建新生日 → 打开创建弹窗；一键清除所有
@@ -837,64 +832,24 @@
     applyStyleColors(btn.dataset.style);
   }));
   applyStyleColors('classic');
-  state.birthdayTheme = null;
-  function compressImage(dataUrl) {
-    return new Promise(resolve => {
-      const img = new Image();
-      img.onload = () => {
-        const max = 480; const ratio = Math.min(1, max / Math.max(img.width, img.height));
-        const c = document.createElement('canvas');
-        c.width = Math.round(img.width * ratio); c.height = Math.round(img.height * ratio);
-        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-        try { resolve(c.toDataURL('image/jpeg', 0.8)); } catch { resolve(''); }
-      };
-      img.onerror = () => resolve('');
-      img.src = dataUrl;
-    });
-  }
-  function bindImageUpload(inputId, statusId, key, msg) {
-    const el = $(inputId);
-    if (!el) return;
-    el.addEventListener('change', async () => {
-      const file = el.files && el.files[0];
-      const st = $(statusId);
-      if (!file) return;
-      if (!file.type.startsWith('image/')) { st.textContent = '⚠ 请选择图片文件'; st.className = 'ai-status err'; return; }
-      if (file.size > 6 * 1024 * 1024) { st.textContent = '⚠ 图片过大（≤6MB）'; st.className = 'ai-status err'; return; }
-      st.textContent = '处理中…'; st.className = 'ai-status';
-      try {
-        const dataUrl = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); });
-        const compressed = await compressImage(dataUrl);
-        if (!compressed) throw new Error('图片处理失败');
-        if (!state.birthdayTheme) state.birthdayTheme = {};
-        state.birthdayTheme[key] = compressed;
-        st.textContent = msg; st.className = 'ai-status';
-      } catch (e) { st.textContent = '⚠ ' + (e.message || '处理失败'); st.className = 'ai-status err'; }
-    });
-  }
-  bindImageUpload('#birthday-upload', '#birthday-upload-status', 'image', '✅ 已上传，将作为贺图（请确保你对该图有使用权）');
-  bindImageUpload('#birthday-bg-upload', '#birthday-bg-status', 'bgImage', '✅ 已导入，将作为祝福页底图');
   const birthdayCreate = $('#birthday-create');
   if (birthdayCreate) birthdayCreate.addEventListener('click', async () => {
     const name = $('#birthday-name').value.trim();
     const message = $('#birthday-message').value.trim();
+    const dateVal = ($('#birthday-date') ? $('#birthday-date').value : '').trim();
     if (!name) { showToast('请填写寿星名字', 'error'); return; }
+    if (!dateVal) { showToast('请选择生日日期', 'error'); return; }
+    const birthday = dateVal.slice(5, 10); // YYYY-MM-DD → MM-DD
     birthdayCreate.disabled = true; birthdayCreate.textContent = '生成中…';
     try {
-      // 组装主题：用户自定义颜色（默认选中风格）+ 贺图/底图/图片网址
+      // 自定义颜色（默认选中风格）
       const theme = {};
       const val = id => ($(id) ? $(id).value : '');
       const col = { bg: val('#c-bg'), paper: val('#c-paper'), accent: val('#c-accent'), secondary: val('#c-secondary') };
       const hasColor = Object.values(col).some(v => /^#[0-9a-fA-F]{6}$/.test(v));
       if (hasColor) theme.palette = col;
-      const urlImg = val('#birthday-image-url').trim();
-      if (urlImg && /^https?:\/\/[^\s"<>]+$/i.test(urlImg)) theme.image = urlImg;
-      if (state.birthdayTheme) {
-        if (state.birthdayTheme.image) theme.image = state.birthdayTheme.image;
-        if (state.birthdayTheme.bgImage) theme.bgImage = state.birthdayTheme.bgImage;
-      }
-      const body = { name, message, style: state.birthdayStyle };
-      if (theme.palette || theme.image || theme.bgImage) body.theme = theme;
+      const body = { name, message, style: state.birthdayStyle, birthday };
+      if (theme.palette) body.theme = theme;
       const res = await api('/api/admin/birthdays', { method: 'POST', body: JSON.stringify(body) });
       const link = location.origin + '/birthday/' + res.token;
       $('#birthday-link').textContent = link;
