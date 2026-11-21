@@ -1014,3 +1014,6 @@ body {
 .ai-status { font-size: 12px; color: var(--green); }
 .ai-status.err { color: var(--warn); }
 @media (max-width: 480px) { .style-picker { grid-template-columns: repeat(2, 1fr); } }
+.ai-custom-body label.ai-image-opt { flex-direction: row; align-items: flex-start; gap: 7px; cursor: pointer; }
+.ai-custom-body label.ai-image-opt input { width: auto; margin-top: 2px; accent-color: var(--red); }
+.ai-custom-body label.ai-image-opt span { flex: 1; }
