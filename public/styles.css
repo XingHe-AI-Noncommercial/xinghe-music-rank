@@ -747,3 +747,24 @@ body:not(.entered) .header-actions { display:none; }
 .admin-shell.mode-phone .table-tools, .admin-shell.mode-phone .admin-add-form .wide { width:100%; }
 .admin-shell.mode-phone .birthday-panel-toolbar { flex-wrap:wrap; }
 .admin-shell.mode-phone .ban-presets { display:flex; flex-wrap:wrap; gap:4px; }
+
+/* ---------- 扫雷插旗模式 + 新游戏 ---------- */
+.game-btn.on { border-color:var(--accent); color:var(--accent); }
+.mine-flag-toggle { display:inline-block; margin:6px auto; }
+.simon-pads { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; width:220px; margin:8px auto; }
+.simon-pad { height:96px; border-radius:14px; border:var(--border); cursor:pointer; opacity:.85; transition:.08s; }
+.simon-pad:active, .simon-pad.lit { opacity:1; transform:scale(.96); filter:brightness(1.35); }
+.simon-pad.c0 { background:#e23b2e; } .simon-pad.c1 { background:#1f8a5f; }
+.simon-pad.c2 { background:#f5a623; } .simon-pad.c3 { background:#2a6fd6; }
+.math-q { font-size:30px; font-weight:900; text-align:center; margin:10px 0; color:var(--ink); }
+.math-opts { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; max-width:280px; margin:0 auto; }
+.math-opt { background:var(--card2); border:var(--border); border-radius:var(--r-sm); font-size:22px; font-weight:900; padding:14px; cursor:pointer; color:var(--ink); }
+.math-opt.correct { background:var(--accent); color:var(--accent-ink); }
+.math-opt.wrong { background:#ff6b6b; color:#fff; }
+.lights-grid { display:grid; gap:8px; width:fit-content; margin:10px auto; }
+.light-cell { width:52px; height:52px; border-radius:12px; background:var(--card2); border:var(--border); cursor:pointer; transition:.12s; }
+.light-cell.on { background:var(--accent); box-shadow:0 0 14px var(--glow); }
+.seq-display { font-size:32px; font-weight:900; letter-spacing:.18em; text-align:center; margin:10px 0; color:var(--accent); }
+.seq-btns { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; max-width:280px; margin:0 auto; }
+.seq-btn { width:52px; height:52px; border-radius:12px; background:var(--card2); border:var(--border); font-size:20px; font-weight:900; color:var(--ink); cursor:pointer; }
+.seq-btn:disabled { opacity:.35; cursor:default; }
