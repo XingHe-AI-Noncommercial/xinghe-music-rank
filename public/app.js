@@ -818,7 +818,7 @@
 
   const openInbox = $('#open-inbox');
   if (openInbox) openInbox.addEventListener('click', async () => {
-    showModal('inbox-modal');
+    go('inbox');
     await loadInbox();
   });
   const inboxAlertLater = $('#inbox-alert-later');
@@ -830,7 +830,7 @@
   const inboxAlertView = $('#inbox-alert-view');
   if (inboxAlertView) inboxAlertView.addEventListener('click', async () => {
     $('#inbox-alert')?.classList.add('hidden');
-    showModal('inbox-modal');
+    go('inbox');
     try { await api('/api/inbox/read', { method: 'POST', body: JSON.stringify({ id: '*' }) }); } catch (error) {}
     await loadInbox();
   });
@@ -853,32 +853,24 @@
 
   // ---------- 版本号 + 更新日志（左上角） ----------
   const versionChip = $('#version-chip');
-  if (versionChip) versionChip.addEventListener('click', () => showModal('changelog-modal'));
+  if (versionChip) versionChip.addEventListener('click', () => go('about'));
 
-  // ---------- 右上角：页面风格切换 ----------
+  // ---------- 右上角：页面风格 ----------
   const THEMES = ['retro', 'huanghong', 'netease', 'tencent', 'classic', 'starry', 'pastel', 'neon', 'ocean'];
   const themeToggle = $('#theme-toggle');
-  const themeMenu = $('#theme-menu');
   const syncThemeActive = () => {
     const cur = document.documentElement.dataset.theme || 'retro';
-    $$('#theme-menu .theme-swatch').forEach(b => b.classList.toggle('is-active', b.dataset.theme === cur));
+    $$('.theme-swatch').forEach(b => b.classList.toggle('is-active', b.dataset.theme === cur));
   };
-  if (themeToggle && themeMenu) {
-    themeToggle.addEventListener('click', e => {
-      e.stopPropagation();
-      themeMenu.classList.toggle('hidden');
-      syncThemeActive();
-    });
-    document.addEventListener('click', e => { if (!themeMenu.classList.contains('hidden') && !themeMenu.contains(e.target)) themeMenu.classList.add('hidden'); });
-    $$('#theme-menu .theme-swatch').forEach(b => b.addEventListener('click', () => {
-      const t = b.dataset.theme;
-      if (THEMES.includes(t)) {
-        document.documentElement.dataset.theme = t;
-        try { localStorage.setItem('xh-theme', t); } catch {}
-      }
-      themeMenu.classList.add('hidden');
-    }));
-  }
+  if (themeToggle) themeToggle.addEventListener('click', () => go('theme'));
+  $$('.theme-swatch').forEach(b => b.addEventListener('click', () => {
+    const t = b.dataset.theme;
+    if (THEMES.includes(t)) {
+      document.documentElement.dataset.theme = t;
+      try { localStorage.setItem('xh-theme', t); } catch {}
+    }
+    syncThemeActive();
+  }));
   syncThemeActive();
 
   // ---------- 音浪语录（滚动） ----------
@@ -903,16 +895,15 @@
     onScroll();
   }
 
-  // ---------- 快捷按键 ----------
+  // ---------- 快捷按键（跳转到对应页面） ----------
   const quickAnnouncement = $('#quick-announcement');
-  if (quickAnnouncement) quickAnnouncement.addEventListener('click', () => {
-    const board = $('#announcement-board');
-    if (board) { board.classList.remove('hidden'); board.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-  });
+  if (quickAnnouncement) quickAnnouncement.addEventListener('click', () => go('notices'));
   const quickGames = $('#quick-games');
-  if (quickGames) quickGames.addEventListener('click', () => showModal('games-modal'));
+  if (quickGames) quickGames.addEventListener('click', () => go('games'));
   const quickInbox = $('#quick-inbox');
-  if (quickInbox) quickInbox.addEventListener('click', async () => { showModal('inbox-modal'); await loadInbox(); });
+  if (quickInbox) quickInbox.addEventListener('click', async () => { go('inbox'); await loadInbox(); });
+  // 主页顶部「小游戏」「收件箱」也跳转对应页面
+  $('#open-games')?.addEventListener('click', () => go('games'));
 
   // ---------- 创建生日祝福 ----------
   function openCreateBirthday() {
@@ -996,9 +987,31 @@
     if (link) window.open(link, '_blank');
   });
 
+  // ---------- 视图路由（入口 → 主页 → 各功能页） ----------
+  const VIEWS = ['landing', 'home', 'submit', 'rank', 'notices', 'games', 'inbox', 'theme', 'rules', 'about'];
+  function go(view) { location.hash = '#/' + view; }
+  function route() {
+    const raw = (location.hash || '').replace(/^#\/?/, '');
+    const active = VIEWS.includes(raw) ? raw : 'landing';
+    $$('[data-view]').forEach(v => v.classList.toggle('hidden', v.dataset.view !== active));
+    document.body.classList.toggle('entered', active !== 'landing');
+    window.scrollTo({ top: 0 });
+    if (active === 'inbox') loadInbox();
+    if (active === 'games' && typeof window.renderGames === 'function') window.renderGames();
+  }
+  window.addEventListener('hashchange', route);
+  $('#enter-site')?.addEventListener('click', () => go('home'));
+  $$('.hub-card[data-nav]').forEach(card => card.addEventListener('click', () => go(card.dataset.nav)));
+  $$('[data-back]').forEach(btn => btn.addEventListener('click', () => go(btn.dataset.back)));
+  $('#hub-admin')?.addEventListener('click', openAdmin);
+  $('#hub-birthday')?.addEventListener('click', () => showModal('birthday-modal'));
+  // 进入网站前，品牌 logo 不能绕过入口
+  document.querySelector('.brand')?.addEventListener('click', e => { if (!document.body.classList.contains('entered')) e.preventDefault(); });
+
   // ---------- 启动 ----------
+  route();
   refreshState();
-  loadInbox().then(maybeShowInboxAlert); // 进入网页：有未读消息则全屏提示
+  loadInbox().then(() => { if (document.body.classList.contains('entered')) maybeShowInboxAlert(); }); // 进入网站后才提示未读消息
   // 访问统计：每会话只计一次
   try {
     if (!sessionStorage.getItem('xh_visit_tracked')) {
