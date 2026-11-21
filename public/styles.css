@@ -890,3 +890,103 @@ body {
 
 /* ---------- 焦点可达性 ---------- */
 :focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; border-radius: 6px; }
+/* ============================================================================
+   星河音浪榜 · 复古 v3：方正 + 红/白按钮 + 中空矩形右上偏移复制层（立体感）
+   ============================================================================ */
+:root { --red: #e23b2e; --red-dark: #a81f16; --radius: 0px; }
+
+/* ---------- 方正：把圆角全部压平 ---------- */
+.button, .modal-card, .hero-panel, .quota-panel, .submit-form, .admin-shell,
+.metric-card, .quota-card, .song-card, .rule-card, .announcement-board, .announcement-item,
+.admin-card, .admin-kpi, .submission-item, .track-card, .game-card, .toast, .quick-btn,
+.search-box, .icon-button, .amount-control, .inbox-item, .toggle-section, .formula-strip,
+.voting-banner, .admin-announcement-row, .vocadb-card, .file-drop, .copy-card,
+.stack-form input, .admin-add-form input, .table-tools input, .table-tools select,
+.submit-form input, #import-format, .import-label textarea, textarea, .vote-amount, .guess-form input,
+.ban-slide, .inbox-alert-slide, .live-pill, .week-chip, .brand-mark, .login-mark,
+.rank-number, .song-cover, .submission-cover, .game-canvas, .ban-until, .admin-card-badge,
+.top-tag, .change-pill, .state-pill, .tiny-button, .banner-symbol, .small-mark, .profile-avatar,
+.footer-star, .amount-control button {
+  border-radius: 0 !important;
+}
+
+/* ---------- 中空矩形/正方形：右上偏移 + 复制一层（立体感） ---------- */
+.button, .quick-btn, .live-pill, .week-chip, .icon-button, .modal-close, .rank-number,
+.brand-mark, .small-mark, .login-mark, .footer-star, .banner-symbol, .amount-control,
+.search-box, .game-btn, .inbox-btn {
+  box-shadow: 3px -3px 0 var(--ink), 6px -6px 0 rgba(31,36,48,.16);
+}
+.button:hover, .quick-btn:hover, .game-btn:hover { transform: translate(-1px, 1px); box-shadow: 2px -2px 0 var(--ink), 4px -4px 0 rgba(31,36,48,.14); }
+.button:active, .quick-btn:active, .game-btn:active { transform: translate(-2px, 2px); box-shadow: 1px -1px 0 var(--ink); }
+
+/* ---------- 按钮：红 / 白 ---------- */
+.button { background: #fff; color: var(--ink); border-color: var(--ink); }
+.button-primary { background: var(--red); color: #fff; border-color: var(--red-dark); box-shadow: 3px -3px 0 var(--red-dark), 6px -6px 0 rgba(31,36,48,.18); }
+.button-primary:hover { background: #c92e21; }
+.button-outline, .button-quiet { background: #fff; color: var(--ink); border-color: var(--ink); }
+.button-outline:hover, .button-quiet:hover { background: #f2efe4; }
+.hero-cta .button-primary, #birthday-create { background: var(--red); }
+
+/* ---------- 面板：轻微右上偏移（复制一层） ---------- */
+.hero-panel, .quota-panel, .submit-form, .admin-shell, .ban-slide, .inbox-alert-slide {
+  box-shadow: 4px -4px 0 var(--ink), 8px -8px 0 rgba(31,36,48,.14) !important;
+}
+.metric-card, .quota-card, .song-card, .rule-card, .announcement-board, .announcement-item,
+.admin-card, .admin-kpi, .submission-item, .track-card, .game-card, .toast, .inbox-item,
+.toggle-section, .formula-strip, .voting-banner, .admin-announcement-row, .vocadb-card, .copy-card {
+  box-shadow: 3px -3px 0 rgba(31,36,48,.1), 6px -6px 0 rgba(31,36,48,.05) !important;
+}
+
+/* ---------- 版本号 + 更新日志（左上角） ---------- */
+.brand-left { display: flex; align-items: center; gap: 10px; }
+.version-chip { display: inline-flex; align-items: center; gap: 6px; border: 2px solid var(--ink); background: #fff; color: var(--ink); padding: 3px 9px; font-family: "Courier New", monospace; font-size: 12px; font-weight: 700; letter-spacing: .04em; cursor: pointer; box-shadow: 2px -2px 0 var(--ink); border-radius: 0; }
+.version-chip:hover { background: #fff4e8; transform: translate(-1px,1px); box-shadow: 1px -1px 0 var(--ink); }
+.version-chip b { color: var(--red); }
+.version-chip span { color: #6d7180; font-size: 11px; }
+
+/* ---------- 快捷按键条 ---------- */
+.quick-strip { margin: 14px 0 4px; }
+.quick-strip > .eyebrow { margin-bottom: 12px; }
+.quick-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.quick-btn { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 16px 8px; border: 2px solid var(--ink); background: #fff; color: var(--ink); border-radius: 0; cursor: pointer; text-align: center; min-height: 96px; }
+.quick-btn:hover { background: #fff4e8; }
+.quick-btn:active { transform: translate(-2px,2px); }
+.quick-btn .quick-icon { font-size: 22px; line-height: 1; color: var(--signal); }
+.quick-btn b { font-size: 13px; font-weight: 900; }
+.quick-btn small { font-family: "Courier New", monospace; font-size: 10px; letter-spacing: .12em; color: #8a8574; }
+.quick-btn.quick-primary { background: var(--red); color: #fff; border-color: var(--red-dark); box-shadow: 3px -3px 0 var(--red-dark), 6px -6px 0 rgba(31,36,48,.18); }
+.quick-btn.quick-primary .quick-icon, .quick-btn.quick-primary small { color: #ffe0dc; }
+.quick-btn.quick-primary:hover { background: #c92e21; }
+
+/* ---------- 更新日志 ---------- */
+.modal-narrow { max-width: 460px; }
+.changelog-list { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+.changelog-item { display: flex; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); background: #fff; box-shadow: 2px -2px 0 rgba(31,36,48,.08); }
+.changelog-item code { font-family: "Courier New", monospace; font-weight: 700; color: var(--red); white-space: nowrap; font-size: 12px; padding-top: 2px; }
+.changelog-item b { color: var(--ink); font-size: 13px; }
+.changelog-item p { color: #5f636e; font-size: 12px; margin: 2px 0 0; }
+.changelog-item.is-current { border-color: var(--red); background: #fff4ef; }
+.changelog-item.is-current code { background: var(--red); color: #fff; padding: 1px 6px; }
+
+/* ---------- 生日弹窗 ---------- */
+#birthday-modal .stack-form { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+#birthday-modal .stack-form label { color: #4d515b; font-weight: 700; }
+#birthday-modal .stack-form label em { color: var(--red); font-style: normal; }
+#birthday-modal .stack-form label span { color: #8a8574; font-weight: 400; font-size: 12px; }
+#birthday-modal input, #birthday-modal textarea { border: 2px solid var(--ink); background: #fff; color: var(--ink); border-radius: 0; padding: 9px 10px; font-size: 14px; }
+#birthday-modal textarea { resize: vertical; }
+#birthday-modal input:focus, #birthday-modal textarea:focus { border-color: var(--red); outline: none; }
+.birthday-result { margin-top: 12px; border: 2px solid var(--red); background: #fff4ef; padding: 10px 12px; }
+.birthday-result > label { display: block; color: var(--red); font-weight: 700; font-size: 12px; margin-bottom: 6px; }
+.birthday-result .bv-preview { border: 1px solid var(--line); background: #fff; padding: 8px 10px; font-size: 13px; word-break: break-all; }
+.birthday-result .modal-actions { margin-top: 10px; }
+
+/* ---------- 后台「创建生日」导航项 ---------- */
+#open-birthday span { font-size: 15px; }
+
+/* ---------- 窄屏适配 ---------- */
+@media (max-width: 760px) {
+  .quick-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .quick-btn { min-height: 84px; padding: 12px 6px; }
+  .version-chip span { display: none; }
+}
