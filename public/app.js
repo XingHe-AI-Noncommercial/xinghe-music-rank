@@ -781,11 +781,11 @@
   if (versionChip) versionChip.addEventListener('click', () => showModal('changelog-modal'));
 
   // ---------- 右上角：页面风格切换 ----------
-  const THEMES = ['netease', 'tencent', 'classic', 'starry', 'pastel', 'neon', 'ocean'];
+  const THEMES = ['huanghong', 'netease', 'tencent', 'classic', 'starry', 'pastel', 'neon', 'ocean'];
   const themeToggle = $('#theme-toggle');
   const themeMenu = $('#theme-menu');
   const syncThemeActive = () => {
-    const cur = document.documentElement.dataset.theme || 'netease';
+    const cur = document.documentElement.dataset.theme || 'huanghong';
     $$('#theme-menu .theme-swatch').forEach(b => b.classList.toggle('is-active', b.dataset.theme === cur));
   };
   if (themeToggle && themeMenu) {
