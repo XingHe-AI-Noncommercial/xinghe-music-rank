@@ -347,7 +347,7 @@
       <button class="modal-close" data-close="birthday-modal" aria-label="关闭">×</button>
       <div class="modal-eyebrow"><span class="eyebrow-line"></span> HAPPY BIRTHDAY</div>
       <h2 id="birthday-title">创建生日祝福</h2>
-      <p class="modal-description">生成一条祝福链接，转发给寿星；每个人打开看到的祝福语都不一样。</p>
+      <p class="modal-description">选一个生日日期并生成链接。今天到这天 → 「生日快乐」祝福；还没到 → 实时倒计时（天 + 时:分:秒）。</p>
       <div class="stack-form">
         <label>寿星名字 <em>*</em><span>显示在祝福页上</span></label>
         <input id="birthday-name" type="text" maxlength="20" placeholder="例如：小星">
@@ -362,14 +362,8 @@
           <button class="style-opt" data-style="ocean" title="海盐蓝"><i style="background:#0e2a38"></i><i style="background:#12384a"></i><i style="background:#ffd166"></i><b>海盐蓝</b></button>
           <button class="style-opt" data-style="neon" title="霓虹紫"><i style="background:#120a20"></i><i style="background:#1c1030"></i><i style="background:#ff4ea0"></i><b>霓虹紫</b></button>
         </div>
-        <label>上传贺图（可选）<span>作为卡片背景，卡片长相由它决定；自动压缩</span></label>
-        <input id="birthday-upload" type="file" accept="image/*" class="birthday-upload">
-        <span id="birthday-upload-status" class="ai-status"></span>
-        <label>导入底图（可选）<span>作为页面最底下的背景，自动压缩</span></label>
-        <input id="birthday-bg-upload" type="file" accept="image/*" class="birthday-upload">
-        <span id="birthday-bg-status" class="ai-status"></span>
-        <label>粘贴图片网址（可选）<span>官方/角色图直链，如 https://…/x.jpg，作为贺图（卡片背景）</span></label>
-        <input id="birthday-image-url" type="url" placeholder="https://…/picture.jpg">
+        <label>生日日期 <em>*</em><span>到这天显示「生日快乐」；否则显示距离生日的倒计时（按当天 0 点整算，精准到秒）</span></label>
+        <input id="birthday-date" type="date" required>
         <label>自定义颜色（可选）<span>让底色等贴合氛围；切换风格会重置为该风格默认，可再改</span></label>
         <div class="color-custom">
           <label class="color-item"><input id="c-bg" type="color" value="#f2eee2"><span>底色</span></label>
