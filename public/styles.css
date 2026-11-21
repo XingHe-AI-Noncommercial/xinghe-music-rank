@@ -1018,3 +1018,11 @@ body {
 .ai-custom-body label.ai-image-opt input { width: auto; margin-top: 2px; accent-color: var(--red); }
 .ai-custom-body label.ai-image-opt span { flex: 1; }
 input.birthday-upload { border: 2px dashed var(--line); background: #fff; padding: 8px 10px; font-size: 12px; color: #6a6a72; width: 100%; }
+.admin-bday-list { display: flex; flex-direction: column; gap: 8px; }
+.admin-bday-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 2px solid var(--line); background: #fff; }
+.admin-bday-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.admin-bday-copy b { font-size: 14px; color: var(--ink); }
+.admin-bday-copy code { font-family: "Courier New", monospace; font-size: 11px; color: #8a8574; }
+.admin-bday-copy small { font-size: 11px; color: #8a8574; }
+.admin-bday-actions { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 640px) { .admin-bday-row { flex-direction: column; align-items: stretch; } .admin-bday-actions { justify-content: flex-start; } }
