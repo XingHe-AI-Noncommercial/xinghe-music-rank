@@ -168,6 +168,48 @@ export async function markInboxRead(DB, ip, id) {
   return Boolean(item);
 }
 
+// ---------- 生日祝福（settings.birthdays，JSON 数组；无需建表） ----------
+const BDAY_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+export function makeBirthdayToken() {
+  let t = '';
+  const arr = new Uint32Array(16);
+  crypto.getRandomValues(arr);
+  for (let i = 0; i < 16; i++) t += BDAY_CHARS[arr[i] % BDAY_CHARS.length];
+  return t;
+}
+export async function getBirthdays(DB) {
+  const raw = await getSetting(DB, 'birthdays', '[]');
+  try { const arr = JSON.parse(raw); return Array.isArray(arr) ? arr : []; } catch { return []; }
+}
+export async function setBirthdays(DB, list) {
+  await setSetting(DB, 'birthdays', JSON.stringify(list.slice(0, 200)));
+}
+export async function addBirthday(DB, { name, message }) {
+  const list = await getBirthdays(DB);
+  let token; do { token = makeBirthdayToken(); } while (list.some(b => b.token === token));
+  const item = {
+    id: makeId(), token,
+    name: String(name || '').slice(0, 20),
+    message: String(message || '').slice(0, 80),
+    createdAt: isoNow(), visits: 0,
+  };
+  list.unshift(item);
+  await setBirthdays(DB, list);
+  return item;
+}
+export async function getBirthdayByToken(DB, token) {
+  const list = await getBirthdays(DB);
+  return list.find(b => b.token === token) || null;
+}
+export async function bumpBirthdayVisit(DB, token) {
+  const list = await getBirthdays(DB);
+  const item = list.find(b => b.token === token);
+  if (!item) return null;
+  item.visits = (item.visits || 0) + 1;
+  await setBirthdays(DB, list);
+  return item;
+}
+
 // ---------- 访客国家码（Cloudflare CF-IPCountry 头） ----------
 export function countryCode(request) {
   return String(request.headers.get('CF-IPCountry') || '').toUpperCase();
