@@ -289,10 +289,12 @@
     const N = 9, MINES = 10;
     const wrap = document.createElement('div'); wrap.className = 'mine-grid';
     const st = status(stage);
-    let cells, revealed, flagged, started, over = false, win = false;
+    let cells, revealed, flagged, started, over = false, win = false, flagMode = false;
     function reset() {
       cells = Array.from({ length: N }, () => Array(N).fill(null));
-      revealed = 0; flagged = 0; started = false; over = false; win = false;
+      revealed = 0; flagged = 0; started = false; over = false; win = false; flagMode = false;
+      flagBtn.textContent = '🚩 插旗模式：关';
+      flagBtn.classList.remove('on');
       st.textContent = `💣 ${MINES} · 已翻开 0/${N * N - MINES}`;
       wrap.innerHTML = '';
       for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
@@ -340,9 +342,12 @@
       el.textContent = el.classList.contains('flagged') ? '🚩' : '';
       st.textContent = `💣 ${MINES - flagged} · 已翻开 ${revealed}/${N * N - MINES}`;
     }
+    const flagBtn = btn('🚩 插旗模式：关', 'mine-flag-toggle');
+    flagBtn.addEventListener('click', () => { flagMode = !flagMode; flagBtn.textContent = `🚩 插旗模式：${flagMode ? '开' : '关'}`; flagBtn.classList.toggle('on', flagMode); });
     wrap.addEventListener('click', e => {
       const el = e.target.closest('.mine-cell'); if (!el || over || win) return;
       const i = +el.dataset.i, j = +el.dataset.j;
+      if (flagMode) { toggleFlag(i, j); return; }
       if (!started) { started = true; plant(i, j); }
       reveal(i, j);
     });
@@ -351,9 +356,9 @@
       const el = e.target.closest('.mine-cell'); if (!el || over || win) return;
       toggleFlag(+el.dataset.i, +el.dataset.j);
     });
-    stage.appendChild(st); stage.appendChild(wrap); restartBtn(stage, reset);
+    stage.appendChild(st); stage.appendChild(flagBtn); stage.appendChild(wrap); restartBtn(stage, reset);
     reset();
-    return { stop() { wrap.onclick = null; wrap.oncontextmenu = null; } };
+    return { stop() { wrap.onclick = null; wrap.oncontextmenu = null; flagBtn.onclick = null; } };
   }
 
   // ============================================================
@@ -754,8 +759,117 @@
   }
 
   // ---------- 游戏清单 ----------
+
+  // ============================================================
+  // 颜色记忆（Simon）· 原创
+  // ============================================================
+  function openSimon(stage) {
+    const st = status(stage);
+    const wrap = document.createElement('div'); wrap.className = 'simon-pads';
+    const pads = ['c0','c1','c2','c3'].map((c, i) => { const b = document.createElement('button'); b.className = 'simon-pad ' + c; b.dataset.id = i; wrap.appendChild(b); return b; });
+    let seq = [], step = 0, playing = false, score = 0;
+    function flash(i, cb) { const b = pads[i]; b.classList.add('lit'); setTimeout(() => b.classList.remove('lit'), 320); if (cb) setTimeout(cb, 400); }
+    function nextRound() {
+      seq.push(Math.floor(Math.random() * 4)); step = 0; score = seq.length - 1; playing = true;
+      st.textContent = `🎨 第 ${seq.length} 轮 · 记住顺序`;
+      seq.forEach((c, i) => setTimeout(() => flash(c), 700 + i * 430));
+      setTimeout(() => { playing = false; st.textContent = `🔁 你来重复（${seq.length} 个）`; }, 700 + seq.length * 430);
+    }
+    function tap(i) {
+      if (playing) return;
+      flash(i);
+      if (i === seq[step]) { step++; if (step === seq.length) setTimeout(nextRound, 500); }
+      else { st.textContent = `💥 错了！本轮得分 ${score}`; playing = true; setTimeout(() => { seq = []; nextRound(); }, 1200); }
+    }
+    pads.forEach((b, i) => b.addEventListener('click', () => tap(i)));
+    stage.appendChild(st); stage.appendChild(wrap); restartBtn(stage, () => { seq = []; score = 0; nextRound(); });
+    nextRound();
+    return { stop() { pads.forEach(b => b.onclick = null); } };
+  }
+
+  // ============================================================
+  // 速算大师 · 原创
+  // ============================================================
+  function openMath(stage) {
+    const st = status(stage);
+    const q = document.createElement('div'); q.className = 'math-q';
+    const opts = document.createElement('div'); opts.className = 'math-opts';
+    let score = 0, qn = 0, locked = false;
+    function make() {
+      const a = 1 + Math.floor(Math.random() * 20), b = 1 + Math.floor(Math.random() * 20), op = Math.random() < .5 ? '+' : '×';
+      const ans = op === '+' ? a + b : a * b;
+      q.textContent = `${a} ${op} ${b} = ?`;
+      const set = new Set([ans]);
+      while (set.size < 4) set.add(Math.max(1, ans + (Math.floor(Math.random() * 7) - 3)));
+      const arr = [...set].sort(() => Math.random() - .5);
+      opts.innerHTML = '';
+      arr.forEach(v => { const b = document.createElement('button'); b.className = 'math-opt'; b.textContent = v; b.addEventListener('click', () => { if (locked) return; locked = true; if (v === ans) b.classList.add('correct'); else b.classList.add('wrong'); qn++; score += (v === ans ? 1 : 0); st.textContent = `✅ ${score} 分 · 第 ${qn} 题`; setTimeout(make, 700); }); opts.appendChild(b); });
+      locked = false;
+    }
+    stage.appendChild(st); stage.appendChild(q); stage.appendChild(opts); restartBtn(stage, () => { score = 0; qn = 0; make(); });
+    make();
+    return { stop() { opts.onclick = null; } };
+  }
+
+  // ============================================================
+  // 点灯 5×5 · 原创
+  // ============================================================
+  function openLights(stage) {
+    const N = 5;
+    const st = status(stage);
+    const wrap = document.createElement('div'); wrap.className = 'lights-grid';
+    let board, moves = 0, won = false;
+    function cellEl(i, j) { return wrap.querySelector(`[data-i="${i}"][data-j="${j}"]`); }
+    function draw() { for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) cellEl(i, j).classList.toggle('on', board[i][j]); }
+    function toggle(i, j) { if (i < 0 || j < 0 || i >= N || j >= N) return; board[i][j] = !board[i][j]; }
+    function tapCell(i, j) { toggle(i, j); toggle(i - 1, j); toggle(i + 1, j); toggle(i, j - 1); toggle(i, j + 1); moves++; draw(); if (board.every(r => r.every(v => v))) { won = true; st.textContent = `🎉 通关！用了 ${moves} 步`; } }
+    function reset() {
+      board = Array.from({ length: N }, () => Array(N).fill(false)); moves = 0; won = false;
+      for (let k = 0; k < N * N; k++) if (Math.random() < .5) { const i = Math.floor(Math.random() * N), j = Math.floor(Math.random() * N); tapCell(i, j); }
+      if (board.every(r => r.every(v => v))) { reset(); return; }
+      st.textContent = '💡 点亮所有格子（点一个，它和上下左右一起翻转）'; moves = 0; draw();
+    }
+    wrap.innerHTML = '';
+    for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) { const c = document.createElement('button'); c.className = 'light-cell'; c.dataset.i = i; c.dataset.j = j; c.addEventListener('click', () => { if (!won) tapCell(i, j); }); wrap.appendChild(c); }
+    stage.appendChild(st); stage.appendChild(wrap); restartBtn(stage, reset);
+    reset();
+    return { stop() { wrap.onclick = null; } };
+  }
+
+  // ============================================================
+  // 记忆数字 · 原创
+  // ============================================================
+  function openSeq(stage) {
+    const st = status(stage);
+    const disp = document.createElement('div'); disp.className = 'seq-display';
+    const btns = document.createElement('div'); btns.className = 'seq-btns';
+    for (let k = 0; k < 10; k++) { const b = document.createElement('button'); b.className = 'seq-btn'; b.textContent = k; b.dataset.k = k; b.disabled = true; btns.appendChild(b); }
+    let seq = [], idx = 0, phase = 'show', score = 0;
+    function showSeq() {
+      const len = Math.min(8, 3 + Math.floor(score / 2));
+      seq = Array.from({ length: len }, () => Math.floor(Math.random() * 10));
+      phase = 'show'; idx = 0; st.textContent = `👀 记住这 ${len} 个数字`;
+      disp.textContent = seq.join(' ');
+      [...btns.children].forEach(b => b.disabled = true);
+      setTimeout(() => { phase = 'input'; disp.textContent = '？'.repeat(seq.length); st.textContent = '✍️ 按顺序点数字'; [...btns.children].forEach(b => b.disabled = false); }, 1400);
+    }
+    function tap(k) {
+      if (phase !== 'input') return;
+      if (k === seq[idx]) { idx++; if (idx === seq.length) { score++; st.textContent = `✅ 得分 ${score}`; [...btns.children].forEach(b => b.disabled = true); setTimeout(showSeq, 700); } }
+      else { st.textContent = `💥 错了！得分 ${score}`; [...btns.children].forEach(b => b.disabled = true); setTimeout(showSeq, 1100); }
+    }
+    [...btns.children].forEach(b => b.addEventListener('click', () => tap(+b.dataset.k)));
+    stage.appendChild(st); stage.appendChild(disp); stage.appendChild(btns); restartBtn(stage, () => { score = 0; showSeq(); });
+    showSeq();
+    return { stop() { btns.onclick = null; } };
+  }
+
   const GAMES = {
     snake:   { name: '贪吃蛇', desc: '经典街机 · 键盘/滑动', icon: '🐍', open: openSnake },
+    simon:   { name: '颜色记忆', desc: '记住颜色顺序 · 反应力', icon: '🎨', open: openSimon },
+    math:    { name: '速算大师', desc: '快速心算 · 选答案', icon: '➗', open: openMath },
+    lights:  { name: '点灯 5×5', desc: '点亮全部格子', icon: '💡', open: openLights },
+    seq:     { name: '记忆数字', desc: '记住数字序列', icon: '🔢', open: openSeq },
     g2048:   { name: '2048',   desc: '数字合并 · 键盘/滑动', icon: '🔢', open: open2048 },
     tetris:  { name: '俄罗斯方块', desc: '经典下落 · 键盘/滑动', icon: '🧩', open: openTetris },
     mine:    { name: '扫雷',   desc: '经典推理 · 点击/旗标', icon: '💣', open: openMine },
