@@ -447,7 +447,7 @@
     }).join('');
   }
 
-  // 生日祝福管理：列出全部（含历史），可复制 / 打开 / 删除
+  // 生日祝福管理：列出全部（含历史），显示完整网址，可复制/打开/关停/启用/删除
   function renderAdminBirthdays(list) {
     const holder = $('#admin-birthday-list'); if (!holder) return;
     const arr = Array.isArray(list) ? list : [];
@@ -455,17 +455,28 @@
     if (!arr.length) { holder.innerHTML = '<div class="empty-table">暂无生日祝福。点击左侧「🎂 创建生日」生成。</div>'; return; }
     holder.innerHTML = arr.map(b => {
       const link = location.origin + '/birthday/' + b.token;
-      return `<div class="admin-bday-row" data-id="${escapeHtml(b.id)}">
-        <div class="admin-bday-copy"><b>${escapeHtml(b.name || '未命名')}</b><code>${escapeHtml(String(b.token).slice(0, 6))}…</code><small>${fmtDate(b.createdAt)} · ${escapeHtml(b.style || 'classic')}</small></div>
+      const off = b.disabled === true || b.disabled === 'true';
+      return `<div class="admin-bday-row${off ? ' is-off' : ''}" data-id="${escapeHtml(b.id)}">
+        <div class="admin-bday-copy"><b>${escapeHtml(b.name || '未命名')}${off ? ' <span class="bday-off">已关停</span>' : ''}</b><code>${escapeHtml(b.token)}</code><small>${fmtDate(b.createdAt)} · ${escapeHtml(b.style || 'classic')} · ${b.visits || 0} 次打开</small></div>
+        <div class="admin-bday-link" title="${escapeHtml(link)}">${escapeHtml(link)}</div>
         <div class="admin-bday-actions">
           <button class="inline-action" data-bday-copy="${escapeHtml(link)}">复制</button>
           <button class="inline-action" data-bday-open="${escapeHtml(link)}">打开</button>
+          <button class="inline-action${off ? '' : ' danger'}" data-bday-off="${escapeHtml(b.id)}" data-off="${off ? 'false' : 'true'}">${off ? '启用' : '关停'}</button>
           <button class="inline-action danger" data-bday-del="${escapeHtml(b.id)}">删除</button>
         </div>
       </div>`;
     }).join('');
     holder.querySelectorAll('[data-bday-copy]').forEach(btn => btn.addEventListener('click', () => copyText(btn.dataset.bdayCopy)));
     holder.querySelectorAll('[data-bday-open]').forEach(btn => btn.addEventListener('click', () => window.open(btn.dataset.bdayOpen, '_blank')));
+    holder.querySelectorAll('[data-bday-off]').forEach(btn => btn.addEventListener('click', async () => {
+      const on = btn.dataset.off === 'true';
+      try {
+        await api('/api/admin/birthdays', { method: 'PATCH', body: JSON.stringify({ id: btn.dataset.bdayOff, disabled: on }) });
+        showToast(on ? '已关停该网址' : '已启用该网址', 'success');
+        await loadAdminData();
+      } catch (e) { showToast(e.message, 'error'); }
+    }));
     holder.querySelectorAll('[data-bday-del]').forEach(btn => btn.addEventListener('click', async () => {
       if (!confirm('确定删除这条生日祝福？')) return;
       try {
