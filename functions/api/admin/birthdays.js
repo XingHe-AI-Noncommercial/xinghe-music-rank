@@ -41,7 +41,10 @@ export async function onRequestDelete(context) {
   if (!DB) return fail('数据库尚未连接：请配置 D1 绑定 DB。', 503);
   const auth = await adminOnly(context);
   if (auth) return auth;
-  const id = new URL(context.request.url).searchParams.get('id');
+  const url = new URL(context.request.url);
+  const all = url.searchParams.get('all') === 'true';
+  if (all) { await setBirthdays(DB, []); return json({ ok: true, cleared: true }); }
+  const id = url.searchParams.get('id');
   const list = await getBirthdays(DB);
   const next = list.filter(b => b.id !== id);
   await setBirthdays(DB, next);
