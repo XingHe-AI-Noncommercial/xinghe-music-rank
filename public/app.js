@@ -753,22 +753,43 @@
     btn.classList.add('is-active');
     state.birthdayStyle = btn.dataset.style;
   }));
-  // AI 定制：API 只存本机 localStorage，绝不发送到服务器；复古提示词 + 不侵权指令
+  // AI 定制：key 经本站中转临时转发（不落库/不记录/不共享），绕开浏览器跨域；复古提示词 + 不侵权
   state.birthdayTheme = null;
   const AI_SAVE = 'xh_ai_config_v1';
   function loadAiConfig() { try { return JSON.parse(localStorage.getItem(AI_SAVE)) || {}; } catch { return {}; } }
   function saveAiConfig(cfg) { try { localStorage.setItem(AI_SAVE, JSON.stringify(cfg)); } catch {} }
+  async function aiProxy(payload) {
+    const res = await fetch('/api/ai', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+    const text = await res.text();
+    let data; try { data = JSON.parse(text); } catch { data = {}; }
+    return { status: res.status, data };
+  }
+  function compressImage(b64) {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 480; const ratio = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * ratio); c.height = Math.round(img.height * ratio);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        try { resolve(c.toDataURL('image/jpeg', 0.8)); } catch { resolve(''); }
+      };
+      img.onerror = () => resolve('');
+      img.src = 'data:image/png;base64,' + b64;
+    });
+  }
   const aiGenerate = $('#ai-generate');
   if (aiGenerate) aiGenerate.addEventListener('click', async () => {
     const name = $('#birthday-name').value.trim();
     const interest = $('#ai-interest').value.trim();
-    const base = ($('#ai-base').value.trim() || 'https://api.openai.com/v1').replace(/\/+$/, '');
+    const base = ($('#ai-base').value.trim() || 'https://api.deepseek.com/v1').replace(/\/+$/, '');
     const key = $('#ai-key').value.trim();
-    const model = $('#ai-model').value.trim() || 'gpt-4o-mini';
+    const model = $('#ai-model').value.trim() || 'deepseek-chat';
     const status = $('#ai-status');
     if (!key) { status.textContent = '请填写你的 API Key（仅存本机）'; status.className = 'ai-status err'; return; }
     saveAiConfig({ base, model, interest });
-    status.textContent = 'AI 生成中…'; status.className = 'ai-status';
+    const setStatus = (text, err) => { status.textContent = text; status.className = 'ai-status' + (err ? ' err' : ''); };
+    setStatus('AI 生成中…');
     const prompt = [
       '你是一个复古纸艺生日贺卡设计助手。请为「' + (name || '寿星') + '」的生日页面设计一个原创主题。',
       '要求：',
@@ -778,24 +799,37 @@
       '4. 只返回一个 JSON 对象，不要任何其他文字：{"palette":{"bg":"#RRGGBB","paper":"#RRGGBB","ink":"#RRGGBB","accent":"#RRGGBB","secondary":"#RRGGBB","glow":"#RRGGBB"},"motif":"1个符号","message":"一句原创中文生日祝福，不超过40字"}'
     ].join('\n');
     try {
-      const res = await fetch(base + '/chat/completions', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', 'authorization': 'Bearer ' + key },
-        body: JSON.stringify({ model, messages: [{ role: 'system', content: prompt }], temperature: 0.9 }),
-      });
-      if (!res.ok) throw new Error('AI 请求失败（' + res.status + '）。检查地址/Key/模型，部分接口需支持跨域。');
-      const data = await res.json();
-      const content = data?.choices?.[0]?.message?.content || '';
+      const r = await aiProxy({ base, key, model, messages: [{ role: 'system', content: prompt }], temperature: 0.9, response_format: { type: 'json_object' } });
+      if (r.status === 401) { setStatus('⚠ 已连接，但 Key 无权限（无效）——网络通了，请填正确 Key', true); return; }
+      if (r.status === 502) { setStatus('⚠ 连接失败：接口不可达或网络受限', true); return; }
+      if (r.status !== 200) { setStatus('⚠ AI 返回 ' + r.status + '，请检查地址/Key/模型', true); return; }
+      const content = r.data?.choices?.[0]?.message?.content || '';
       const m = content.match(/\{[\s\S]*\}/);
-      if (!m) throw new Error('AI 未返回有效主题，请重试。');
+      if (!m) { setStatus('⚠ AI 未返回有效主题，请重试', true); return; }
       const theme = JSON.parse(m[0]);
-      if (!theme.palette || !theme.message) throw new Error('AI 返回格式不完整。');
+      if (!theme.palette || !theme.message) { setStatus('⚠ AI 返回格式不完整', true); return; }
+      // 可选：生成原创插画（不侵权，仅抽象氛围）
+      if ($('#ai-image').checked) {
+        setStatus('生成主题插画中…');
+        const imgModel = $('#ai-image-model').value.trim() || 'gpt-image-1';
+        const imgPrompt = '一张复古纸艺风格的原创生日贺图，氛围与「' + (interest || name || '寿星') + '」相关。要求：原创抽象设计，只用配色、音符、星星、彩带、年份等抽象元素表达氛围，绝对不要出现或模仿任何真实角色、动漫角色、虚拟歌手、品牌的具体形象、面部、服装、标志或名称。';
+        const img = await aiProxy({ base, key, model: imgModel, image: true, prompt: imgPrompt, size: '1024x1024' });
+        if (img.status === 200 && img.data?.data?.[0]) {
+          const d = img.data.data[0];
+          theme.image = d.url || (d.b64_json ? await compressImage(d.b64_json) : '');
+          if (!theme.image) { setStatus('⚠ 主题已生成，但插画无法读取', true); state.birthdayTheme = theme; if (theme.message) $('#birthday-message').value = theme.message; return; }
+        } else {
+          setStatus('⚠ 主题已生成，但插画失败（' + (img.status || '') + '），可稍后再试', true);
+          state.birthdayTheme = theme; if (theme.message) $('#birthday-message').value = theme.message;
+          return;
+        }
+      }
       state.birthdayTheme = theme;
-      status.textContent = '✅ 主题已生成，将应用到祝福页'; status.className = 'ai-status';
+      setStatus('✅ 主题' + (theme.image ? '与插画' : '') + '已生成，将应用到祝福页');
       if (theme.message) $('#birthday-message').value = theme.message;
     } catch (error) {
       state.birthdayTheme = null;
-      status.textContent = '⚠ ' + error.message; status.className = 'ai-status err';
+      setStatus('⚠ ' + (error.message || '生成失败'), true);
     }
   });
   const birthdayCreate = $('#birthday-create');
