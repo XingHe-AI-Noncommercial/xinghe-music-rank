@@ -60,8 +60,6 @@ function renderPage(wish, found) {
   const aiSubtitle = String(theme.subtitle || '').slice(0, 80);
   const aiOrnament = String(theme.ornament || c.motif).slice(0, 4);
   const aiImage = found && theme.image && String(theme.image).length < 500000 ? String(theme.image) : '';
-  const aiAllowed = theme.allowed === true || theme.allowed === 'true';
-  const aiReason = String(theme.reason || '').slice(0, 120);
   const aiInterest = String(theme.interest || name || '').slice(0, 40);
   const aiBg = found && theme.bgImage && String(theme.bgImage).length < 500000 ? String(theme.bgImage) : '';
   const bgStyle = aiBg ? `background-image:linear-gradient(${c.paper}e6, ${c.paper}e6),url("${esc(aiBg)}");background-size:cover;background-position:center;` : '';
@@ -159,7 +157,6 @@ function renderPage(wish, found) {
     ${heroSub ? '<div class="bday-sub">' + esc(heroSub) + '</div>' : ''}
     <div class="bday-divider"><span>${aiOrnament}</span></div>
     ${aiImage ? '<div class="bday-img"><img src="' + esc(aiImage) + '" alt="生日贺图" loading="lazy" onerror="this.parentNode.remove()"></div>' : '<div class="bday-banner"><div class="bb-emblem">🎂</div><div class="bb-title"><i></i><span>' + esc(interestLine || '生日快乐') + '</span><i></i></div><div class="bb-tag">HAPPY ANNIVERSARY · ' + c.motif + ' ✦ ' + c.motif + '</div></div>'}
-    ${found && aiReason ? '<div class="copyright-note">🔍 二创判断：' + esc(aiReason) + (aiAllowed ? '' : '（已用原创抽象贺图，未使用任何角色形象）') + '</div>' : ''}
     <div class="bday-message"><span class="q">“</span><p id="wish">${found ? (aiMessage ? safeAi : '祝你生日快乐，愿你所有美好都如期而至。') : '这条祝福不存在或已失效。'}</p></div>
     ${found && safeCustom ? '<div class="custom">✦ ' + safeCustom + '</div>' : ''}
     ${found ? '<button id="again" class="btn primary">再换一句祝福 ✦</button>' : ''}
