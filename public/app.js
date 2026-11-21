@@ -208,26 +208,58 @@
     }
   }
 
+  // ---------- 榜单（搜索 / 收藏 / 分享） ----------
+  let favs = new Set();
+  try { favs = new Set(JSON.parse(localStorage.getItem('xh-favs') || '[]')); } catch { favs = new Set(); }
+  let favOnly = false;
+  function saveFavs() { try { localStorage.setItem('xh-favs', JSON.stringify([...favs])); } catch { /* ignore */ } }
   function renderList() {
     const data = state.data || seedPreview();
-    const songs = data.songs || [];
+    let songs = data.songs || [];
+    const q = (($('#search-box')?.value) || '').trim().toLowerCase();
+    if (q) songs = songs.filter(s => (s.title || '').toLowerCase().includes(q) || (s.artist || '').toLowerCase().includes(q) || (s.bvid || '').toLowerCase().includes(q));
+    if (favOnly) songs = songs.filter(s => favs.has(s.bvid));
     $('#list-count').textContent = `共 ${number(songs.length)} 个`;
     $('#empty-list').classList.toggle('hidden', songs.length !== 0);
     const grid = $('#list-grid');
-    if (!songs.length) { grid.innerHTML = ''; return; }
+    if (!songs.length) { grid.innerHTML = '<div class="empty-state"><span>🗂️</span><strong>没有匹配的作品</strong></div>'; return; }
     grid.innerHTML = songs.map((song, index) => {
-      // 对外只显示掩码 BV 号，不提供 B 站跳转（不暴露真实编号）
+      const bv = song.bvid || '';
+      const fav = favs.has(bv);
       return `<article class="track-card lite-card">
+        <button class="fav-btn ${fav ? 'is-fav' : ''}" data-fav="${escapeHtml(bv)}" title="收藏 / 取消收藏" aria-label="收藏">${fav ? '♥' : '♡'}</button>
         <span class="lite-rank">${String(index + 1).padStart(2, '0')}</span>
         <div class="track-info">
           <span class="track-title">${escapeHtml(song.title)}</span>
           <span class="track-artist">${escapeHtml(song.artist || '未知创作者')}</span>
-          <span class="track-bv">${escapeHtml(song.bvid || '')}</span>
+          <span class="track-bv">${escapeHtml(bv)}</span>
         </div>
         <span class="track-open" title="不提供跳转（BV 号已掩码）">♪</span>
       </article>`;
     }).join('');
   }
+  $('#list-grid').addEventListener('click', event => {
+    const btn = event.target.closest('.fav-btn');
+    if (!btn) return;
+    const bv = btn.dataset.fav;
+    if (favs.has(bv)) { favs.delete(bv); } else { favs.add(bv); showToast('已收藏到「我的收藏」', 'success'); }
+    saveFavs();
+    renderList();
+    syncFavFilter();
+  });
+  $('#search-box')?.addEventListener('input', renderList);
+  $('#fav-filter')?.addEventListener('click', () => { favOnly = !favOnly; renderList(); syncFavFilter(); });
+  function syncFavFilter() {
+    const b = $('#fav-filter');
+    if (b) { b.classList.toggle('is-on', favOnly); b.innerHTML = favOnly ? '❤ 只看收藏' : '♡ 只看收藏'; }
+  }
+  $('#share-list')?.addEventListener('click', () => {
+    const data = state.data || seedPreview();
+    const songs = data.songs || [];
+    if (!songs.length) { showToast('本周还没有上榜作品。', 'error'); return; }
+    const text = `🎵 星河音浪榜 · 本周（${data.week || ''}）\n` + songs.map((s, i) => `${i + 1}. ${s.title} — ${s.artist || '未知创作者'}`).join('\n') + `\n\n— 来自 xingheai.dpdns.org`;
+    (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => showToast('本周榜单已复制到剪贴板。', 'success')).catch(() => showToast('复制失败，请手动复制。', 'error'));
+  });
 
   // ---------- 投稿 ----------
   $('#submit-form').addEventListener('submit', async event => {
@@ -781,11 +813,11 @@
   if (versionChip) versionChip.addEventListener('click', () => showModal('changelog-modal'));
 
   // ---------- 右上角：页面风格切换 ----------
-  const THEMES = ['huanghong', 'netease', 'tencent', 'classic', 'starry', 'pastel', 'neon', 'ocean'];
+  const THEMES = ['retro', 'huanghong', 'netease', 'tencent', 'classic', 'starry', 'pastel', 'neon', 'ocean'];
   const themeToggle = $('#theme-toggle');
   const themeMenu = $('#theme-menu');
   const syncThemeActive = () => {
-    const cur = document.documentElement.dataset.theme || 'huanghong';
+    const cur = document.documentElement.dataset.theme || 'retro';
     $$('#theme-menu .theme-swatch').forEach(b => b.classList.toggle('is-active', b.dataset.theme === cur));
   };
   if (themeToggle && themeMenu) {
@@ -805,6 +837,28 @@
     }));
   }
   syncThemeActive();
+
+  // ---------- 音浪语录（滚动） ----------
+  const QUOTES = [
+    '好歌不设防，好歌经得起时间。', '每周一颗星，为这一周而亮。', '别让喜欢的歌，只躺在收藏夹里。',
+    '音乐是时间的留声机。', '把这一周，唱进歌里。', '收藏是一种温柔，分享是一种勇气。',
+    '愿你循环的每一首，都值得单曲循环。', '星河滚烫，音符是人间理想。', '好的作品值得被更多人听见。',
+    '别怕迟到，好歌永远在等你。', '每一次投稿，都是给这一周的礼物。',
+  ];
+  const quoteTrack = $('#quote-track');
+  if (quoteTrack) {
+    const half = QUOTES.map(q => `<span><b>♪</b> ${escapeHtml(q)}</span>`).join('');
+    quoteTrack.innerHTML = half + half;
+  }
+
+  // ---------- 返回顶部 ----------
+  const backtop = $('#backtop');
+  if (backtop) {
+    const onScroll = () => backtop.classList.toggle('show', (window.scrollY || document.documentElement.scrollTop) > 320);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    backtop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    onScroll();
+  }
 
   // ---------- 快捷按键 ----------
   const quickAnnouncement = $('#quick-announcement');
