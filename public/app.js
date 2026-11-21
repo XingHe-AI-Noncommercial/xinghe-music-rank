@@ -289,7 +289,7 @@
 
   $('#refresh-button').addEventListener('click', () => refreshState(true));
   $('#open-admin').addEventListener('click', openAdmin);
-  $('#open-admin-dev').addEventListener('click', openAdmin);
+  $('#open-admin-dev')?.addEventListener('click', openAdmin);
   async function openAdmin() {
     if (state.adminLoggedIn) { showModal('admin-modal'); await loadAdminData(); }
     else showModal('admin-login-modal');
