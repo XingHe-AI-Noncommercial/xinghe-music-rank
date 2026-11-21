@@ -847,42 +847,58 @@
     const key = $('#ai-key').value.trim();
     const model = $('#ai-model').value.trim() || 'deepseek-chat';
     const status = $('#ai-status');
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
     if (!key) { status.textContent = '请填写你的 API Key（仅存本机）'; status.className = 'ai-status err'; return; }
     saveAiConfig({ base, model, interest });
     const setStatus = (text, err) => { status.textContent = text; status.className = 'ai-status' + (err ? ' err' : ''); };
-    setStatus('AI 生成中…');
-    const prompt = [
-      '你是复古纸艺生日贺卡设计助手，兼版权顾问。请为「' + (name || '寿星') + '」的生日页面设计原创主题。',
-      '步骤一（二创判断）：判断「' + (interest || '无') + '」相关的角色/作品/IP 官方是否通常允许粉丝二创。一般官方允许有限度非商业个人二创，但禁止商用与直接搬运官方图。用你的知识判断，给出结论与一句理由。',
-      '步骤二（原创主题）：复古、方正、纸质；配色偏红白，除非兴趣另有明显偏好。只用抽象配色、纹样符号、emoji 营造氛围（如喜欢蓝色星星→蓝金+⭐）。',
-      '铁律：绝不复制、模仿或使用任何真实角色/品牌/版权形象的外观、面部、服装、标志或名称；也不用官方图。只做原创抽象主题。',
-      '只返回一个 JSON 对象，不要任何其他文字：{"palette":{"bg":"#RRGGBB","paper":"#RRGGBB","ink":"#RRGGBB","accent":"#RRGGBB","secondary":"#RRGGBB","glow":"#RRGGBB"},"motif":"1个符号","message":"一句原创中文生日祝福，不超过40字","allowed":true,"reason":"二创判断一句话，如：官方通常允许非商业个人二创，但不建议直接使用官方图"}'
-    ].join('\n');
-    try {
-      const r = await aiProxy({ base, key, model, messages: [{ role: 'system', content: prompt }], temperature: 0.9, response_format: { type: 'json_object' } });
-      if (r.status === 0) { setStatus('⚠ ' + (r.data.error || '中转请求失败'), true); return; }
-      if (r.status === 401) { setStatus('⚠ 已连接，但 Key 无权限（无效）——网络通了，请填正确 Key', true); return; }
-      if (r.status === 502) { setStatus('⚠ 连接失败：接口不可达或网络受限', true); return; }
-      if (r.status !== 200) { setStatus('⚠ AI 返回 ' + r.status + '，请检查地址/Key/模型', true); return; }
+    const callAI = async (messages) => {
+      const r = await aiProxy({ base, key, model, messages, temperature: 0.9, response_format: { type: 'json_object' } });
+      if (r.status === 0) { setStatus('⚠ ' + (r.data.error || '中转请求失败'), true); return null; }
+      if (r.status === 401) { setStatus('⚠ 已连接，但 Key 无权限（无效）——网络通了，请填正确 Key', true); return null; }
+      if (r.status === 502) { setStatus('⚠ 连接失败：接口不可达或网络受限', true); return null; }
+      if (r.status !== 200) { setStatus('⚠ AI 返回 ' + r.status + '，请检查地址/Key/模型', true); return null; }
       const content = r.data?.choices?.[0]?.message?.content || '';
       const m = content.match(/\{[\s\S]*\}/);
-      if (!m) { setStatus('⚠ AI 未返回有效主题，请重试', true); return; }
-      const theme = JSON.parse(m[0]);
-      if (!theme.palette || !theme.message) { setStatus('⚠ AI 返回格式不完整', true); return; }
+      if (!m) { setStatus('⚠ AI 未返回有效内容，请重试', true); return null; }
+      try { return JSON.parse(m[0]); } catch { setStatus('⚠ AI 返回格式不完整', true); return null; }
+    };
+    const prompt1 = [
+      '你是一位资深生日贺卡设计总监，兼版权顾问。请为「' + (name || '寿星') + '」设计一张原创、有品质感的复古生日贺卡，主题围绕「' + (interest || '无') + '」。',
+      '请先深度思考版式与氛围，不要敷衍、不要一个词居中。',
+      '1. 版式：有明确视觉层级（主标题 / 副标题 / 正文 / 装饰），复古方正纸质。',
+      '2. 氛围：根据兴趣定抽象氛围（配色/纹样/元素），如喜欢蓝色星星→蓝金+星+音符。',
+      '3. 细节：主标题（短、动人）、副标题（一句有诗意的描述）、装饰符号、祝福语。',
+      '4. 二创：判断「' + (interest || '无') + '」相关 IP 官方是否通常允许非商业个人二创（一般允许有限度，但禁商用与直接搬运官方图），给出一句 reason。',
+      '铁律：绝不复制、模仿或使用任何真实角色/品牌/版权形象的外观、面部、服装、标志或名称；不出现具体角色名；只做原创抽象主题。',
+      '只返回一个 JSON 对象，不要任何其他文字：{"palette":{"bg":"#RRGGBB","paper":"#RRGGBB","ink":"#RRGGBB","accent":"#RRGGBB","secondary":"#RRGGBB","glow":"#RRGGBB"},"motif":"1个符号","ornament":"1个符号","title":"主标题≤12字","subtitle":"副标题≤24字","message":"一句原创中文生日祝福≤40字","allowed":true,"reason":"二创判断一句话"}'
+    ].join('\n');
+    try {
+      // 第一轮：深度设计概念
+      setStatus('① 深度理解与版式设计…');
+      const concept = await callAI([{ role: 'system', content: prompt1 }]);
+      if (!concept) return;
+      if (!concept.palette || !concept.message) { setStatus('⚠ 设计概念不完整，请重试', true); return; }
+      await sleep(600);
+      // 第二轮：打磨成品
+      setStatus('② 打磨细节与文案…');
+      let theme = concept;
+      const polished = await callAI([{ role: 'system', content: '你是一位资深设计师，正在打磨下面这张生日贺卡设计。请做最后润色：确保配色协调、版式平衡、文案动人。输入概念：' + JSON.stringify(concept) + '。只返回同样的 JSON 结构（可微调配色与文案），不要任何其他文字。' }]);
+      if (polished && polished.palette && polished.message) theme = polished;
       theme.interest = interest || name || '';
       theme.allowed = theme.allowed === true || theme.allowed === 'true';
       theme.reason = theme.reason || '';
-      setStatus((theme.allowed ? '✅ 二创允许：' : 'ℹ 二创受限：') + (theme.reason || '已用原创抽象主题'));
-      // 可选：生成原创插画（不侵权，仅抽象氛围）
-      if ($('#ai-image').checked) {
-        setStatus('生成主题插画中…');
+      // 图片：优先粘贴的网址，其次 AI 生图
+      const urlImg = ($('#ai-image-url') ? $('#ai-image-url').value.trim() : '');
+      if (urlImg && /^https?:\/\/\S+\.(png|jpe?g|webp|gif|avif)(\?\S*)?$/i.test(urlImg)) {
+        theme.image = urlImg;
+      } else if ($('#ai-image').checked) {
+        setStatus('③ 生成主题插画中…');
         const imgModel = $('#ai-image-model').value.trim() || 'gpt-image-1';
         const imgPrompt = '一张复古纸艺风格的原创生日贺图，氛围与「' + (interest || name || '寿星') + '」相关。要求：原创抽象设计，只用配色、音符、星星、彩带、年份等抽象元素表达氛围，绝对不要出现或模仿任何真实角色、动漫角色、虚拟歌手、品牌的具体形象、面部、服装、标志或名称。';
         const img = await aiProxy({ base, key, model: imgModel, image: true, prompt: imgPrompt, size: '1024x1024' });
         if (img.status === 200 && img.data?.data?.[0]) {
           const d = img.data.data[0];
           theme.image = d.url || (d.b64_json ? await compressImage('data:image/png;base64,' + d.b64_json) : '');
-          if (!theme.image) { setStatus('⚠ 主题已生成，但插画无法读取', true); state.birthdayTheme = theme; if (theme.message) $('#birthday-message').value = theme.message; return; }
         } else {
           setStatus('⚠ 主题已生成，但插画失败（' + (img.status || '') + '），可稍后再试', true);
           state.birthdayTheme = theme; if (theme.message) $('#birthday-message').value = theme.message;
@@ -890,7 +906,7 @@
         }
       }
       state.birthdayTheme = theme;
-      setStatus('✅ 主题' + (theme.image ? '与插画' : '') + '已生成，将应用到祝福页');
+      setStatus('✅ 深度定制完成（' + (theme.allowed ? '二创允许' : '二创受限') + '）· ' + (theme.reason || '已应用原创主题'));
       if (theme.message) $('#birthday-message').value = theme.message;
     } catch (error) {
       state.birthdayTheme = null;
