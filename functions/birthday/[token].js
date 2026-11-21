@@ -62,7 +62,9 @@ function renderPage(wish, found) {
   const aiImage = found && theme.image && String(theme.image).length < 500000 ? String(theme.image) : '';
   const aiInterest = String(theme.interest || name || '').slice(0, 40);
   const aiBg = found && theme.bgImage && String(theme.bgImage).length < 500000 ? String(theme.bgImage) : '';
-  const bgStyle = aiBg ? `background-image:linear-gradient(${c.paper}e6, ${c.paper}e6),url("${esc(aiBg)}");background-size:cover;background-position:center;` : '';
+  // 贺图 → 卡片背景（卡片长相由贺图决定）；底图 → 页面最底部背景
+  const cardStyle = aiImage ? `background-image:linear-gradient(${c.paper}b3, ${c.paper}b3),url("${esc(aiImage)}");background-size:cover;background-position:center;` : '';
+  const pageBgStyle = aiBg ? `background-image:linear-gradient(${c.bg}cc, ${c.bg}cc),url("${esc(aiBg)}");background-size:cover;background-position:center;` : '';
   const safeName = esc(name);
   const safeCustom = esc(custom);
   const safeAi = esc(aiMessage);
@@ -122,9 +124,6 @@ function renderPage(wish, found) {
   .bday-divider { display:flex; align-items:center; gap:10px; margin:12px auto; max-width:220px; }
   .bday-divider:before, .bday-divider:after { content:""; flex:1; height:2px; background:${c.ink}33; }
   .bday-divider span { color:${c.accent}; font-size:14px; }
-  .bday-img { margin:8px 0 12px; padding:8px; border:2px solid ${c.ink}; background:${c.paper}; box-shadow:5px -5px 0 ${c.ink}cc; position:relative; }
-  .bday-img img { width:100%; max-height:270px; object-fit:cover; display:block; }
-  .bday-img:after { content:"✦"; position:absolute; top:-9px; left:-9px; color:${c.accent}; font-size:15px; background:${c.paper}; padding:0 3px; }
   .bday-banner { margin:8px 0 12px; padding:20px 16px 18px; border:2px solid ${c.ink}; position:relative; overflow:hidden; background:repeating-linear-gradient(45deg, ${c.accent}12 0 12px, transparent 12px 24px), repeating-linear-gradient(-45deg, ${c.secondary}12 0 12px, transparent 12px 24px); }
   .bday-banner:after { content:"${c.motif}"; position:absolute; font-size:96px; right:-14px; bottom:-30px; opacity:.13; transform:rotate(-14deg); }
   .bb-emblem { width:56px; height:56px; margin:0 auto 8px; display:flex; align-items:center; justify-content:center; font-size:28px; border:2px solid ${c.ink}; background:${c.paper}; box-shadow:3px -3px 0 ${c.ink}; position:relative; }
@@ -145,10 +144,10 @@ function renderPage(wish, found) {
   @keyframes fall { to { transform:translateY(110vh) rotate(720deg); } }
 </style>
 </head>
-<body>
+<body style="${pageBgStyle}">
   <div class="motif-water" aria-hidden="true">${c.motif}</div>
   <div id="confetti" aria-hidden="true"></div>
-  <div class="card" style="${bgStyle}">
+  <div class="card" style="${cardStyle}">
     <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
     <div class="balloons" aria-hidden="true">${found ? balloons : ''}</div>
     <span class="cake">🎂</span>
@@ -156,7 +155,7 @@ function renderPage(wish, found) {
     <h1 class="bday-hero">${found ? '<span class="orn">' + aiOrnament + '</span> ' + esc(heroTitle).replace(safeName, '<span class="name">' + safeName + '</span>') + ' <span class="orn">' + aiOrnament + '</span>' : '生日快乐！'}</h1>
     ${heroSub ? '<div class="bday-sub">' + esc(heroSub) + '</div>' : ''}
     <div class="bday-divider"><span>${aiOrnament}</span></div>
-    ${aiImage ? '<div class="bday-img"><img src="' + esc(aiImage) + '" alt="生日贺图" loading="lazy" onerror="this.parentNode.remove()"></div>' : '<div class="bday-banner"><div class="bb-emblem">🎂</div><div class="bb-title"><i></i><span>' + esc(interestLine || '生日快乐') + '</span><i></i></div><div class="bb-tag">HAPPY ANNIVERSARY · ' + c.motif + ' ✦ ' + c.motif + '</div></div>'}
+    ${aiImage ? '' : '<div class="bday-banner"><div class="bb-emblem">🎂</div><div class="bb-title"><i></i><span>' + esc(interestLine || '生日快乐') + '</span><i></i></div><div class="bb-tag">HAPPY ANNIVERSARY · ' + c.motif + ' ✦ ' + c.motif + '</div></div>'}
     <div class="bday-message"><span class="q">“</span><p id="wish">${found ? (aiMessage ? safeAi : '祝你生日快乐，愿你所有美好都如期而至。') : '这条祝福不存在或已失效。'}</p></div>
     ${found && safeCustom ? '<div class="custom">✦ ' + safeCustom + '</div>' : ''}
     ${found ? '<button id="again" class="btn primary">再换一句祝福 ✦</button>' : ''}
