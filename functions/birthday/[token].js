@@ -62,9 +62,9 @@ function renderPage(wish, found) {
   const aiImage = found && theme.image && String(theme.image).length < 500000 ? String(theme.image) : '';
   const aiInterest = String(theme.interest || name || '').slice(0, 40);
   const aiBg = found && theme.bgImage && String(theme.bgImage).length < 500000 ? String(theme.bgImage) : '';
-  // 贺图 → 卡片背景（卡片长相由贺图决定）；底图 → 页面最底部背景
-  const cardStyle = aiImage ? `background-image:linear-gradient(${c.paper}b3, ${c.paper}b3),url("${esc(aiImage)}");background-size:cover;background-position:center;` : '';
-  const pageBgStyle = aiBg ? `background-image:linear-gradient(${c.bg}cc, ${c.bg}cc),url("${esc(aiBg)}");background-size:cover;background-position:center;` : '';
+  // 贺图 → 卡片背景（清晰可见）；底图 → 页面最底部背景（清晰可见）
+  const cardStyle = aiImage ? `background-image:linear-gradient(${c.paper}59, ${c.paper}59),url("${esc(aiImage)}");background-size:cover;background-position:center;` : '';
+  const pageBgStyle = aiBg ? `background-image:linear-gradient(${c.bg}80, ${c.bg}80),url("${esc(aiBg)}");background-size:cover;background-position:center;` : '';
   const safeName = esc(name);
   const safeCustom = esc(custom);
   const safeAi = esc(aiMessage);
@@ -100,15 +100,15 @@ function renderPage(wish, found) {
   .motif-water { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; font-size:min(46vw,320px); opacity:.05; pointer-events:none; z-index:0; transform:rotate(-8deg); }
   .card {
     position:relative; z-index:2; width:min(460px,94vw); background:${c.paper};
-    border:2px solid ${c.ink}; border-radius:0; padding:28px 24px 24px; text-align:center;
-    box-shadow:6px -6px 0 ${c.ink},12px -12px 0 ${c.ink}22;
+    border:2px solid ${c.ink}; border-radius:18px; padding:30px 26px 26px; text-align:center;
+    box-shadow:0 24px 64px ${c.ink}38, 7px -7px 0 ${c.ink}, 14px -14px 0 ${c.ink}1f;
   }
-  .card:before { content:""; position:absolute; inset:7px; border:1px solid ${c.ink}33; pointer-events:none; }
+  .card:before { content:""; position:absolute; inset:8px; border:1px solid ${c.ink}2b; border-radius:12px; pointer-events:none; }
   .corner { position:absolute; width:22px; height:22px; border:2px solid ${c.accent}; }
-  .corner.tl { top:-8px; left:-8px; border-right:none; border-bottom:none; }
-  .corner.tr { top:-8px; right:-8px; border-left:none; border-bottom:none; }
-  .corner.bl { bottom:-8px; left:-8px; border-right:none; border-top:none; }
-  .corner.br { bottom:-8px; right:-8px; border-left:none; border-top:none; }
+  .corner.tl { top:6px; left:6px; border-right:none; border-bottom:none; }
+  .corner.tr { top:6px; right:6px; border-left:none; border-bottom:none; }
+  .corner.bl { bottom:6px; left:6px; border-right:none; border-top:none; }
+  .corner.br { bottom:6px; right:6px; border-left:none; border-top:none; }
   .balloons { position:relative; height:56px; margin-bottom:0; font-size:28px; letter-spacing:6px; }
   .balloons span { display:inline-block; animation:sway 3.4s ease-in-out infinite; }
   .balloons span:nth-child(2n){ animation-delay:.5s; } .balloons span:nth-child(3n){ animation-delay:1s; }
@@ -116,27 +116,27 @@ function renderPage(wish, found) {
   @keyframes sway { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-9px) rotate(3deg)} }
   .cake { font-size:46px; line-height:1; display:inline-block; animation:bounce 2.4s ease-in-out infinite; filter:drop-shadow(0 8px 12px ${c.ink}33); }
   @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-  .eyebrow { font-family:"Courier New",monospace; letter-spacing:.22em; font-size:11px; color:${c.ink}99; margin-top:8px; font-weight:700; }
-  .bday-hero { font-family:Impact,"Microsoft YaHei",sans-serif; font-weight:800; font-size:30px; margin:6px 0 2px; letter-spacing:.02em; line-height:1.25; }
+  .eyebrow { font-family:"Courier New",monospace; letter-spacing:.22em; font-size:11px; color:${c.ink}99; margin-top:8px; font-weight:700; text-shadow:0 1px 8px ${c.paper}e6; }
+  .bday-hero { font-family:Impact,"Microsoft YaHei",sans-serif; font-weight:800; font-size:30px; margin:6px 0 2px; letter-spacing:.02em; line-height:1.25; text-shadow:0 1px 0 ${c.paper}cc, 0 3px 14px ${c.paper}cc; }
   .bday-hero .orn { color:${c.accent}; font-size:.8em; vertical-align:middle; }
   .bday-hero .name { color:${c.accent}; }
-  .bday-sub { font-family:"Courier New",monospace; font-size:12px; color:${c.ink}88; letter-spacing:.12em; margin-top:2px; }
+  .bday-sub { font-family:"Courier New",monospace; font-size:12px; color:${c.ink}88; letter-spacing:.12em; margin-top:2px; text-shadow:0 1px 8px ${c.paper}e6; }
   .bday-divider { display:flex; align-items:center; gap:10px; margin:12px auto; max-width:220px; }
   .bday-divider:before, .bday-divider:after { content:""; flex:1; height:2px; background:${c.ink}33; }
   .bday-divider span { color:${c.accent}; font-size:14px; }
-  .bday-banner { margin:8px 0 12px; padding:20px 16px 18px; border:2px solid ${c.ink}; position:relative; overflow:hidden; background:repeating-linear-gradient(45deg, ${c.accent}12 0 12px, transparent 12px 24px), repeating-linear-gradient(-45deg, ${c.secondary}12 0 12px, transparent 12px 24px); }
+  .bday-banner { margin:8px 0 12px; padding:20px 16px 18px; border:2px solid ${c.ink}; border-radius:12px; position:relative; overflow:hidden; background:repeating-linear-gradient(45deg, ${c.accent}12 0 12px, transparent 12px 24px), repeating-linear-gradient(-45deg, ${c.secondary}12 0 12px, transparent 12px 24px); }
   .bday-banner:after { content:"${c.motif}"; position:absolute; font-size:96px; right:-14px; bottom:-30px; opacity:.13; transform:rotate(-14deg); }
   .bb-emblem { width:56px; height:56px; margin:0 auto 8px; display:flex; align-items:center; justify-content:center; font-size:28px; border:2px solid ${c.ink}; background:${c.paper}; box-shadow:3px -3px 0 ${c.ink}; position:relative; }
   .bb-title { display:flex; align-items:center; justify-content:center; gap:10px; font-family:Impact,sans-serif; font-size:22px; color:${c.accent}; position:relative; }
   .bb-title i { width:26px; height:2px; background:${c.ink}; display:inline-block; }
   .bb-tag { font-family:"Courier New",monospace; font-size:10px; letter-spacing:.22em; color:${c.ink}88; margin-top:8px; position:relative; }
-  .bday-message { margin:12px auto 6px; padding:12px 14px; border-left:4px solid ${c.accent}; background:${c.accent}10; text-align:left; }
+  .bday-message { margin:12px auto 6px; padding:13px 15px; border-left:4px solid ${c.accent}; border-radius:12px; background:${c.paper}d9; backdrop-filter:blur(7px); text-align:left; box-shadow:0 4px 18px ${c.ink}14; }
   .bday-message .q { font-family:Georgia,serif; font-size:30px; color:${c.accent}; line-height:.4; display:block; }
   .bday-message p { font-size:15px; line-height:1.8; margin:4px 0 0; min-height:2.5em; transition:opacity .4s; }
   .bday-message p.fade { opacity:0; }
-  .custom { margin-top:10px; padding:10px 12px; border:2px solid ${c.secondary}; background:${c.secondary}18; font-size:14px; line-height:1.7; }
-  .copyright-note { margin-top:10px; font-size:11px; line-height:1.6; padding:8px 10px; border:1px dashed ${c.ink}55; color:${c.ink}99; text-align:left; }
-  .btn { margin-top:14px; border:2px solid ${c.ink}; background:${c.paper}; color:${c.ink}; font-weight:900; font-size:13px; padding:9px 16px; cursor:pointer; box-shadow:3px -3px 0 ${c.ink},6px -6px 0 ${c.ink}22; font-family:inherit; }
+  .custom { margin-top:10px; padding:11px 13px; border:2px solid ${c.secondary}; border-radius:12px; background:${c.paper}d9; backdrop-filter:blur(7px); font-size:14px; line-height:1.7; box-shadow:0 4px 18px ${c.ink}14; }
+  .copyright-note { margin-top:10px; font-size:11px; line-height:1.6; padding:8px 10px; border:1px dashed ${c.ink}55; border-radius:10px; color:${c.ink}99; text-align:left; background:${c.paper}66; }
+  .btn { margin-top:14px; border:2px solid ${c.ink}; background:${c.paper}; color:${c.ink}; font-weight:900; font-size:13px; padding:9px 16px; border-radius:10px; cursor:pointer; box-shadow:3px -3px 0 ${c.ink},6px -6px 0 ${c.ink}22; font-family:inherit; }
   .btn:hover { transform:translate(-1px,1px); }
   .btn.primary { background:${c.accent}; color:${c.dark ? '#1a1020' : '#fff'}; border-color:${c.accent}; box-shadow:3px -3px 0 ${c.accent}cc,6px -6px 0 ${c.ink}22; }
   .foot { margin-top:16px; font-family:"Courier New",monospace; font-size:10px; letter-spacing:.14em; color:${c.ink}88; }
