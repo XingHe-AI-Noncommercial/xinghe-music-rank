@@ -447,12 +447,11 @@
     }).join('');
   }
 
-  // 生日祝福管理：列出全部（含历史），显示完整网址，可复制/打开/关停/启用/删除
-  function renderAdminBirthdays(list) {
-    const holder = $('#admin-birthday-list'); if (!holder) return;
+  // 生日祝福行渲染（总览区 + 专门面板共用）：显示完整网址，可复制/打开/关停/启用/删除
+  function renderBirthdayRows(holder, list) {
+    if (!holder) return;
     const arr = Array.isArray(list) ? list : [];
-    const count = $('#admin-birthday-count'); if (count) count.textContent = `${arr.length} 条`;
-    if (!arr.length) { holder.innerHTML = '<div class="empty-table">暂无生日祝福。点击左侧「🎂 创建生日」生成。</div>'; return; }
+    if (!arr.length) { holder.innerHTML = '<div class="empty-table">暂无生日祝福。点「创建生日」生成一条。</div>'; return; }
     holder.innerHTML = arr.map(b => {
       const link = location.origin + '/birthday/' + b.token;
       const off = b.disabled === true || b.disabled === 'true';
@@ -474,7 +473,7 @@
       try {
         await api('/api/admin/birthdays', { method: 'PATCH', body: JSON.stringify({ id: btn.dataset.bdayOff, disabled: on }) });
         showToast(on ? '已关停该网址' : '已启用该网址', 'success');
-        await loadAdminData();
+        await loadAdminData(); loadBirthdayPanel();
       } catch (e) { showToast(e.message, 'error'); }
     }));
     holder.querySelectorAll('[data-bday-del]').forEach(btn => btn.addEventListener('click', async () => {
@@ -482,9 +481,32 @@
       try {
         await api('/api/admin/birthdays?id=' + encodeURIComponent(btn.dataset.bdayDel), { method: 'DELETE' });
         showToast('已删除生日祝福', 'success');
-        await loadAdminData();
+        await loadAdminData(); loadBirthdayPanel();
       } catch (e) { showToast(e.message, 'error'); }
     }));
+  }
+
+  // 生日祝福管理：总览区列表
+  function renderAdminBirthdays(list) {
+    const holder = $('#admin-birthday-list'); if (!holder) return;
+    const arr = Array.isArray(list) ? list : [];
+    const count = $('#admin-birthday-count'); if (count) count.textContent = `${arr.length} 条`;
+    renderBirthdayRows(holder, arr);
+  }
+
+  // 生日祝福专门总览面板：查看/复制/删除/一键清除/关停
+  let birthdayPanelLoading = false;
+  async function loadBirthdayPanel() {
+    const holder = $('#birthday-panel-list');
+    if (!holder || birthdayPanelLoading) return;
+    birthdayPanelLoading = true;
+    try {
+      const r = await api('/api/admin/birthdays', { method: 'GET' });
+      renderBirthdayRows(holder, r.list || []);
+      const st = $('#birthday-panel-stats');
+      if (st) { const l = r.list || []; st.textContent = `共 ${l.length} 条 · 已关停 ${l.filter(x => x.disabled).length} · 累计打开 ${l.reduce((a, b) => a + (b.visits || 0), 0)} 次`; }
+    } catch (e) { holder.innerHTML = '<div class="empty-table">' + escapeHtml(e.message) + '</div>'; }
+    finally { birthdayPanelLoading = false; }
   }
 
   // 访客公网 IP 列表：每个进入/投稿过的 IP + 其活动/投稿，点「封禁」自动填入表单
@@ -782,8 +804,7 @@
   if (quickInbox) quickInbox.addEventListener('click', async () => { showModal('inbox-modal'); await loadInbox(); });
 
   // ---------- 创建生日祝福 ----------
-  const openBirthday = $('#open-birthday');
-  if (openBirthday) openBirthday.addEventListener('click', () => {
+  function openCreateBirthday() {
     $('#birthday-result')?.classList.add('hidden');
     $('#birthday-link').textContent = '';
     state.birthdayTheme = null;
@@ -793,6 +814,20 @@
     const bu = $('#birthday-bg-upload'); if (bu) bu.value = '';
     const iu = $('#birthday-image-url'); if (iu) iu.value = '';
     showModal('birthday-modal');
+  }
+  const openBirthday = $('#open-birthday');
+  if (openBirthday) openBirthday.addEventListener('click', () => { loadBirthdayPanel(); showModal('birthday-panel-modal'); });
+  // 面板：创建新生日 → 关面板开创建弹窗；一键清除所有
+  const panelCreate = $('#birthday-panel-create');
+  if (panelCreate) panelCreate.addEventListener('click', () => { hideModal('birthday-panel-modal'); openCreateBirthday(); });
+  const panelClear = $('#birthday-panel-clear');
+  if (panelClear) panelClear.addEventListener('click', async () => {
+    if (!confirm('确定一键清除所有生日祝福链接？此操作不可撤销。')) return;
+    try {
+      await api('/api/admin/birthdays?all=true', { method: 'DELETE' });
+      showToast('已清除全部生日链接', 'success');
+      await loadAdminData(); loadBirthdayPanel();
+    } catch (e) { showToast(e.message, 'error'); }
   });
   // 风格选择 + 颜色联动
   const BDAY_STYLES = {
