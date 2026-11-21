@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN" data-theme="huanghong">
+<html lang="zh-CN" data-theme="retro">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -26,7 +26,8 @@
         <button id="theme-toggle" class="theme-toggle" title="切换页面风格" aria-label="切换页面风格">🎨</button>
         <div id="theme-menu" class="theme-menu hidden">
           <p class="theme-menu-title">选择页面风格</p>
-          <button class="theme-swatch is-active" data-theme="huanghong"><i style="background:linear-gradient(135deg,#ff3d2e,#ffc233)"></i><b>黄红 · 默认</b></button>
+          <button class="theme-swatch is-active" data-theme="retro"><i style="background:linear-gradient(135deg,#d5342a,#e07b1f)"></i><b>复古 · 默认</b></button>
+          <button class="theme-swatch" data-theme="huanghong"><i style="background:linear-gradient(135deg,#ff3d2e,#ffc233)"></i><b>黄红</b></button>
           <button class="theme-swatch" data-theme="netease"><i style="background:linear-gradient(135deg,#1f8a5f,#5fd9a4)"></i><b>网易青绿</b></button>
           <button class="theme-swatch" data-theme="tencent"><i style="background:linear-gradient(135deg,#1f6feb,#63b3ff)"></i><b>腾讯蓝</b></button>
           <button class="theme-swatch" data-theme="classic"><i style="background:linear-gradient(135deg,#ff5a4e,#ffb800)"></i><b>经典红金</b></button>
@@ -41,6 +42,8 @@
       <button class="button button-quiet" id="open-admin">开发者模式 ↗</button>
     </div>
   </header>
+
+  <div class="quote-bar" aria-hidden="true"><span class="quote-label">✦ 音浪语录</span><div class="quote-marquee"><div class="quote-track" id="quote-track"></div></div></div>
 
   <main id="top" class="page-shell">
     <section class="hero-panel">
@@ -105,7 +108,7 @@
     <section id="list" class="ranking-section">
       <div class="ranking-header">
         <div class="section-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> THIS WEEK</div><h2>本周榜单 <span id="list-total" class="top-tag">0 个</span></h2><p>仅显示审核通过的作品；BV 号对外一律以掩码显示，不提供 B 站跳转。</p></div></div>
-        <div class="ranking-tools"><span id="week-chip" class="week-chip">本周周期：—</span><button id="refresh-button" class="icon-button" title="刷新榜单" aria-label="刷新榜单">⟳</button></div>
+        <div class="ranking-tools"><input id="search-box" class="search-input" type="text" placeholder="搜索歌曲 / 作者 / BV号…" aria-label="搜索榜单"><button id="share-list" class="chip-action">📤 分享本周</button><button id="fav-filter" class="chip-action">❤ 只看收藏</button><span id="week-chip" class="week-chip">本周周期：—</span><button id="refresh-button" class="icon-button" title="刷新榜单" aria-label="刷新榜单">⟳</button></div>
       </div>
       <div id="list-grid" class="collection-grid"><div class="loading-panel"><span class="loader"></span> 正在加载本周榜单…</div></div>
       <div id="empty-list" class="empty-state hidden"><span>⌕</span><strong>本周还是空的</strong><p>投一个视频，或等开发者上架；每周一 00:00 清空。</p></div>
@@ -295,6 +298,7 @@
   </section>
 
   <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+  <button id="backtop" class="backtop" title="返回顶部" aria-label="返回顶部">↑</button>
 
   <!-- 小游戏：选择面板 -->
   <div id="games-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="games-title">
@@ -401,7 +405,7 @@
       <h2 id="changelog-title">更新日志</h2>
       <p class="modal-description">星河音浪榜 · 版本记录</p>
       <div class="changelog-list">
-        <div class="changelog-item is-current"><code>v1.14.1</code><div><b>整页大改版</b><p>全新界面，更腾讯、更网易：右上角可切换多种页面风格；左下角可联系开发者（xinghe-ai@outlook.com）；整体更丰富、更现代。</p></div></div>
+        <div class="changelog-item is-current"><code>v1.14.1</code><div><b>整页重做 + 新增功能</b><p>默认恢复最开始的复古风格（方正红白、右上偏移立体感），右上角可切换多种风格；新增：榜单搜索、收藏歌曲、分享本周榜单、音浪语录、返回顶部；开发者后台新增：导出数据、批量通过/拒绝、广播消息、访问统计；左下角联系开发者（xinghe-ai@outlook.com）。</p></div></div>
       </div>
     </div>
   </div>
