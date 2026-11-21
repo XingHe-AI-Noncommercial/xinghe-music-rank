@@ -203,6 +203,16 @@
                 <button id="clear-rejected" class="button button-outline">🗑 清除已拒绝投稿</button>
                 <span id="clear-rejected-count" class="copy-count">已拒绝 0 个</span>
               </div>
+              <div class="copy-row">
+                <button id="export-backup" class="button button-outline">⬇ 导出完整备份</button>
+                <span class="copy-count">下载全部歌曲 / 设置 / 公告 / 封禁 / 生日 / 访问统计（JSON）</span>
+              </div>
+              <div class="copy-row">
+                <form id="broadcast-form" class="admin-add-form" style="grid-template-columns:1fr auto;">
+                  <label class="wide">📢 站内广播（发送到所有投稿人的收件箱）<input name="text" maxlength="500" required placeholder="输入广播内容，如：本周榜单已更新…"></label>
+                  <button class="button button-primary" type="submit">发送广播</button>
+                </form>
+              </div>
             </section>
 
             <!-- 公告栏：管理员发布公告 -->
@@ -236,7 +246,14 @@
 
           <div id="admin-view-submissions" class="admin-view hidden">
             <section class="admin-card">
-              <div class="admin-card-title"><div><span class="mini-label">PENDING REVIEW</span><h3>待审核投稿</h3><p class="admin-card-subtitle">通过后上架（计入复制）；拒绝则不显示、不复制。</p></div><span id="submissions-count-pill" class="admin-card-badge">0 待处理</span></div>
+              <div class="admin-card-title"><div><span class="mini-label">PENDING REVIEW</span><h3>待审核投稿</h3><p class="admin-card-subtitle">勾选后可一次通过 / 拒绝多条；通过后上架（计入复制），拒绝不显示、不复制。</p></div><span id="submissions-count-pill" class="admin-card-badge">0 待处理</span></div>
+              <div class="batch-bar">
+                <label class="inline-check"><input type="checkbox" id="batch-check-all"> 全选</label>
+                <button id="batch-approve" class="button button-primary">✓ 批量通过</button>
+                <button id="batch-reject" class="button button-outline">✕ 批量拒绝</button>
+                <input id="batch-reason" type="text" placeholder="批量拒绝理由（可选）" class="search-input" style="width:220px">
+                <span id="batch-selected-count" class="copy-count">已选 0 条</span>
+              </div>
               <div id="admin-submissions-list" class="submission-list"></div>
             </section>
           </div>
