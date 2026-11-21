@@ -780,6 +780,32 @@
   const versionChip = $('#version-chip');
   if (versionChip) versionChip.addEventListener('click', () => showModal('changelog-modal'));
 
+  // ---------- 右上角：页面风格切换 ----------
+  const THEMES = ['netease', 'tencent', 'classic', 'starry', 'pastel', 'neon', 'ocean'];
+  const themeToggle = $('#theme-toggle');
+  const themeMenu = $('#theme-menu');
+  const syncThemeActive = () => {
+    const cur = document.documentElement.dataset.theme || 'netease';
+    $$('#theme-menu .theme-swatch').forEach(b => b.classList.toggle('is-active', b.dataset.theme === cur));
+  };
+  if (themeToggle && themeMenu) {
+    themeToggle.addEventListener('click', e => {
+      e.stopPropagation();
+      themeMenu.classList.toggle('hidden');
+      syncThemeActive();
+    });
+    document.addEventListener('click', e => { if (!themeMenu.classList.contains('hidden') && !themeMenu.contains(e.target)) themeMenu.classList.add('hidden'); });
+    $$('#theme-menu .theme-swatch').forEach(b => b.addEventListener('click', () => {
+      const t = b.dataset.theme;
+      if (THEMES.includes(t)) {
+        document.documentElement.dataset.theme = t;
+        try { localStorage.setItem('xh-theme', t); } catch {}
+      }
+      themeMenu.classList.add('hidden');
+    }));
+  }
+  syncThemeActive();
+
   // ---------- 快捷按键 ----------
   const quickAnnouncement = $('#quick-announcement');
   if (quickAnnouncement) quickAnnouncement.addEventListener('click', () => {
