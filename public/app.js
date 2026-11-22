@@ -413,18 +413,21 @@
     try {
       const body = { on: !cur };
       if (!cur) {
-        const ip = (ipInput?.value || '').trim();
+        const ip = (ipInput?.value || state.adminData?.publicIP || '').trim();
         if (!ip) { showToast('开启全体403前，请先填写你的公网IP。', 'error'); return; }
         body.ip = ip;
       }
       const res = await api('/api/admin/maintenance', { method: 'POST', body: JSON.stringify(body) });
-      if (res.ipMismatch) { showToast(res.message, 'error'); }
-      else { showToast(res.message, res.maintenance ? 'success' : 'info'); }
+      showToast(res.message, res.maintenance ? 'success' : 'info');
       state.adminData = { ...(state.adminData || {}), maintenance: res.maintenance };
       await loadAdminData();
       await refreshState();
       if (!cur && res.confirm && res.confirm < 3) button.textContent = `请再次确认（${res.confirm}/3）`;
-    } catch (error) { showToast(error.message, 'error'); }
+    } catch (error) {
+      showToast(error.message, 'error');
+      if (!cur) button.textContent = '开始网站维护';
+      else button.textContent = '关闭网站维护';
+    }
     finally { button.disabled = false; }
   });
 
