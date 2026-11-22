@@ -3,7 +3,7 @@
 // 精简版后台数据：全部作品（含状态）+ 待审核列表 + 统计 + 本周周期。
 // 需开发者登录，同样限流。
 // ============================================================================
-import { enforceRateLimit, ensureWeek, fail, getAnnouncements, getBans, getClientIp, getVisitStats, isAdmin, isMaintenanceOn, json, mondayOfBeijing, rateLimitFailed } from '../../_lib.js';
+import { enforceRateLimit, ensureWeek, fail, getAnnouncements, getBans, getClientIp, getVisitStats, ipFamily, isAdmin, isMaintenanceOn, json, mondayOfBeijing, rateLimitFailed } from '../../_lib.js';
 
 export async function onRequestGet(context) {
   if (!(await isAdmin(context.request, context.env))) return fail('请先登录开发者模式。', 401);
@@ -65,6 +65,7 @@ export async function onRequestGet(context) {
       visits: await getVisitStats(DB),
       bvList: approvedBvids.join(','),
       publicIP: getClientIp(context.request),
+      ipFamily: ipFamily(getClientIp(context.request)),
     });
   } catch (error) {
     return fail(error?.message || '后台数据读取失败。', 500);
