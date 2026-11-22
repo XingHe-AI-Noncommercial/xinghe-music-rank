@@ -771,3 +771,16 @@ body:not(.entered) .header-actions { display:none; }
 
 /* 维护开启时，后台登录/控制台必须显示在维护屏（z:200）之上 */
 #admin-login-modal, #admin-modal { z-index:210; }
+
+/* ---------- 棋盘网格修正：保证成正方形矩阵（避免单列） ---------- */
+.mine-grid { grid-template-columns:repeat(9,30px); }
+.gomoku-board { grid-template-columns:repeat(9,26px); }
+.reversi-grid { grid-template-columns:repeat(6,34px); }
+.puzzle-grid { grid-template-columns:repeat(4,52px); }
+.lights-grid { grid-template-columns:repeat(5,52px); }
+#game-stage { overflow-x:auto; }
+
+/* ---------- 开发者后台：全体403 公网IP填写 ---------- */
+#admin-ip-input { flex:1; min-width:150px; background:var(--bg2); border:var(--border); color:var(--ink); border-radius:var(--r-sm); padding:10px 12px; font-size:13px; outline:none; }
+#admin-ip-input:focus { border-color:var(--accent); }
+#ip-help { color:var(--accent); font-size:12px; white-space:nowrap; text-decoration:underline; }
