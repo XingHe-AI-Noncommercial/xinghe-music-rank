@@ -784,3 +784,28 @@ body:not(.entered) .header-actions { display:none; }
 #admin-ip-input { flex:1; min-width:150px; background:var(--bg2); border:var(--border); color:var(--ink); border-radius:var(--r-sm); padding:10px 12px; font-size:13px; outline:none; }
 #admin-ip-input:focus { border-color:var(--accent); }
 #ip-help { color:var(--accent); font-size:12px; white-space:nowrap; text-decoration:underline; }
+
+/* ---------- 开发者控制台：紧凑化，小屏也能完整显示 ---------- */
+.admin-backdrop .admin-shell { height:100dvh; }
+.admin-content { padding:12px; }
+.admin-card { padding:12px; margin-bottom:10px; }
+.admin-card-title { margin-bottom:8px; }
+.admin-card-title h3 { font-size:14px; }
+.admin-card-subtitle { font-size:11px; }
+.admin-kpi-grid { grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:8px; margin-bottom:12px; }
+.admin-kpi { padding:12px; }
+.admin-kpi-top { font-size:11px; }
+.admin-kpi strong { font-size:20px; }
+.admin-kpi small { font-size:10px; }
+.admin-add-form { gap:8px; }
+.admin-add-form input, .admin-add-form textarea { padding:8px 10px; font-size:12px; }
+.admin-add-form label { font-size:12px; }
+.admin-sidebar { width:196px; padding:12px 10px; }
+.admin-profile { padding:9px 10px; margin-bottom:12px; }
+.admin-nav { padding:9px 10px; font-size:13px; }
+.admin-welcome { margin-bottom:12px; }
+.admin-welcome h2 { font-size:20px; }
+.admin-welcome p { font-size:12px; }
+.copy-row { gap:8px; }
+.copy-count { font-size:11px; }
+.table-tools input[type=search] { padding:7px 10px; font-size:12px; }
