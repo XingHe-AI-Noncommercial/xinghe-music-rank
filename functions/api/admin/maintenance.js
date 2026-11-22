@@ -7,7 +7,7 @@
 // 关闭：开发者本人已被放行，直接关闭，无需IP验证。
 // 需开发者登录，同样限流。
 // ============================================================================
-import { enforceRateLimit, fail, getClientIp, getSetting, isAdmin, json, rateLimitFailed, readBody, setSetting } from '../../_lib.js';
+import { enforceRateLimit, fail, getClientIp, getSetting, ipFamily, isAdmin, json, rateLimitFailed, readBody, setSetting } from '../../_lib.js';
 
 export async function onRequestPost(context) {
   if (!(await isAdmin(context.request, context.env))) return fail('请先登录后台。', 401);
@@ -25,7 +25,14 @@ export async function onRequestPost(context) {
     // —— 开启：公网IP 3 次确认 ——
     const clientIP = getClientIp(context.request);
     const enteredIP = String(body?.ip || '').trim();
+    const clientFamily = ipFamily(clientIP);
+    const enteredFamily = ipFamily(enteredIP);
     let confirm = Number(await getSetting(DB, 'maintenance_confirm', '0')) || 0;
+    if (enteredFamily !== clientFamily) {
+      const label = clientFamily === 'v6' ? 'IPv6' : 'IPv4';
+      await setSetting(DB, 'maintenance_confirm', '0');
+      return fail(`检测到你的连接走${label}（${clientIP}），请切换${label}模式并填写${label}地址。`, 400);
+    }
     if (!clientIP || !enteredIP || enteredIP !== clientIP) {
       await setSetting(DB, 'maintenance_confirm', '0'); // 不匹配 → 重置
       return fail('公网IP不匹配，已重新开始确认。', 400);
