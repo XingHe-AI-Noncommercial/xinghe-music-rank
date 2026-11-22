@@ -153,7 +153,7 @@
         <div class="about-brand"><span class="brand-mark">✦</span><span><strong>星河音浪榜 · 精简版</strong><small>XINGHE MUSIC CHART · LITE</small></span></div>
         <p>一个每周一清空的 B 站视频投稿榜：投稿 → 开发者审核 → 上架 → 一键复制 BV 号。每天每 IP 限投 1 个，通过审核才显示。</p>
         <div class="changelog-list">
-          <div class="changelog-item is-current"><code>v1.14.5</code><div><b>本次更新</b><p>新增全体403（维护时仅开发者可访问，开启需公网IP 3 次确认，输入框自动填入检测到的公网IP）；修复扫雷/五子棋/黑白棋/华容道/点灯棋盘为正方形矩阵；开发者控制台紧凑化，小屏也能完整显示。</p></div></div>
+          <div class="changelog-item is-current"><code>v1.14.5</code><div><b>本次更新</b><p>新增全体403（维护时仅开发者可访问，开启需公网IP 3 次确认，支持IPv4/IPv6双模式，输入框自动填入检测到的公网IP）；修复扫雷/五子棋/黑白棋/华容道/点灯棋盘为正方形矩阵；开发者控制台紧凑化，小屏也能完整显示。</p></div></div>
           <div class="changelog-item"><code>v1.14.3</code><div><b>历史版本</b><p>修复了已知 bug，优化了使用体验，新增了若干功能。</p></div></div>
         </div>
         <div class="about-actions"><a class="button button-outline" href="mailto:xinghe-ai@outlook.com">✉ 联系开发者</a><span class="copy-count">xinghe-ai@outlook.com</span></div>
@@ -227,7 +227,14 @@
                 <span id="maintenance-state" class="copy-count">维护关闭</span>
               </div>
               <div class="copy-row">
-                <input id="admin-ip-input" placeholder="开启前请填写你的公网IP" autocomplete="off" autocapitalize="off">
+                <div class="ip-mode-group" role="group" aria-label="公网IP模式">
+                <button type="button" class="ip-mode-btn active" data-ipmode="v4">IPv4</button>
+                <button type="button" class="ip-mode-btn" data-ipmode="v6">IPv6</button>
+              </div>
+              <input id="admin-ip-input" placeholder="开启前请填写你的公网IP" autocomplete="off" autocapitalize="off">
+              </div>
+              <div class="copy-row">
+                <span id="ip-hint" class="copy-count">检测中…</span>
                 <a id="ip-help" href="https://ipinfo.io/ip" target="_blank" rel="noopener noreferrer">不知道公网IP？点这里测试 ↗</a>
               </div>
               <div class="copy-row">
