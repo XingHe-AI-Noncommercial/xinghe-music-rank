@@ -287,6 +287,14 @@ export function getClientIp(request) {
   return String(header).slice(0, 64);
 }
 
+// 判断 IP 家族：含冒号为 IPv6，形如 a.b.c.d 为 IPv4，其余 unknown
+export function ipFamily(ip) {
+  const s = String(ip || '').trim();
+  if (s.includes(':')) return 'v6';
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(s)) return 'v4';
+  return 'unknown';
+}
+
 // ---------- API 频率限制：每个 IP 每 10 秒最多 10 次 ----------
 export async function enforceRateLimit(env, request, options = {}) {
   const limit = Number(options.limit) || RATE_LIMIT_MAX;
