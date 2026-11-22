@@ -7,7 +7,7 @@
 // 关闭：开发者本人已被放行，直接关闭，无需IP验证。
 // 需开发者登录，同样限流。
 // ============================================================================
-import { enforceRateLimit, fail, getSetting, isAdmin, json, rateLimitFailed, readBody, setSetting } from '../../_lib.js';
+import { enforceRateLimit, fail, getClientIp, getSetting, isAdmin, json, rateLimitFailed, readBody, setSetting } from '../../_lib.js';
 
 export async function onRequestPost(context) {
   if (!(await isAdmin(context.request, context.env))) return fail('请先登录后台。', 401);
@@ -23,12 +23,12 @@ export async function onRequestPost(context) {
 
   if (on) {
     // —— 开启：公网IP 3 次确认 ——
-    const clientIP = (context.request.headers.get('CF-Connecting-IP') || '').trim();
+    const clientIP = getClientIp(context.request);
     const enteredIP = String(body?.ip || '').trim();
     let confirm = Number(await getSetting(DB, 'maintenance_confirm', '0')) || 0;
     if (!clientIP || !enteredIP || enteredIP !== clientIP) {
       await setSetting(DB, 'maintenance_confirm', '0'); // 不匹配 → 重置
-      return json({ ok: false, ipMismatch: true, confirm: 0, total: 3, message: '公网IP不匹配，已重新开始确认。' });
+      return fail('公网IP不匹配，已重新开始确认。', 400);
     }
     confirm += 1;
     await setSetting(DB, 'maintenance_confirm', String(confirm));
