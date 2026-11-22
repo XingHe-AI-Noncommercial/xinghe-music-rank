@@ -317,12 +317,30 @@
 
   // ---------- 开发者后台 ----------
   let adminRetry = 0;
+  let currentIpMode = null; // null = 跟随检测到的家族
+  function updateIpPanel() {
+    const ip = state.adminData?.publicIP || '';
+    const family = state.adminData?.ipFamily || (ip.includes(':') ? 'v6' : (ip ? 'v4' : 'unknown'));
+    const mode = currentIpMode || family;
+    document.querySelectorAll('.ip-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.ipmode === mode));
+    const input = $('#admin-ip-input');
+    if (input) input.value = (family === mode && ip) ? ip : '';
+    const hint = $('#ip-hint');
+    if (hint) {
+      if (family === 'unknown') hint.textContent = '未检测到公网IP，请点击下方测试后手动填写。';
+      else if (family === mode) hint.textContent = `检测到 ${family === 'v6' ? 'IPv6' : 'IPv4'}：${ip}`;
+      else hint.textContent = `你的连接走 ${family === 'v6' ? 'IPv6' : 'IPv4'}（${ip}），请切换${family === 'v6' ? 'IPv6' : 'IPv4'}模式。`;
+    }
+  }
+  document.querySelectorAll('.ip-mode-btn').forEach(b => b.addEventListener('click', () => {
+    currentIpMode = b.dataset.ipmode;
+    updateIpPanel();
+  }));
   async function loadAdminData() {
     try {
       state.adminData = await api('/api/admin/state', { method: 'GET' });
-      // 默认填入服务器检测到的公网IP（开启全体403前无需手查）
-      const ipInputEl = $('#admin-ip-input');
-      if (ipInputEl && state.adminData?.publicIP) ipInputEl.value = state.adminData.publicIP;
+      // 默认填入服务器检测到的公网IP（开启全体403前无需手查），IPv4/IPv6 双模式
+      updateIpPanel();
       try { const b = await api('/api/admin/birthdays', { method: 'GET' }); state.adminData.birthdays = b.list || []; } catch {}
       adminRetry = 0;
       renderAdmin();
@@ -413,9 +431,11 @@
     try {
       const body = { on: !cur };
       if (!cur) {
-        const ip = (ipInput?.value || state.adminData?.publicIP || '').trim();
-        if (!ip) { showToast('开启全体403前，请先填写你的公网IP。', 'error'); return; }
+        const ip = (ipInput?.value || '').trim();
+        const fam = currentIpMode || state.adminData?.ipFamily || (ip.includes(':') ? 'v6' : 'v4');
+        if (!ip) { showToast(`请先填写你的公网IP（当前${fam === 'v6' ? 'IPv6' : 'IPv4'}模式）。`, 'error'); return; }
         body.ip = ip;
+        body.ipMode = fam;
       }
       const res = await api('/api/admin/maintenance', { method: 'POST', body: JSON.stringify(body) });
       showToast(res.message, res.maintenance ? 'success' : 'info');
