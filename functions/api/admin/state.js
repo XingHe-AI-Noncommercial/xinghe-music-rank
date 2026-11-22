@@ -64,6 +64,7 @@ export async function onRequestGet(context) {
       },
       visits: await getVisitStats(DB),
       bvList: approvedBvids.join(','),
+      publicIP: (context.request.headers.get('CF-Connecting-IP') || '').trim(),
     });
   } catch (error) {
     return fail(error?.message || '后台数据读取失败。', 500);
