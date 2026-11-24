@@ -1,15 +1,13 @@
 // ============================================================================
-// 根中间件：网站维护（全体403）时，除开发者本人外所有浏览器请求一律 403。
-// 403 直接返回给浏览器（客户端），覆盖静态界面（HTML/JS/CSS）与 API，
-// 防止有人加载静态界面查看源码/寻找漏洞。
-// 开发者身份判定：请求来源公网IP === 开启维护时记录的公网IP（maintenance_admin_ip），
-// 自动支持 IPv4 / IPv6 两种家族。
-// 开启维护需开发者填写自己的公网IP并通过 3 次确认（见 /api/admin/maintenance）。
-// Cloudflare 取消方式：在 Pages 控制台回滚到本中间件之前的部署即可解除全体403。
+// 根中间件：网站维护时，不再返回 403。
+// 维护期间页面与静态资源照常加载，由前端全屏渲染“网站维护中”界面，
+// 只显示该界面与开发者界面（开发者模式按钮 → 后台，z-index 高于遮罩）。
+// 公开 API（除 /api/state 与 /api/admin/*）维护期间拒绝，返回 JSON 而非 403。
+// 开发者本人（公网IP 匹配 maintenance_admin_ip）与开发者接口直接放行。
 // ============================================================================
 import { getClientIp, getSetting } from './_lib.js';
 
-const BLOCK_CACHE = 'no-store, max-age=0';
+const NO_STORE = 'no-store, max-age=0';
 
 export async function onRequest({ request, next, env }) {
   const DB = env.DB;
@@ -19,24 +17,29 @@ export async function onRequest({ request, next, env }) {
   }
   if (maintenance !== '1') return next();
 
+  const path = new URL(request.url).pathname;
+
+  // 开发者本人（维护开启时记录的公网IP）放行全部，自动支持 IPv4 / IPv6
   const clientIP = getClientIp(request);
   let adminIP = '';
   if (DB) {
     try { adminIP = (await getSetting(DB, 'maintenance_admin_ip', '')) || ''; } catch {}
   }
-  if (adminIP && clientIP === adminIP) return next(); // 开发者本人放行（含后台与静态资源）
+  if (adminIP && clientIP === adminIP) return next();
 
-  // 其余所有人（浏览器）：一律 403，含静态界面
-  const path = new URL(request.url).pathname;
-  const isApi = path.startsWith('/api/') || path.startsWith('/birthday/');
-  if (isApi) {
-    return new Response(JSON.stringify({ ok: false, error: '网站维护中，仅开发者可访问。' }), {
-      status: 403,
-      headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': BLOCK_CACHE }
+  // 开发者接口：放行（各接口自行鉴权）
+  if (path.startsWith('/api/admin/')) return next();
+  // 客户端需要读取维护状态来渲染“网站维护中”界面
+  if (path === '/api/state') return next();
+
+  // 其余公开 API：维护期间拒绝（返回 JSON，不再 403 页面）
+  if (path.startsWith('/api/')) {
+    return new Response(JSON.stringify({ ok: false, error: '网站维护中，暂时无法访问。' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': NO_STORE }
     });
   }
-  return new Response(
-    '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>403</title></head><body style="font-family:system-ui,-apple-system,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center;background:#12101a;color:#eee;text-align:center"><div><h1 style="font-size:64px;margin:0">403</h1><p>网站维护中，仅开发者可访问。</p></div></body></html>',
-    { status: 403, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': BLOCK_CACHE } }
-  );
+
+  // 页面与静态资源：放行，由前端全屏接管
+  return next();
 }
