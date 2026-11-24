@@ -61,16 +61,16 @@ export async function ensureVoteTables(DB) {
       day        TEXT,
       period     TEXT,
       created_at TEXT NOT NULL
-    )`).run(),
-    DB.prepare('CREATE INDEX IF NOT EXISTS idx_votes_period_song ON votes(period, song_id)').run(),
-    DB.prepare('CREATE INDEX IF NOT EXISTS idx_votes_ip_day ON votes(voter_ip, day)').run(),
+    )`),
+    DB.prepare('CREATE INDEX IF NOT EXISTS idx_votes_period_song ON votes(period, song_id)'),
+    DB.prepare('CREATE INDEX IF NOT EXISTS idx_votes_ip_day ON votes(voter_ip, day)'),
     DB.prepare(`CREATE TABLE IF NOT EXISTS vote_usage (
       ip            TEXT NOT NULL,
       day           TEXT NOT NULL,
       normal_used   INTEGER NOT NULL DEFAULT 0,
       advanced_used INTEGER NOT NULL DEFAULT 0,
       PRIMARY KEY (ip, day)
-    )`).run(),
+    )`),
   ]);
 }
 
@@ -82,10 +82,10 @@ export async function ensureWeek(DB) {
   const row = await DB.prepare("SELECT value FROM settings WHERE key = 'period_key'").first();
   if (row?.value === period) return false;
   await DB.batch([
-    DB.prepare("DELETE FROM songs").run(),
-    DB.prepare("DELETE FROM votes").run(),
-    DB.prepare("DELETE FROM vote_usage").run(),
-    DB.prepare("INSERT INTO settings(key, value) VALUES('period_key', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(period).run(),
+    DB.prepare("DELETE FROM songs"),
+    DB.prepare("DELETE FROM votes"),
+    DB.prepare("DELETE FROM vote_usage"),
+    DB.prepare("INSERT INTO settings(key, value) VALUES('period_key', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(period),
   ]);
   return true;
 }
