@@ -816,6 +816,8 @@ body:not(.entered) .header-actions { display:none; }
 
 /* 维护开启时，后台登录/控制台必须显示在维护屏（z:200）之上 */
 #admin-login-modal, #admin-modal { z-index:210; }
+/* 从开发者后台打开的弹窗须在后台(210)之上，否则被压住看不到 */
+#birthday-modal, #reject-modal { z-index:230; }
 
 /* ---------- 棋盘网格修正：保证成正方形矩阵（避免单列） ---------- */
 .mine-grid { grid-template-columns:repeat(9,30px); }
