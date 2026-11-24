@@ -489,7 +489,7 @@
     catch { showToast('复制失败，请手动选择上方文本复制。', 'error'); }
   });
 
-  // 网站维护开关（开启需填写公网IP并 3 次确认）
+  // 网站维护开关（开启需填写公网IP，填对即一次生效）
   const mToggleBtn = $('#maintenance-toggle');
   if (mToggleBtn) mToggleBtn.addEventListener('click', async () => {
     const cur = Boolean(state.adminData?.maintenance);
@@ -510,7 +510,6 @@
       state.adminData = { ...(state.adminData || {}), maintenance: res.maintenance };
       await loadAdminData();
       await refreshState();
-      if (!cur && res.confirm && res.confirm < 3) button.textContent = `请再次确认（${res.confirm}/3）`;
     } catch (error) {
       showToast(error.message, 'error');
       if (!cur) button.textContent = '开始网站维护';
