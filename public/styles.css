@@ -869,3 +869,6 @@ body:not(.entered) .header-actions { display:none; }
 .vote-normal { background:linear-gradient(135deg,#3b82f6,#60a5fa); }
 .vote-advanced { background:linear-gradient(135deg,#e11d48,#f472b6); }
 .week-chip.is-closed { opacity:.6; text-decoration:line-through; }
+
+/* ---------- 后台列表：小框可滚动，页面不随条目数变长 ---------- */
+.admin-ip-list, .admin-ban-list, .admin-birthday-list { max-height: 240px; overflow-y: auto; overscroll-behavior: contain; }
