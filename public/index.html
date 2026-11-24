@@ -20,7 +20,7 @@
         <span class="brand-mark">✦</span>
         <span class="brand-text"><strong>星河音浪榜</strong><small>XINGHE MUSIC CHART · LITE</small></span>
       </a>
-      <button class="version-chip" id="version-chip" type="button" title="查看更新日志"><b>v1.14.9</b><span>更新日志</span></button>
+      <button class="version-chip" id="version-chip" type="button" title="查看更新日志"><b>v1.15</b><span>更新日志</span></button>
     </div>
     <div class="header-actions">
       <span id="header-live" class="live-pill"><i></i>正在连接</span>
@@ -41,7 +41,7 @@
         <h1>星河音浪榜</h1>
         <p class="landing-sub">一个每两周清空的 B 站视频投稿榜单。投稿、审核、投票、一键复制，都在里面。</p>
         <button id="enter-site" class="button button-primary button-xl" type="button">进入网站 <span>→</span></button>
-        <div class="landing-foot"><span>✦</span> v1.14.9 · 每两周重置 · 每天每 IP 1 个 · 通过审核才上架</div>
+        <div class="landing-foot"><span>✦</span> v1.15 · 每两周重置 · 每天每 IP 1 个 · 通过审核才上架</div>
       </div>
     </section>
 
@@ -64,7 +64,7 @@
         <button class="hub-card hub-admin" id="hub-admin" type="button"><span class="hub-icon">🛠</span><b>开发者模式</b><small>DEV CONSOLE</small></button>
       </div>
       <div class="quote-bar" aria-hidden="true"><span class="quote-label">✦ 音浪语录</span><div class="quote-marquee"><div class="quote-track" id="quote-track"></div></div></div>
-      <div class="home-foot"><span>星河音浪榜 · 为这两周留一颗星</span><span>© <span id="current-year">2026</span> · v1.14.9</span></div>
+      <div class="home-foot"><span>星河音浪榜 · 为这两周留一颗星</span><span>© <span id="current-year">2026</span> · v1.15</span></div>
     </section>
 
     <!-- ③ 投稿页 -->
@@ -142,15 +142,15 @@
 
     <!-- ⑨ 规则页 -->
     <section class="view hidden" data-view="rules">
-      <div class="page-head"><button class="back-link" data-back="home" type="button">← 返回主页</button><div class="eyebrow"><span class="eyebrow-line"></span> HOW IT WORKS</div><h2>规则说明</h2><p>一个每周重置的 B 站视频投稿榜。</p></div>
+      <div class="page-head"><button class="back-link" data-back="home" type="button">← 返回主页</button><div class="eyebrow"><span class="eyebrow-line"></span> HOW IT WORKS</div><h2>规则说明</h2><p>一个每两周重置的 B 站视频投稿榜。</p></div>
       <section id="about" class="rules-section">
         <div class="rules-grid">
-          <article class="rule-card"><span class="rule-number">01</span><span class="rule-icon">⟳</span><h3>每周一清空</h3><p>每周一北京时间 00:00，全部作品清空，重新开始新的一周。</p><div class="rule-example"><span>周期</span><strong>周一重置</strong></div></article>
+          <article class="rule-card"><span class="rule-number">01</span><span class="rule-icon">⟳</span><h3>每两周清空</h3><p>每两周（双周周一）北京时间 00:00，全部作品与投票清空，重新开始新的周期。</p><div class="rule-example"><span>周期</span><strong>双周重置</strong></div></article>
           <article class="rule-card"><span class="rule-number">02</span><span class="rule-icon">⌁</span><h3>每天每 IP 1 个</h3><p>同一 IP 每天最多投稿 1 个作品；被拒绝后当天可重新提交。</p><div class="rule-example"><span>限额</span><strong>1 / 天</strong></div></article>
           <article class="rule-card"><span class="rule-number">03</span><span class="rule-icon">⏳</span><h3>需审核上架</h3><p>投稿先进待审核；开发者通过后才显示在榜单、才被复制。</p><div class="rule-example"><span>流程</span><strong>先审后上</strong></div></article>
-          <article class="rule-card"><span class="rule-number">04</span><span class="rule-icon">⧉</span><h3>一键复制 BV</h3><p>开发者模式可复制全部已上架作品的掩码 BV 号，中间用逗号分隔。</p><div class="rule-example"><span>仅含</span><strong>已上架</strong></div></article>
+          <article class="rule-card"><span class="rule-number">04</span><span class="rule-icon">⧉</span><h3>一键复制 BV</h3><p>开发者模式可复制全部已上架作品的掩码 BV 号，中间用逗号分隔。</p><div class="rule-example"><span>仅含</span><strong>已上架</strong></div></article><article class="rule-card"><span class="rule-number">05</span><span class="rule-icon">🗳</span><h3>普通票 / 高级票</h3><p>普通票 +1 分、高级票 +3 分，每日分别限 10 / 5 张；可投不同歌曲，同一首连续投票不超 5 张，每两周重置。</p><div class="rule-example"><span>加分</span><strong>+1 / +3</strong></div></article>
         </div>
-        <div class="formula-strip"><span class="formula-icon">∑</span><div><strong>每周重置 · 投稿需审核 · 开发者一键复制</strong><small>周一 00:00 清空 · 每天每 IP 1 个 · 通过审核才上架 · BV 号对外掩码显示 · 不上传音频、不使用 R2。</small></div><span class="formula-eq">LITE ENGINE / XH</span></div>
+        <div class="formula-strip"><span class="formula-icon">∑</span><div><strong>每两周重置 · 普通票 / 高级票 · 投稿需审核 · 开发者一键复制</strong><small>双周周一 00:00 清空 · 普通票 +1 / 每日 10 张 · 高级票 +3 / 每日 5 张 · 同一首连续不超 5 张 · 每天每 IP 1 个 · 通过审核才上架 · BV 号对外掩码显示。</small></div><span class="formula-eq">LITE ENGINE / XH</span></div>
       </section>
     </section>
 
@@ -159,13 +159,13 @@
       <div class="page-head"><button class="back-link" data-back="home" type="button">← 返回主页</button><div class="eyebrow"><span class="eyebrow-line"></span> ABOUT</div><h2>关于 · 更新日志</h2><p>星河音浪榜 · 版本记录。</p></div>
       <section class="about-card">
         <div class="about-brand"><span class="brand-mark">✦</span><span><strong>星河音浪榜 · 精简版</strong><small>XINGHE MUSIC CHART · LITE</small></span></div>
-        <p>一个每周一清空的 B 站视频投稿榜：投稿 → 开发者审核 → 上架 → 一键复制 BV 号。每天每 IP 限投 1 个，通过审核才显示。</p>
+        <p>一个每两周清空的 B 站视频投稿榜：投稿 → 开发者审核 → 上架 → 投票 → 一键复制 BV 号。每天每 IP 限投 1 个，通过审核才显示。</p>
         <div class="changelog-list">
-          <div class="changelog-item is-current"><code>v1.14.9</code><div><b>本次更新</b><p>网站维护改为全屏「网站维护中」界面（不再返回 403），维护时只显示该界面与开发者界面；GitHub 仓库图标移到主页右上角；修复页面风格最后 5 个配色点不了的问题。</p></div></div>
-          <div class="changelog-item"><code>v1.14.7</code><div><b>历史版本</b><p>恢复投票（普通票 +1 分 / 每日 10 张，高级票 +3 分 / 每日 5 张，同一首连续不超 5 张，每两周重置）；新增森林绿 / 落日 / 玫瑰粉 / 薄荷 / 石墨等配色；主页支持手机 / 平板模式；新增开发者 QQ 3943331485。</p></div></div><div class="changelog-item"><code>v1.14.5</code><div><b>历史版本</b><p>修复扫雷 / 五子棋 / 黑白棋 / 华容道 / 点灯棋盘显示为正方形矩阵；优化小游戏在手机上的操作体验。</p></div></div>
+          <div class="changelog-item is-current"><code>v1.15</code><div><b>本次更新</b><p>规则说明页周期文案统一为每两周（原为每周一清空 / 周一重置，与首页及 v1.14.7 投票周期不一致）；规则页新增「普通票 / 高级票」规则卡片；描述更新为每两周清空。</p></div></div>
+          <div class="changelog-item"><code>v1.14.9</code><div><b>历史版本</b><p>网站维护改为全屏「网站维护中」界面（不再返回 403），维护时只显示该界面与开发者界面；GitHub 仓库图标移到主页右上角；修复页面风格最后 5 个配色点不了的问题。</p></div></div><div class="changelog-item"><code>v1.14.7</code><div><b>历史版本</b><p>恢复投票（普通票 +1 分 / 每日 10 张，高级票 +3 分 / 每日 5 张，同一首连续不超 5 张，每两周重置）；新增森林绿 / 落日 / 玫瑰粉 / 薄荷 / 石墨等配色；主页支持手机 / 平板模式；新增开发者 QQ 3943331485。</p></div></div><div class="changelog-item"><code>v1.14.5</code><div><b>历史版本</b><p>修复扫雷 / 五子棋 / 黑白棋 / 华容道 / 点灯棋盘显示为正方形矩阵；优化小游戏在手机上的操作体验。</p></div></div>
         </div>
         <div class="about-actions"><a class="button button-outline" href="mailto:xinghe-ai@outlook.com">✉ 邮件联系</a><span class="copy-count">xinghe-ai@outlook.com</span></div><div class="about-actions"><a class="button button-outline" href="https://wpa.qq.com/msgrd?v=3&amp;uin=3943331485&amp;site=qq&amp;menu=yes" target="_blank" rel="noopener noreferrer">💬 QQ 联系</a><span class="copy-count">开发者 QQ：3943331485</span></div>
-        <div class="about-foot">© <span id="current-year-2">2026</span> XINGHE · v1.14.9 · WEEKLY COMMUNITY PROJECT</div>
+        <div class="about-foot">© <span id="current-year-2">2026</span> XINGHE · v1.15 · WEEKLY COMMUNITY PROJECT</div>
       </section>
     </section>
   </main>
