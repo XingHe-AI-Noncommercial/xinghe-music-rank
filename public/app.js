@@ -106,7 +106,13 @@
       if (showError) showToast(`当前显示本地预览：${error.message}`, 'error');
     } finally {
       state.loading = false;
+      hideBootSplash();
     }
+  }
+  // 首个状态加载完成后移除启动遮罩（避免维护/正常界面闪现）
+  function hideBootSplash() {
+    const el = $('#boot-splash');
+    if (el) { el.classList.add('bs-done'); setTimeout(() => el.remove(), 300); }
   }
   // 网站维护遮罩：开启时覆盖全站，右上角仅开发者可进入后台
   function applyMaintenance(on) {
