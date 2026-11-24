@@ -968,7 +968,7 @@
   if (versionChip) versionChip.addEventListener('click', () => go('about'));
 
   // ---------- 右上角：页面风格 ----------
-  const THEMES = ['retro', 'huanghong', 'netease', 'tencent', 'classic', 'starry', 'pastel', 'neon', 'ocean'];
+  const THEMES = ['retro', 'huanghong', 'netease', 'tencent', 'classic', 'starry', 'pastel', 'neon', 'ocean', 'forest', 'sunset', 'rose', 'mint', 'graphite'];
   const themeToggle = $('#theme-toggle');
   const syncThemeActive = () => {
     const cur = document.documentElement.dataset.theme || 'retro';
