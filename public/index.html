@@ -18,7 +18,7 @@
         <span class="brand-mark">✦</span>
         <span class="brand-text"><strong>星河音浪榜</strong><small>XINGHE MUSIC CHART · LITE</small></span>
       </a>
-      <button class="version-chip" id="version-chip" type="button" title="查看更新日志"><b>v1.14.5</b><span>更新日志</span></button>
+      <button class="version-chip" id="version-chip" type="button" title="查看更新日志"><b>v1.14.7</b><span>更新日志</span></button>
     </div>
     <div class="header-actions">
       <span id="header-live" class="live-pill"><i></i>正在连接</span>
@@ -37,16 +37,16 @@
         <div class="landing-star" aria-hidden="true"><span>♫</span></div>
         <div class="landing-eyebrow"><span class="eyebrow-line"></span> XINGHE MUSIC CHART · LITE</div>
         <h1>星河音浪榜</h1>
-        <p class="landing-sub">一个每周一清空的 B 站视频投稿榜单。投稿、审核、一键复制，都在里面。</p>
+        <p class="landing-sub">一个每两周清空的 B 站视频投稿榜单。投稿、审核、投票、一键复制，都在里面。</p>
         <button id="enter-site" class="button button-primary button-xl" type="button">进入网站 <span>→</span></button>
-        <div class="landing-foot"><span>✦</span> v1.14.5 · 每周重置 · 每天每 IP 1 个 · 通过审核才上架</div>
+        <div class="landing-foot"><span>✦</span> v1.14.7 · 每两周重置 · 每天每 IP 1 个 · 通过审核才上架</div>
       </div>
     </section>
 
     <!-- ② 主页：功能指引，每个功能一个按钮 -->
     <section class="view hidden" data-view="home">
       <div class="hub-header">
-        <div class="eyebrow"><span class="eyebrow-line"></span> GUIDE <span id="week-label" class="week-chip">本周</span></div>
+        <div class="hub-header-row"><div class="eyebrow"><span class="eyebrow-line"></span> GUIDE <span id="week-label" class="week-chip">本周</span></div><button id="home-mode-toggle" class="button button-outline button-sm" title="切换平板 / 手机显示模式">📱 手机模式</button></div>
         <h2>今天想做点什么？</h2>
         <p>点一个功能，直接进入对应页面。</p>
       </div>
@@ -62,7 +62,7 @@
         <button class="hub-card hub-admin" id="hub-admin" type="button"><span class="hub-icon">🛠</span><b>开发者模式</b><small>DEV CONSOLE</small></button>
       </div>
       <div class="quote-bar" aria-hidden="true"><span class="quote-label">✦ 音浪语录</span><div class="quote-marquee"><div class="quote-track" id="quote-track"></div></div></div>
-      <div class="home-foot"><span>星河音浪榜 · 为这一周留一颗星</span><span>© <span id="current-year">2026</span> · v1.14.5</span></div>
+      <div class="home-foot"><span>星河音浪榜 · 为这两周留一颗星</span><span>© <span id="current-year">2026</span> · v1.14.7</span></div>
     </section>
 
     <!-- ③ 投稿页 -->
@@ -81,16 +81,17 @@
 
     <!-- ④ 榜单页 -->
     <section class="view hidden" data-view="rank">
-      <div class="page-head"><button class="back-link" data-back="home" type="button">← 返回主页</button><div class="eyebrow"><span class="eyebrow-line"></span> THIS WEEK</div><h2>本周榜单 <span id="list-total" class="top-tag">0 个</span></h2><p>仅显示审核通过的作品；BV 号对外一律以掩码显示，不提供 B 站跳转。</p></div>
+      <div class="page-head"><button class="back-link" data-back="home" type="button">← 返回主页</button><div class="eyebrow"><span class="eyebrow-line"></span> THIS WEEK</div><h2>本期榜单 <span id="list-total" class="top-tag">0 个</span></h2><p>仅显示审核通过的作品；普通票 +1 分、高级票 +3 分，每两周重置一次；BV 号对外以掩码显示。</p></div>
       <section class="metrics-grid" aria-label="站点概况">
-        <article class="metric-card metric-feature"><div class="metric-top"><span>本周上架</span><span class="metric-icon">◈</span></div><strong id="metric-approved">—</strong><div class="metric-bottom"><span>审核通过的视频</span><span class="metric-accent">LISTED</span></div></article>
+        <article class="metric-card metric-feature"><div class="metric-top"><span>本期上架</span><span class="metric-icon">◈</span></div><strong id="metric-approved">—</strong><div class="metric-bottom"><span>审核通过的作品</span><span class="metric-accent">LISTED</span></div></article>
         <article class="metric-card"><div class="metric-top"><span>待审核</span><span class="metric-icon">⏳</span></div><strong id="metric-pending">—</strong><div class="metric-bottom"><span>等待开发者处理</span><span class="metric-accent">PENDING</span></div></article>
         <article class="metric-card"><div class="metric-top"><span>今日可投</span><span class="metric-icon">⌁</span></div><strong id="metric-submit" class="metric-tier">—</strong><div class="metric-bottom"><span id="metric-submit-sub">每天每 IP 1 个</span><span class="metric-accent">TODAY</span></div></article>
+        <article class="metric-card"><div class="metric-top"><span>今日票</span><span class="metric-icon">🗳</span></div><strong id="metric-vote" class="metric-tier">—</strong><div class="metric-bottom"><span id="metric-vote-sub">普通 10 · 高级 5</span><span class="metric-accent">VOTE</span></div></article>
       </section>
       <section id="list" class="ranking-section">
-        <div class="ranking-tools"><input id="search-box" class="search-input" type="text" placeholder="搜索歌曲 / 作者 / BV号…" aria-label="搜索榜单"><button id="share-list" class="chip-action">📤 分享本周</button><button id="fav-filter" class="chip-action">❤ 只看收藏</button><span id="week-chip" class="week-chip">本周周期：—</span><button id="refresh-button" class="icon-button" title="刷新榜单" aria-label="刷新榜单">⟳</button></div>
+        <div class="ranking-tools"><input id="search-box" class="search-input" type="text" placeholder="搜索歌曲 / 作者 / BV号…" aria-label="搜索榜单"><button id="share-list" class="chip-action">📤 分享本周</button><button id="fav-filter" class="chip-action">❤ 只看收藏</button><span id="week-chip" class="week-chip">本期周期：—</span><span id="vote-chip" class="week-chip">投票：—</span><button id="refresh-button" class="icon-button" title="刷新榜单" aria-label="刷新榜单">⟳</button></div>
         <div id="list-grid" class="collection-grid"><div class="loading-panel"><span class="loader"></span> 正在加载本周榜单…</div></div>
-        <div id="empty-list" class="empty-state hidden"><span>⌕</span><strong>本周还是空的</strong><p>投一个视频，或等开发者上架；每周一 00:00 清空。</p></div>
+        <div id="empty-list" class="empty-state hidden"><span>⌕</span><strong>本期还是空的</strong><p>投一个视频，或等开发者上架；每两周一次清空。</p></div>
         <div class="ranking-footer"><span><i class="tiny-dot"></i> 只有审核通过的作品才会被计入开发者的一键复制</span><span id="list-count">共 0 个</span></div>
       </section>
     </section>
@@ -105,7 +106,7 @@
 
     <!-- ⑥ 小游戏页 -->
     <section class="view hidden" data-view="games">
-      <div class="page-head"><button class="back-link" data-back="home" type="button">← 返回主页</button><div class="eyebrow"><span class="eyebrow-line"></span> MINI GAMES</div><h2>小游戏</h2><p>经典小游戏合集，点一个就能玩。手机支持点按 / 滑动操作。</p></div>
+      <div class="page-head"><button class="back-link" data-back="home" type="button">← 返回主页</button><div class="eyebrow"><span class="eyebrow-line"></span> MINI GAMES</div><h2>小游戏</h2><p>经典小游戏合集，点一个就能玩。手机支持点按 / 滑动操作。</p><a class="gh-link" href="https://github.com/XingHe-AI-Noncommercial/xinghe-music-rank" target="_blank" rel="noopener noreferrer" aria-label="GitHub 仓库" title="在 GitHub 查看本站源码 / 仓库"><svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg><span>GitHub</span></a></div>
       <div id="games-grid" class="games-grid"></div>
     </section>
 
@@ -129,6 +130,11 @@
         <button class="theme-swatch" data-theme="pastel"><i style="background:linear-gradient(135deg,#ff7ba9,#ffd166)"></i><b>粉彩</b></button>
         <button class="theme-swatch" data-theme="neon"><i style="background:linear-gradient(135deg,#ff4ea0,#4df3ff)"></i><b>霓虹</b></button>
         <button class="theme-swatch" data-theme="ocean"><i style="background:linear-gradient(135deg,#2196c9,#4fc3f7)"></i><b>海盐蓝</b></button>
+        <button class="theme-swatch" data-theme="forest"><i style="background:linear-gradient(135deg,#2e8b57,#7cc576)"></i><b>森林绿</b></button>
+        <button class="theme-swatch" data-theme="sunset"><i style="background:linear-gradient(135deg,#ff6b4a,#ffb35c)"></i><b>落日</b></button>
+        <button class="theme-swatch" data-theme="rose"><i style="background:linear-gradient(135deg,#e75480,#f78fb3)"></i><b>玫瑰粉</b></button>
+        <button class="theme-swatch" data-theme="mint"><i style="background:linear-gradient(135deg,#00a896,#52d1c0)"></i><b>薄荷</b></button>
+        <button class="theme-swatch" data-theme="graphite"><i style="background:linear-gradient(135deg,#6d6dff,#a5a5ff)"></i><b>石墨</b></button>
       </div>
     </section>
 
@@ -153,17 +159,17 @@
         <div class="about-brand"><span class="brand-mark">✦</span><span><strong>星河音浪榜 · 精简版</strong><small>XINGHE MUSIC CHART · LITE</small></span></div>
         <p>一个每周一清空的 B 站视频投稿榜：投稿 → 开发者审核 → 上架 → 一键复制 BV 号。每天每 IP 限投 1 个，通过审核才显示。</p>
         <div class="changelog-list">
-          <div class="changelog-item is-current"><code>v1.14.5</code><div><b>本次更新</b><p>新增全体403（维护时仅开发者可访问，开启需公网IP 3 次确认，支持IPv4/IPv6双模式，输入框自动填入检测到的公网IP）；修复扫雷/五子棋/黑白棋/华容道/点灯棋盘为正方形矩阵；开发者控制台紧凑化，小屏也能完整显示。</p></div></div>
-          <div class="changelog-item"><code>v1.14.3</code><div><b>历史版本</b><p>修复了已知 bug，优化了使用体验，新增了若干功能。</p></div></div>
+          <div class="changelog-item is-current"><code>v1.14.7</code><div><b>本次更新</b><p>恢复投票：普通票 +1 分（每日 10 张）、高级票 +3 分（每日 5 张），可投不同歌曲，同一首连续投票不超 5 张，每两周重置一次；新增森林绿 / 落日 / 玫瑰粉 / 薄荷 / 石墨等多套配色；主页支持手机模式与平板模式（默认平板）；小游戏页新增 GitHub 仓库指引；新增开发者 QQ 联系（3943331485）。</p></div></div>
+          <div class="changelog-item"><code>v1.14.5</code><div><b>历史版本</b><p>修复扫雷 / 五子棋 / 黑白棋 / 华容道 / 点灯棋盘显示为正方形矩阵；优化小游戏在手机上的操作体验。</p></div></div>
         </div>
-        <div class="about-actions"><a class="button button-outline" href="mailto:xinghe-ai@outlook.com">✉ 联系开发者</a><span class="copy-count">xinghe-ai@outlook.com</span></div>
-        <div class="about-foot">© <span id="current-year-2">2026</span> XINGHE · v1.14.5 · WEEKLY COMMUNITY PROJECT</div>
+        <div class="about-actions"><a class="button button-outline" href="mailto:xinghe-ai@outlook.com">✉ 邮件联系</a><span class="copy-count">xinghe-ai@outlook.com</span></div><div class="about-actions"><a class="button button-outline" href="https://wpa.qq.com/msgrd?v=3&amp;uin=3943331485&amp;site=qq&amp;menu=yes" target="_blank" rel="noopener noreferrer">💬 QQ 联系</a><span class="copy-count">开发者 QQ：3943331485</span></div>
+        <div class="about-foot">© <span id="current-year-2">2026</span> XINGHE · v1.14.7 · WEEKLY COMMUNITY PROJECT</div>
       </section>
     </section>
   </main>
 
   <!-- 左下角：联系开发者 -->
-  <a id="contact-dev" class="contact-dev" href="mailto:xinghe-ai@outlook.com" title="发送邮件给开发者">✉ 联系开发者</a>
+  <div class="contact-dev-wrap"><a class="contact-dev" href="mailto:xinghe-ai@outlook.com" title="发送邮件给开发者">✉ 联系开发者</a><a class="contact-dev" href="https://wpa.qq.com/msgrd?v=3&amp;uin=3943331485&amp;site=qq&amp;menu=yes" target="_blank" rel="noopener noreferrer" title="QQ 联系开发者：3943331485">💬 QQ 3943331485</a></div>
 
   <!-- 开发者登录弹窗 -->
   <div id="admin-login-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="login-title">
@@ -224,7 +230,11 @@
               <div class="admin-card-title"><div><span class="mini-label">SITE TOOLS</span><h3>站点工具</h3><p class="admin-card-subtitle">一键开启 / 关闭网站维护；清除已拒绝投稿。</p></div></div>
               <div class="copy-row">
                 <button id="maintenance-toggle" class="button button-primary">开始网站维护</button>
-                <span id="maintenance-state" class="copy-count">维护关闭</span>
+              <span id="maintenance-state" class="copy-count">维护关闭</span>
+              </div>
+              <div class="copy-row">
+                <button id="voting-toggle" class="button button-outline">暂停投票</button>
+                <span id="voting-state" class="copy-count">投票开放中</span>
               </div>
               <div class="copy-row">
                 <div class="ip-mode-group" role="group" aria-label="公网IP模式">
