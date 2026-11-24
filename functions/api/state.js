@@ -54,7 +54,7 @@ export async function onRequestGet(context) {
 
     return json({
       ok: true,
-      week: mondayOfBeijing(),
+      week: period,
       maintenance: await isMaintenanceOn(DB),
       announcements: (await getAnnouncements(DB)).map(a => ({ id: a.id, text: a.text, createdAt: a.createdAt })),
       songs: (approved.results || []).map(s => {
