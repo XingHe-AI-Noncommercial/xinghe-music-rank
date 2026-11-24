@@ -9,6 +9,11 @@ export const RATE_LIMIT_MAX = 10;     // 请求数
 export const MAX_TITLE = 100;
 export const MAX_ARTIST = 100;
 
+// ---------- 投票规则 ----------
+export const VOTE_LIMITS = { normal: 10, advanced: 5 }; // 每日额度：普通票10张 / 高级票5张
+export const VOTE_POINTS = { normal: 1, advanced: 3 };  // 每张加分：普通票+1 / 高级票+3
+export const VOTE_MAX_CONSECUTIVE = 5;                  // 同一首歌曲连续投票上限
+
 // ---------- 时间 ----------
 export function isoNow() {
   return new Date().toISOString();
@@ -35,15 +40,52 @@ export function mondayOfBeijing(now = new Date()) {
   return monday.toISOString().slice(0, 10);
 }
 
-// 每周一清空：若 settings.week_key 不是本周一，则清空全部歌曲并记录。
+// 北京时间“双周周期”起始周一 YYYY-MM-DD（每两周一个投票周期，两周重置一次）
+export function biweeklyStartOfBeijing(now = new Date()) {
+  const monday = mondayOfBeijing(now);
+  const d = new Date(monday + 'T00:00:00Z');
+  const weekIndex = Math.floor(d.getTime() / (7 * 86400e3));
+  const periodIndex = Math.floor(weekIndex / 2);
+  return new Date(periodIndex * 14 * 86400e3).toISOString().slice(0, 10);
+}
+
+// 确保投票相关表存在（运行时幂等建表，兼容未跑迁移的线上 D1）
+export async function ensureVoteTables(DB) {
+  await DB.batch([
+    DB.prepare(`CREATE TABLE IF NOT EXISTS votes (
+      id         TEXT PRIMARY KEY,
+      song_id    TEXT NOT NULL,
+      voter_ip   TEXT,
+      type       TEXT NOT NULL CHECK (type IN ('normal', 'advanced')),
+      points     INTEGER NOT NULL DEFAULT 1,
+      day        TEXT,
+      period     TEXT,
+      created_at TEXT NOT NULL
+    )`).run(),
+    DB.prepare('CREATE INDEX IF NOT EXISTS idx_votes_period_song ON votes(period, song_id)').run(),
+    DB.prepare('CREATE INDEX IF NOT EXISTS idx_votes_ip_day ON votes(voter_ip, day)').run(),
+    DB.prepare(`CREATE TABLE IF NOT EXISTS vote_usage (
+      ip            TEXT NOT NULL,
+      day           TEXT NOT NULL,
+      normal_used   INTEGER NOT NULL DEFAULT 0,
+      advanced_used INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (ip, day)
+    )`).run(),
+  ]);
+}
+
+// 每两周清空：若 settings.period_key 不是当前双周周期起点，则清空歌曲、投票与用量并记录。
 // 返回 true 表示本次发生了清空。每个 API 入口调用一次，幂等。
 export async function ensureWeek(DB) {
-  const week = mondayOfBeijing();
-  const row = await DB.prepare("SELECT value FROM settings WHERE key = 'week_key'").first();
-  if (row?.value === week) return false;
+  await ensureVoteTables(DB);
+  const period = biweeklyStartOfBeijing();
+  const row = await DB.prepare("SELECT value FROM settings WHERE key = 'period_key'").first();
+  if (row?.value === period) return false;
   await DB.batch([
     DB.prepare("DELETE FROM songs").run(),
-    DB.prepare("INSERT INTO settings(key, value) VALUES('week_key', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(week).run(),
+    DB.prepare("DELETE FROM votes").run(),
+    DB.prepare("DELETE FROM vote_usage").run(),
+    DB.prepare("INSERT INTO settings(key, value) VALUES('period_key', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(period).run(),
   ]);
   return true;
 }
