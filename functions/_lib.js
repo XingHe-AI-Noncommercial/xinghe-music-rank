@@ -5,7 +5,7 @@
 // ============================================================================
 
 export const RATE_LIMIT_WINDOW = 10;  // 秒
-export const RATE_LIMIT_MAX = 10;     // 请求数
+export const RATE_LIMIT_MAX = 30;     // 请求数（每10秒每IP最多30次）
 export const MAX_TITLE = 100;
 export const MAX_ARTIST = 100;
 
@@ -190,7 +190,7 @@ export async function getBan(DB, ip) {
   return (await getBans(DB)).find(b => b.ip === ip && (b.until === 0 || b.until > now)) || null;
 }
 
-// ---------- 全局 60 秒请求计数：超过 60 次自动开启维护 ----------
+// ---------- 全局 60 秒请求计数：超过 360 次自动开启维护 ----------
 export async function bumpRequestCounter(DB) {
   try {
     const raw = await getSetting(DB, 'req_counter', '{"count":0,"start":0}');
@@ -200,7 +200,7 @@ export async function bumpRequestCounter(DB) {
     if (now - o.start > 60000) { o.count = 0; o.start = now; }
     o.count += 1;
     await setSetting(DB, 'req_counter', JSON.stringify({ count: o.count, start: o.start }));
-    if (o.count > 60) { await setSetting(DB, 'maintenance', '1'); return true; }
+    if (o.count > 360) { await setSetting(DB, 'maintenance', '1'); return true; }
     return false;
   } catch { return false; }
 }
