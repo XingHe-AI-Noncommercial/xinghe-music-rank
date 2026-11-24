@@ -3,7 +3,7 @@
 // 精简版：返回本周【已审核通过】的上架作品 + 统计 + 今日投稿额度。
 // 每次请求先做“每周一清空”，再读取数据。同样 10 秒 / 10 次 IP 限流。
 // ============================================================================
-import { beijingDay, bumpRequestCounter, enforceRateLimit, ensureWeek, fail, getAnnouncements, getBan, getClientIp, isMaintenanceOn, json, maskBvid, mondayOfBeijing, rateLimitFailed } from '../_lib.js';
+import { beijingDay, biweeklyStartOfBeijing, bumpRequestCounter, enforceRateLimit, ensureWeek, fail, getAnnouncements, getBan, getClientIp, getSetting, isMaintenanceOn, json, maskBvid, rateLimitFailed, VOTE_LIMITS, VOTE_POINTS } from '../_lib.js';
 
 export async function onRequestGet(context) {
   const { DB } = context.env;
@@ -25,9 +25,20 @@ export async function onRequestGet(context) {
     // 全局 60 秒请求计数：超过 60 次自动开启维护
     await bumpRequestCounter(DB);
 
+    const period = biweeklyStartOfBeijing();
     const approved = await DB.prepare(
-      "SELECT id, bvid, artist, title, created_at FROM songs WHERE status = 'approved' ORDER BY created_at ASC"
+      "SELECT id, bvid, artist, title, created_at FROM songs WHERE status = 'approved'"
     ).all();
+
+    // 当前周期各歌曲积分
+    const votes = await DB.prepare(
+      'SELECT song_id, SUM(points) AS points, COUNT(*) AS votes FROM votes WHERE period = ? GROUP BY song_id'
+    ).bind(period).all();
+    const voteMap = new Map((votes.results || []).map(v => [v.song_id, { points: Number(v.points || 0), votes: Number(v.votes || 0) }]));
+
+    const day = beijingDay();
+    const todayUsage = await DB.prepare('SELECT normal_used, advanced_used FROM vote_usage WHERE ip = ? AND day = ?')
+      .bind(ip, day).first();
 
     const counts = await DB.prepare(
       `SELECT
@@ -37,7 +48,6 @@ export async function onRequestGet(context) {
     ).first();
 
     // 今日该 IP 投稿情况（pending / approved 占用当日 1 次额度；rejected 不占用，可重投）
-    const day = beijingDay();
     const todayRow = await DB.prepare(
       "SELECT status FROM songs WHERE submitter_ip = ? AND day = ? AND status IN ('pending','approved') LIMIT 1"
     ).bind(ip, day).first();
@@ -47,13 +57,28 @@ export async function onRequestGet(context) {
       week: mondayOfBeijing(),
       maintenance: await isMaintenanceOn(DB),
       announcements: (await getAnnouncements(DB)).map(a => ({ id: a.id, text: a.text, createdAt: a.createdAt })),
-      songs: (approved.results || []).map(s => ({
-        id: s.id,
-        bvid: maskBvid(s.bvid),
-        artist: s.artist,
-        title: s.title,
-        createdAt: s.created_at,
-      })),
+      songs: (approved.results || []).map(s => {
+        const v = voteMap.get(s.id) || { points: 0, votes: 0 };
+        return {
+          id: s.id,
+          bvid: maskBvid(s.bvid),
+          artist: s.artist,
+          title: s.title,
+          createdAt: s.created_at,
+          points: v.points,
+          votes: v.votes,
+        };
+      }).sort((a, b) => (b.points - a.points) || (a.createdAt < b.createdAt ? -1 : 1)),
+      voting: {
+        open: (await getSetting(DB, 'voting_open', '1')) === '1',
+        period,
+        limits: VOTE_LIMITS,
+        points: VOTE_POINTS,
+        remaining: {
+          normal: Math.max(0, VOTE_LIMITS.normal - Number(todayUsage?.normal_used || 0)),
+          advanced: Math.max(0, VOTE_LIMITS.advanced - Number(todayUsage?.advanced_used || 0)),
+        },
+      },
       summary: {
         approved: Number(counts?.approved || 0),
         pending: Number(counts?.pending || 0),
