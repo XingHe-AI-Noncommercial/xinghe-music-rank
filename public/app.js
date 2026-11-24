@@ -33,6 +33,7 @@
       songs: demoTracks,
       summary: { approved: demoTracks.length, pending: 1, rejected: 0 },
       submit: { dailyLimit: 1, submittedToday: false, todayStatus: null, remainingToday: 1 },
+      voting: { open: true, period: new Date().toISOString().slice(0, 10), limits: { normal: 10, advanced: 5 }, points: { normal: 1, advanced: 3 }, remaining: { normal: 10, advanced: 5 } },
     };
   }
 
@@ -164,7 +165,7 @@
     const data = state.data || seedPreview();
     const summary = data.summary || {};
     const submit = data.submit || { dailyLimit: 1, remainingToday: 1, submittedToday: false };
-    $('#week-label').textContent = state.realMode ? '本周' : '本地预览';
+    $('#week-label').textContent = state.realMode ? '本期' : '本地预览';
     $('#current-year').textContent = String(new Date().getFullYear());
     $('#metric-approved').textContent = number(summary.approved ?? data.songs?.length ?? 0);
     $('#metric-pending').textContent = number(summary.pending || 0);
@@ -172,7 +173,13 @@
     $('#metric-submit-sub').textContent = submit.submittedToday
       ? '今天已投过（每天每 IP 1 个）'
       : '今天还可投 1 个';
-    $('#week-chip').textContent = `本周周期：${data.week || '—'} 起`;
+    $('#week-chip').textContent = `本期周期：${data.voting?.period || data.week || '—'} 起`;
+    const vot = data.voting || {};
+    const vr = vot.remaining || {};
+    const mv = $('#metric-vote');
+    if (mv) mv.textContent = vot.open ? `${(vr.normal ?? 0)} / ${(vr.advanced ?? 0)}` : '暂停';
+    const mvs = $('#metric-vote-sub');
+    if (mvs) mvs.textContent = vot.open ? `普通票剩 ${vr.normal ?? 0} · 高级票剩 ${vr.advanced ?? 0}` : '投票未开放';
     $('#list-total').textContent = `${number(data.songs?.length || 0)} 个`;
     renderList();
     renderSubmitStatus(submit);
@@ -212,6 +219,7 @@
   let favs = new Set();
   try { favs = new Set(JSON.parse(localStorage.getItem('xh-favs') || '[]')); } catch { favs = new Set(); }
   let favOnly = false;
+  state.lastVotedSong = null; state.consecutiveCount = 0;
   function saveFavs() { try { localStorage.setItem('xh-favs', JSON.stringify([...favs])); } catch { /* ignore */ } }
   function renderList() {
     const data = state.data || seedPreview();
@@ -223,9 +231,17 @@
     $('#empty-list').classList.toggle('hidden', songs.length !== 0);
     const grid = $('#list-grid');
     if (!songs.length) { grid.innerHTML = '<div class="empty-state"><span>🗂️</span><strong>没有匹配的作品</strong></div>'; return; }
+    const voting = data.voting || {};
+    const rem = voting.remaining || {};
+    const vOpen = voting.open !== false;
     grid.innerHTML = songs.map((song, index) => {
       const bv = song.bvid || '';
       const fav = favs.has(bv);
+      const pts = Number(song.points || 0);
+      const vt = Number(song.votes || 0);
+      const locked = state.lastVotedSong === song.id && state.consecutiveCount >= 5;
+      const disN = !vOpen || (rem.normal || 0) <= 0 || locked;
+      const disA = !vOpen || (rem.advanced || 0) <= 0 || locked;
       return `<article class="track-card lite-card">
         <button class="fav-btn ${fav ? 'is-fav' : ''}" data-fav="${escapeHtml(bv)}" title="收藏 / 取消收藏" aria-label="收藏">${fav ? '♥' : '♡'}</button>
         <span class="lite-rank">${String(index + 1).padStart(2, '0')}</span>
@@ -233,20 +249,62 @@
           <span class="track-title">${escapeHtml(song.title)}</span>
           <span class="track-artist">${escapeHtml(song.artist || '未知创作者')}</span>
           <span class="track-bv">${escapeHtml(bv)}</span>
+          <span class="track-points">＋${pts} 分 · ${vt} 票${locked ? ' · 已连续投满 5 张' : ''}</span>
         </div>
-        <span class="track-open" title="不提供跳转（BV 号已掩码）">♪</span>
+        <div class="vote-box">
+          <button class="vote-btn vote-normal" data-vote="normal" data-song="${escapeHtml(song.id)}" ${disN ? 'disabled' : ''} title="普通票：+1 分 · 每日 10 张">普通票 ＋1</button>
+          <button class="vote-btn vote-advanced" data-vote="advanced" data-song="${escapeHtml(song.id)}" ${disA ? 'disabled' : ''} title="高级票：+3 分 · 每日 5 张">高级票 ＋3</button>
+        </div>
       </article>`;
     }).join('');
+    updateVoteChip();
   }
   $('#list-grid').addEventListener('click', event => {
-    const btn = event.target.closest('.fav-btn');
-    if (!btn) return;
-    const bv = btn.dataset.fav;
-    if (favs.has(bv)) { favs.delete(bv); } else { favs.add(bv); showToast('已收藏到「我的收藏」', 'success'); }
-    saveFavs();
-    renderList();
-    syncFavFilter();
+    const favBtn = event.target.closest('.fav-btn');
+    if (favBtn) {
+      const bv = favBtn.dataset.fav;
+      if (favs.has(bv)) { favs.delete(bv); } else { favs.add(bv); showToast('已收藏到「我的收藏」', 'success'); }
+      saveFavs();
+      renderList();
+      syncFavFilter();
+      return;
+    }
+    const voteBtn = event.target.closest('.vote-btn');
+    if (voteBtn) handleVote(voteBtn);
   });
+  // ---------- 投票 ----------
+  function updateVoteChip() {
+    const v = state.data?.voting;
+    const el = $('#vote-chip');
+    if (!el) return;
+    if (!v) { el.textContent = '投票：—'; return; }
+    const r = v.remaining || {};
+    el.textContent = v.open ? `普通票 ${r.normal || 0}/${v.limits.normal} · 高级票 ${r.advanced || 0}/${v.limits.advanced}` : '投票已暂停';
+    el.classList.toggle('is-closed', !v.open);
+  }
+  async function handleVote(btn) {
+    if (!state.realMode) { showToast('当前是本地预览模式，请先完成 Cloudflare D1 配置。', 'error'); return; }
+    const songId = btn.dataset.song;
+    const type = btn.dataset.vote;
+    btn.disabled = true;
+    try {
+      const res = await api('/api/vote', { method: 'POST', body: JSON.stringify({ songId, type }) });
+      showToast(res.message || '投票成功。', 'success');
+      if (state.data?.voting) {
+        state.data.voting.remaining = res.remainingTotal || state.data.voting.remaining;
+        const v = state.data.voting;
+        v.open = v.open !== false;
+      }
+      const s = (state.data?.songs || []).find(x => x.id === songId);
+      if (s) { s.points = Number(s.points || 0) + Number(res.points || 0); s.votes = Number(s.votes || 0) + 1; }
+      if (state.lastVotedSong === songId) state.consecutiveCount += 1; else { state.lastVotedSong = songId; state.consecutiveCount = 1; }
+      (state.data?.songs || []).sort((a, b) => (Number(b.points || 0) - Number(a.points || 0)) || ((a.createdAt || '') < (b.createdAt || '') ? -1 : 1));
+      renderList();
+    } catch (e) {
+      showToast(e.message || '投票失败，请稍后重试。', 'error');
+      try { const st = await api('/api/state', { method: 'GET' }); if (st?.ok) { state.data = st; renderList(); } } catch {}
+    } finally { btn.disabled = false; }
+  }
   $('#search-box')?.addEventListener('input', renderList);
   $('#fav-filter')?.addEventListener('click', () => { favOnly = !favOnly; renderList(); syncFavFilter(); });
   function syncFavFilter() {
@@ -408,6 +466,10 @@
     const mnt = Boolean(data.maintenance);
     const mToggle = $('#maintenance-toggle'), mState = $('#maintenance-state'), mCount = $('#clear-rejected-count'), cRej = $('#clear-rejected');
     if (mToggle) { mToggle.textContent = mnt ? '关闭网站维护' : '开始网站维护'; mToggle.classList.toggle('button-primary', !mnt); }
+    const vOpen = data.votingOpen !== false;
+    const vToggle = $('#voting-toggle'), vState = $('#voting-state');
+    if (vToggle) vToggle.textContent = vOpen ? '暂停投票' : '开放投票';
+    if (vState) vState.textContent = vOpen ? '投票开放中' : '投票已暂停';
     if (mState) mState.textContent = mnt ? '维护开启中' : '维护关闭';
     if (mCount) mCount.textContent = `已拒绝 ${number(s.rejected || 0)} 个`;
     if (cRej) cRej.disabled = !(s.rejected > 0);
@@ -448,6 +510,21 @@
       if (!cur) button.textContent = '开始网站维护';
       else button.textContent = '关闭网站维护';
     }
+    finally { button.disabled = false; }
+  });
+
+  // 投票开关（开发者）
+  const vToggleBtn = $('#voting-toggle');
+  if (vToggleBtn) vToggleBtn.addEventListener('click', async () => {
+    const cur = state.adminData?.votingOpen !== false;
+    const button = $('#voting-toggle');
+    button.disabled = true;
+    try {
+      const res = await api('/api/admin/voting', { method: 'POST', body: JSON.stringify({ open: !cur }) });
+      showToast(res.message, 'success');
+      state.adminData = { ...(state.adminData || {}), votingOpen: res.votingOpen };
+      await loadAdminData();
+    } catch (error) { showToast(error.message, 'error'); }
     finally { button.disabled = false; }
   });
 
@@ -1057,6 +1134,22 @@
     applyAdminMode(adminMode);
   });
   applyAdminMode(adminMode);
+
+  // ---------- 主页显示模式（手机 / 平板，默认平板） ----------
+  function applyHomeMode(mode) {
+    const view = document.querySelector('.view[data-view="home"]');
+    if (view) { view.classList.toggle('mode-phone', mode === 'phone'); view.classList.toggle('mode-tablet', mode !== 'phone'); }
+    const btn = $('#home-mode-toggle');
+    if (btn) btn.textContent = mode === 'phone' ? '📱 平板模式' : '📱 手机模式';
+  }
+  let homeMode = 'tablet';
+  try { homeMode = localStorage.getItem('xh-home-mode') || 'tablet'; } catch {}
+  $('#home-mode-toggle')?.addEventListener('click', () => {
+    homeMode = homeMode === 'phone' ? 'tablet' : 'phone';
+    try { localStorage.setItem('xh-home-mode', homeMode); } catch {}
+    applyHomeMode(homeMode);
+  });
+  applyHomeMode(homeMode);
 
   // ---------- 启动 ----------
   route();
