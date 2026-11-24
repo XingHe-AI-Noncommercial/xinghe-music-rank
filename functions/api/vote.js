@@ -64,10 +64,10 @@ export async function onRequestPost(context) {
 
     const now = isoNow();
     await DB.batch([
-      DB.prepare('INSERT OR IGNORE INTO vote_usage(ip, day) VALUES(?, ?)').bind(ip, day).run(),
-      DB.prepare(`UPDATE vote_usage SET ${type}_used = ${type}_used + 1 WHERE ip = ? AND day = ?`).bind(ip, day).run(),
+      DB.prepare('INSERT OR IGNORE INTO vote_usage(ip, day) VALUES(?, ?)').bind(ip, day),
+      DB.prepare(`UPDATE vote_usage SET ${type}_used = ${type}_used + 1 WHERE ip = ? AND day = ?`).bind(ip, day),
       DB.prepare('INSERT INTO votes(id, song_id, voter_ip, type, points, day, period, created_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?)')
-        .bind(makeId(), songId, ip, type, points, day, period, now).run(),
+        .bind(makeId(), songId, ip, type, points, day, period, now),
     ]);
 
     const remaining = Math.max(0, limit - (used + 1));
