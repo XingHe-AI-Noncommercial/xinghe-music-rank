@@ -7,7 +7,7 @@
   <meta name="description" content="星河音浪榜 · 精简版：每两周清空的 B 站视频投稿榜单。每天每 IP 限投 1 个，开发者审核通过后上架，可一键复制全部 BV 号。">
   <title>星河音浪榜 · 精简版</title>
   <script>try{const t=localStorage.getItem('xh-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
-  <link rel="stylesheet" href="./styles.css?v=20251125a">
+  <link rel="stylesheet" href="./styles.css?v=20251125b">
   <style>#boot-splash{position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#0e1413;color:#e8f5ee;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;transition:opacity .25s}#boot-splash .bs-logo{font-size:30px;font-weight:900;letter-spacing:.04em}#boot-splash .bs-sub{font-size:12px;opacity:.65;letter-spacing:.18em;text-transform:uppercase}#boot-splash .bs-spin{width:30px;height:30px;border:3px solid rgba(255,255,255,.18);border-top-color:#5fd9a4;border-radius:50%;animation:bs-rot .8s linear infinite}#boot-splash.bs-done{opacity:0;pointer-events:none}@keyframes bs-rot{to{transform:rotate(360deg)}}</style>
 </head>
 <body>
@@ -229,7 +229,7 @@
               </form>
             </section>
             <section class="admin-card">
-              <div class="admin-card-title"><div><span class="mini-label">SITE TOOLS</span><h3>站点工具</h3><p class="admin-card-subtitle">一键开启 / 关闭网站维护；清除已拒绝投稿。</p></div></div>
+              <div class="admin-card-title"><div><span class="mini-label">SITE TOOLS</span><h3>站点工具</h3><p class="admin-card-subtitle">一键开启 / 关闭网站维护（维护对所有人含开发者生效，开发者凭密码会话进后台）；清除已拒绝投稿。</p></div></div>
               <div class="copy-row">
                 <button id="maintenance-toggle" class="button button-primary">开始网站维护</button>
               <span id="maintenance-state" class="copy-count">维护关闭</span>
@@ -237,17 +237,6 @@
               <div class="copy-row">
                 <button id="voting-toggle" class="button button-outline">暂停投票</button>
                 <span id="voting-state" class="copy-count">投票开放中</span>
-              </div>
-              <div class="copy-row">
-                <div class="ip-mode-group" role="group" aria-label="公网IP模式">
-                <button type="button" class="ip-mode-btn active" data-ipmode="v4">IPv4</button>
-                <button type="button" class="ip-mode-btn" data-ipmode="v6">IPv6</button>
-              </div>
-              <input id="admin-ip-input" placeholder="开启前请填写你的公网IP" autocomplete="off" autocapitalize="off">
-              </div>
-              <div class="copy-row">
-                <span id="ip-hint" class="copy-count">检测中…</span>
-                <a id="ip-help" href="https://ipinfo.io/ip" target="_blank" rel="noopener noreferrer">不知道公网IP？点这里测试 ↗</a>
               </div>
               <div class="copy-row">
                 <button id="clear-rejected" class="button button-outline">🗑 清除已拒绝投稿</button>
@@ -439,7 +428,7 @@
     </div>
   </div>
 
-  <script src="./app.js?v=20251125a" defer></script>
-  <script src="./games.js?v=20251125a" defer></script>
+  <script src="./app.js?v=20251125b" defer></script>
+  <script src="./games.js?v=20251125b" defer></script>
 </body>
 </html>
