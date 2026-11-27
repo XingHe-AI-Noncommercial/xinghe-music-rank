@@ -326,12 +326,27 @@
   });
 
   // ---------- 投稿 ----------
+  // 客户端 SQL 注入特征检测（与后端一致，减少无谓请求；后端仍权威判定+封禁）
+  const CLIENT_SQL_RE = /(union\s+(all\s+)?select\b|select\s+[\w,.*\s]+\s+from\b|insert\s+into\b|update\s+\w+\s+set\b|delete\s+from\b|drop\s+(table|database|schema|index|view)\b|alter\s+table\b|create\s+(table|database)\b|truncate\s+(table|database)\b|exec(ute)?\s*\(|declare\s+\w+|waitfor\s+delay\b|load_file\s*\(|into\s+(outfile|dumpfile)\b|information_schema\b|\b(sleep|benchmark)\s*\(|'\s*(or|and)\s+['"0-9]|1\s*=\s*1\b|'\s*=\s*'|;\s*(select|insert|update|delete|drop)\b|--\s*$|#\s*$|\/\*|\*\/)/i;
+  function clientLooksLikeSql(text) { if (text == null) return false; return CLIENT_SQL_RE.test(String(text)); }
+  document.addEventListener('input', event => {
+    const el = event.target;
+    if (!el || (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA')) return;
+    if (clientLooksLikeSql(el.value)) {
+      if (!el.dataset.sqlWarn) { el.dataset.sqlWarn = '1'; showToast('检测到疑似 SQL 注入，输入已标记，将无法提交。', 'error'); }
+    } else if (el.dataset.sqlWarn) { delete el.dataset.sqlWarn; }
+  });
+
   $('#submit-form').addEventListener('submit', async event => {
     event.preventDefault();
     if (!state.realMode) { showToast('当前是本地预览模式，请先完成 Cloudflare D1 配置。', 'error'); return; }
     const form = event.currentTarget;
     const button = form.querySelector('button[type="submit"]');
     const data = Object.fromEntries(new FormData(form).entries());
+    // SQL 注入防御：客户端先拦一次
+    for (const v of Object.values(data)) {
+      if (clientLooksLikeSql(v)) { showToast('检测到疑似 SQL 注入，已阻止提交。', 'error'); return; }
+    }
     button.disabled = true; button.textContent = '正在提交…';
     try {
       const result = await api('/api/submit', { method: 'POST', body: JSON.stringify(data) });
@@ -341,6 +356,27 @@
     } catch (error) {
       showToast(error.message, 'error');
       button.disabled = false; button.innerHTML = '提交审核 <span>→</span>';
+    }
+  });
+
+  // ---------- BV 自动读取（B站 风控提示已前置） ----------
+  const biliFetchBtn = $('#bili-fetch');
+  if (biliFetchBtn) biliFetchBtn.addEventListener('click', async () => {
+    const form = $('#submit-form');
+    const bvid = (form?.elements?.bvid?.value || '').trim();
+    if (!bvid) { showToast('请先输入 BV 号。', 'error'); return; }
+    biliFetchBtn.disabled = true; const old = biliFetchBtn.textContent; biliFetchBtn.textContent = '读取中…';
+    try {
+      const res = await api('/api/bilibili?bvid=' + encodeURIComponent(bvid), { method: 'GET' });
+      if (form) {
+        if (res.author && form.elements.artist) form.elements.artist.value = res.author;
+        if (res.title && form.elements.title) form.elements.title.value = res.title;
+      }
+      showToast('已自动填入作者名和标题（B站风控可能导致偶尔失败）。', 'success');
+    } catch (error) {
+      showToast(error.message, 'error');
+    } finally {
+      biliFetchBtn.disabled = false; biliFetchBtn.textContent = old;
     }
   });
 
