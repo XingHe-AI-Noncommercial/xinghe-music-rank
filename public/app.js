@@ -359,7 +359,7 @@
     }
   });
 
-  // ---------- BV 自动读取（B站 风控提示已前置） ----------
+  // ---------- BV 自动读取（优先本机代理用真实IP；无则回退服务器，失败提示风控） ----------
   const biliFetchBtn = $('#bili-fetch');
   if (biliFetchBtn) biliFetchBtn.addEventListener('click', async () => {
     const form = $('#submit-form');
@@ -367,7 +367,15 @@
     if (!bvid) { showToast('请先输入 BV 号。', 'error'); return; }
     biliFetchBtn.disabled = true; const old = biliFetchBtn.textContent; biliFetchBtn.textContent = '读取中…';
     try {
-      const res = await api('/api/bilibili?bvid=' + encodeURIComponent(bvid), { method: 'GET' });
+      let res = null;
+      // ① 本机代理（127.0.0.1，用用户真实 IP，绕过浏览器跨域）
+      try {
+        const r = await fetch('http://127.0.0.1:8787/bili?bvid=' + encodeURIComponent(bvid), { method: 'GET' });
+        if (r.ok) res = await r.json().catch(() => null);
+      } catch {}
+      // ② 回退服务器（Cloudflare IP 被 B 站风控，通常失败）
+      if (!res || res.ok !== true) res = await api('/api/bilibili?bvid=' + encodeURIComponent(bvid), { method: 'GET' });
+      if (!res || res.ok !== true) throw new Error(res?.error || '读取 B 站数据失败，请手动填写作者名和标题。');
       if (form) {
         if (res.author && form.elements.artist) form.elements.artist.value = res.author;
         if (res.title && form.elements.title) form.elements.title.value = res.title;
