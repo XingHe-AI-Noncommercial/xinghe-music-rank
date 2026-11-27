@@ -372,7 +372,7 @@
         if (res.author && form.elements.artist) form.elements.artist.value = res.author;
         if (res.title && form.elements.title) form.elements.title.value = res.title;
       }
-      showToast('已自动填入作者名和标题（B站风控可能导致偶尔失败）。', 'success');
+      showToast('已自动填入作者名和标题。', 'success');
     } catch (error) {
       showToast(error.message, 'error');
     } finally {
