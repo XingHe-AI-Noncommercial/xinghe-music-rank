@@ -7,7 +7,7 @@
   <meta name="description" content="星河音浪榜 · 精简版：每两周清空的 B 站视频投稿榜单。每天每 IP 限投 1 个，开发者审核通过后上架，可一键复制全部 BV 号。">
   <title>星河音浪榜 · 精简版</title>
   <script>try{const t=localStorage.getItem('xh-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
-  <link rel="stylesheet" href="./styles.css?v=20251125b">
+  <link rel="stylesheet" href="./styles.css?v=20251125c">
   <style>#boot-splash{position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#0e1413;color:#e8f5ee;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;transition:opacity .25s}#boot-splash .bs-logo{font-size:30px;font-weight:900;letter-spacing:.04em}#boot-splash .bs-sub{font-size:12px;opacity:.65;letter-spacing:.18em;text-transform:uppercase}#boot-splash .bs-spin{width:30px;height:30px;border:3px solid rgba(255,255,255,.18);border-top-color:#5fd9a4;border-radius:50%;animation:bs-rot .8s linear infinite}#boot-splash.bs-done{opacity:0;pointer-events:none}@keyframes bs-rot{to{transform:rotate(360deg)}}</style>
 </head>
 <body>
@@ -73,6 +73,10 @@
       <section id="submit" class="add-section">
         <form id="submit-form" class="submit-form">
           <label class="wide">B 站 BV 号（只填 BV 号，不要粘贴链接）<input name="bvid" maxlength="120" required placeholder="BVXXXXXXXXXX" autocomplete="off"></label>
+          <div class="bv-fetch-row">
+            <button type="button" class="button button-outline bv-fetch-btn" id="bili-fetch">⚡ 自动读取数据</button>
+            <span class="field-hint">自动读取会访问 B 站（服务器代取），可能触发 B 站风控；失败请手动填写作者名和标题。</span>
+          </div>
           <label>作者名<input name="artist" maxlength="100" placeholder="作者 / UP 主" autocomplete="off"></label>
           <label>视频名<input name="title" maxlength="100" required placeholder="视频标题 / 歌名" autocomplete="off"></label>
           <button class="button button-primary" type="submit">提交审核 <span>→</span></button>
@@ -428,7 +432,7 @@
     </div>
   </div>
 
-  <script src="./app.js?v=20251125b" defer></script>
-  <script src="./games.js?v=20251125b" defer></script>
+  <script src="./app.js?v=20251125c" defer></script>
+  <script src="./games.js?v=20251125c" defer></script>
 </body>
 </html>
