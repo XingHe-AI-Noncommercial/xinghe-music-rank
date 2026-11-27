@@ -7,7 +7,7 @@
   <meta name="description" content="星河音浪榜 · 精简版：每两周清空的 B 站视频投稿榜单。每天每 IP 限投 1 个，开发者审核通过后上架，可一键复制全部 BV 号。">
   <title>星河音浪榜 · 精简版</title>
   <script>try{const t=localStorage.getItem('xh-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
-  <link rel="stylesheet" href="./styles.css?v=20251125e">
+  <link rel="stylesheet" href="./styles.css?v=20251125f">
   <style>#boot-splash{position:fixed;inset:0;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#0e1413;color:#e8f5ee;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;transition:opacity .25s}#boot-splash .bs-logo{font-size:30px;font-weight:900;letter-spacing:.04em}#boot-splash .bs-sub{font-size:12px;opacity:.65;letter-spacing:.18em;text-transform:uppercase}#boot-splash .bs-spin{width:30px;height:30px;border:3px solid rgba(255,255,255,.18);border-top-color:#5fd9a4;border-radius:50%;animation:bs-rot .8s linear infinite}#boot-splash.bs-done{opacity:0;pointer-events:none}@keyframes bs-rot{to{transform:rotate(360deg)}}</style>
 </head>
 <body>
@@ -233,6 +233,20 @@
               </form>
             </section>
             <section class="admin-card">
+              <div class="admin-card-title"><div><span class="mini-label">BATCH IMPORT</span><h3>批量导入歌曲</h3><p class="admin-card-subtitle">方式一：在「提示词」里写清要导入什么，交给 AI 生成导入清单；方式二：直接粘贴 BV 清单（每行一个），点「读取 B站 元数据」用你的真实 IP 补全作者和标题，可编辑后批量导入。</p></div><span id="batch-count" class="admin-card-badge">0 首</span></div>
+              <div class="batch-form">
+                <label>提示词（给 AI 生成批量导入）<textarea id="batch-prompt" rows="2" placeholder="例：导入 B站 本周音乐区播放量最高的前 10 首" autocomplete="off"></textarea></label>
+                <label>BV 清单（每行一个 BV 号）<textarea id="batch-list" rows="6" placeholder="BV1GJ411x7h7&#10;BV1Hx411y7i8" autocomplete="off"></textarea></label>
+                <label class="checkbox-line"><input type="checkbox" id="batch-approved"> 直接上架（开发者审核）；不勾选则导入为待审核</label>
+                <div class="batch-actions">
+                  <button class="button button-outline" type="button" id="batch-fetch">读取 B站 元数据</button>
+                  <button class="button button-primary" type="button" id="batch-import-btn">批量导入</button>
+                </div>
+              </div>
+              <textarea id="batch-preview" class="batch-preview" rows="5" placeholder="读取元数据后这里显示「BV号|作者|标题」，可编辑后再导入" autocomplete="off"></textarea>
+              <div id="batch-result" class="batch-result"></div>
+            </section>
+            <section class="admin-card">
               <div class="admin-card-title"><div><span class="mini-label">SITE TOOLS</span><h3>站点工具</h3><p class="admin-card-subtitle">一键开启 / 关闭网站维护（维护对所有人含开发者生效，开发者凭密码会话进后台）；清除已拒绝投稿。</p></div></div>
               <div class="copy-row">
                 <button id="maintenance-toggle" class="button button-primary">开始网站维护</button>
@@ -432,7 +446,7 @@
     </div>
   </div>
 
-  <script src="./app.js?v=20251125e" defer></script>
-  <script src="./games.js?v=20251125e" defer></script>
+  <script src="./app.js?v=20251125f" defer></script>
+  <script src="./games.js?v=20251125f" defer></script>
 </body>
 </html>
