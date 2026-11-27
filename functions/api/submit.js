@@ -4,7 +4,7 @@
 // 被拒绝（rejected）不占用当日额度，可重新提交；BV 号 / 链接 / 视频名手动填写。
 // 强制 10 秒 / 10 次 IP 限流。
 // ============================================================================
-import { beijingDay, enforceRateLimit, ensureWeek, fail, getBan, getClientIp, insertSong, isMaintenanceOn, json, rateLimitFailed, readBody } from '../_lib.js';
+import { beijingDay, enforceRateLimit, ensureWeek, fail, getBan, getClientIp, handleSqlAttempt, insertSong, isMaintenanceOn, json, looksLikeSql, rateLimitFailed, readBody } from '../_lib.js';
 
 export async function onRequestPost(context) {
   const { DB } = context.env;
@@ -23,6 +23,14 @@ export async function onRequestPost(context) {
     // IP 封禁：命中则拒绝投稿
     const ban = await getBan(DB, ip);
     if (ban) return fail('您当前的 IP 已被封禁，暂时无法投稿。', 403);
+
+    // SQL 注入防御：命中 → 若该 IP 已在站内确认则永久封禁；否则仅拒绝
+    for (const [k, val] of Object.entries({ bvid, artist, title })) {
+      if (looksLikeSql(val)) {
+        const banned = await handleSqlAttempt(DB, ip, `SQL注入攻击（${k}）`);
+        return fail(banned ? '检测到疑似 SQL 注入，已永久封禁此账号。' : '检测到疑似 SQL 注入，请求已拒绝。', 400);
+      }
+    }
 
     // 网站维护中：暂停公众投稿（开发者仍可进入后台关闭维护）
     if (await isMaintenanceOn(DB)) return fail('网站维护中，暂时停止投稿，请稍后再来。', 503);
