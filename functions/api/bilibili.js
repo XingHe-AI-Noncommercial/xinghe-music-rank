@@ -38,7 +38,7 @@ export async function onRequestGet(context) {
       pic: String(d.pic || ''),
       mid: String(d.owner?.mid || ''),
     });
-  } catch {
-    return fail('读取 B 站数据失败，请稍后再试或手动填写。', 502);
+  } catch (e) {
+    return fail('读取 B 站数据失败：' + String(e?.message || e).slice(0, 200), 502);
   }
 }
