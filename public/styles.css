@@ -879,3 +879,4 @@ body:not(.entered) .header-actions { display:none; }
 .bv-fetch-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:2px 0 4px; }
 .bv-fetch-btn { flex:none; padding:8px 12px; font-size:12px; }
 .field-hint { color:var(--muted); font-size:11px; line-height:1.5; flex:1; min-width:180px; }
+.field-hint-warn { color:var(--danger, #e5484d); font-weight:600; }
