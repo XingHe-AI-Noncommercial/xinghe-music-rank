@@ -760,6 +760,59 @@
     finally { button.disabled = false; button.textContent = '＋ 直接上架'; }
   });
 
+  // ---- 批量导入歌曲 ----
+  async function fetchBiliMeta(bvid) {
+    try {
+      const r = await fetch('http://127.0.0.1:8787/bili?bvid=' + encodeURIComponent(bvid), { method: 'GET' });
+      if (r.ok) { const j = await r.json().catch(() => null); if (j && j.ok) return j; }
+    } catch {}
+    try { const j = await api('/api/bilibili?bvid=' + encodeURIComponent(bvid), { method: 'GET' }); if (j && j.ok) return j; } catch {}
+    return { ok: false };
+  }
+  function parseBatchList(text) {
+    return String(text || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(l => {
+      const p = l.split('|').map(x => x.trim());
+      return { bvid: p[0] || '', artist: p[1] || '', title: p[2] || '' };
+    });
+  }
+  $('#batch-fetch').addEventListener('click', async () => {
+    const btn = $('#batch-fetch'); const listEl = $('#batch-list');
+    const items = parseBatchList(listEl.value);
+    if (!items.length) { showToast('请先粘贴 BV 清单。', 'error'); return; }
+    btn.disabled = true; const old = btn.textContent; btn.textContent = '读取中…';
+    try {
+      const lines = [];
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i]; let author = it.artist, title = it.title;
+        if (!author || !title) {
+          const meta = await fetchBiliMeta(it.bvid);
+          if (meta.ok) { if (!author) author = meta.author || ''; if (!title) title = meta.title || ''; }
+        }
+        lines.push((it.bvid || '') + '|' + (author || '') + '|' + (title || ''));
+        $('#batch-count').textContent = (i + 1) + '/' + items.length + ' 首';
+      }
+      $('#batch-preview').value = lines.join('\n');
+      $('#batch-count').textContent = items.length + ' 首';
+      showToast('已读取 ' + items.length + ' 首，可编辑后再导入。', 'success');
+    } catch (error) { showToast(error.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = old; }
+  });
+  $('#batch-import-btn').addEventListener('click', async () => {
+    const btn = $('#batch-import-btn'); const resEl = $('#batch-result');
+    const items = parseBatchList($('#batch-preview').value || $('#batch-list').value);
+    if (!items.length) { showToast('没有可导入的歌曲。', 'error'); return; }
+    btn.disabled = true; btn.textContent = '导入中…'; resEl.textContent = ''; resEl.className = 'batch-result';
+    try {
+      const result = await api('/api/admin/batch-import', { method: 'POST', body: JSON.stringify({ songs: items, status: $('#batch-approved').checked ? 'approved' : 'pending' }) });
+      resEl.textContent = result.message + (result.results?.filter(r => !r.ok).slice(0, 8).map(r => '\n• ' + r.bvid + ': ' + r.error).join('') || '');
+      resEl.className = 'batch-result ' + (result.failCount ? 'bad' : 'ok');
+      showToast(result.message, result.failCount ? 'error' : 'success');
+      await loadAdminData(); await refreshState(); $('#batch-preview').value = '';
+    } catch (error) { resEl.textContent = error.message; resEl.className = 'batch-result bad'; showToast(error.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = '批量导入'; }
+  });
+  $('#batch-list').addEventListener('input', () => { $('#batch-count').textContent = parseBatchList($('#batch-list').value).length + ' 首'; });
+
   $('#admin-submissions-list').addEventListener('click', async event => {
     const button = event.target.closest('[data-review]'); if (!button) return;
     const id = button.dataset.id; const action = button.dataset.review;
