@@ -190,6 +190,38 @@ export async function getBan(DB, ip) {
   return (await getBans(DB)).find(b => b.ip === ip && (b.until === 0 || b.until > now)) || null;
 }
 
+// ---------- SQL 注入防御 ----------
+// 命中即视为“疑似 SQL 注入”。要求语句/注释/注入特征上下文，减少正常标题误报。
+const SQL_RE = /(union\s+(all\s+)?select\b|select\s+[\w,.*\s]+\s+from\b|insert\s+into\b|update\s+\w+\s+set\b|delete\s+from\b|drop\s+(table|database|schema|index|view)\b|alter\s+table\b|create\s+(table|database)\b|truncate\s+(table|database)\b|exec(ute)?\s*\(|declare\s+\w+|waitfor\s+delay\b|load_file\s*\(|into\s+(outfile|dumpfile)\b|information_schema\b|\b(sleep|benchmark)\s*\(|'\s*(or|and)\s+['"0-9]|1\s*=\s*1\b|'\s*=\s*'|;\s*(select|insert|update|delete|drop)\b|--\s*$|#\s*$|\/\*|\*\/)/i;
+
+export function looksLikeSql(text) {
+  if (text == null) return false;
+  return SQL_RE.test(String(text));
+}
+
+// 该 IP 是否已在站内有记录（提交过 / 投过票 / 有用量 / 有收件箱）→ 视为“已确认到网站里”
+export async function isEstablishedIp(DB, ip) {
+  if (!ip) return false;
+  try {
+    const s = await DB.prepare("SELECT id FROM songs WHERE submitter_ip = ? LIMIT 1").bind(ip).first();
+    if (s) return true;
+    const v = await DB.prepare("SELECT id FROM votes WHERE voter_ip = ? LIMIT 1").bind(ip).first();
+    if (v) return true;
+    const vu = await DB.prepare("SELECT id FROM vote_usage WHERE ip = ? LIMIT 1").bind(ip).first();
+    if (vu) return true;
+    const inbox = await getSetting(DB, 'inbox:' + ip, '[]');
+    if (inbox && inbox !== '[]') return true;
+  } catch {}
+  return false;
+}
+
+// SQL 注入处理：命中 SQL → 若该 IP 已在站内确认则永久封禁；返回 true 表示已封禁（否则仅拒绝）
+export async function handleSqlAttempt(DB, ip, reason = 'SQL注入攻击') {
+  const established = await isEstablishedIp(DB, ip);
+  if (established) await addBan(DB, ip, 0, reason);
+  return established;
+}
+
 // ---------- 全局 60 秒请求计数：超过 360 次自动开启维护 ----------
 export async function bumpRequestCounter(DB) {
   try {
