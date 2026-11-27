@@ -2,21 +2,16 @@ import { enforceRateLimit, fail, json, rateLimitFailed } from '../_lib.js';
 
 const API = 'https://api.bilibili.com/x/web-interface/view?bvid=';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+const ERR = '读取 B 站数据失败，可能触发风控，请稍后再试或手动填写作者名和标题。';
 
 export async function onRequestGet(context) {
   try {
     const url = new URL(context.request.url);
     const bvid = String(url.searchParams.get('bvid') || '').trim();
-    // —— 诊断模式：验证外部 fetch 是否被平台拦截 ——
-    if (bvid === 'TEST') {
-      const r = await fetch('https://example.com');
+    if (bvid === 'TESTAPI') {
+      const r = await fetch(API + 'BV1GJ411x7h7', { headers: { 'User-Agent': UA, 'Referer': 'https://www.bilibili.com/' } });
       const t = await r.text();
-      return fail('example.com -> ' + r.status + ' len=' + t.length, 200);
-    }
-    if (bvid === 'TESTBILI') {
-      const r = await fetch('https://www.bilibili.com/', { headers: { 'User-Agent': UA, 'Referer': 'https://www.bilibili.com/' } });
-      const t = await r.text();
-      return fail('www.bilibili.com -> ' + r.status + ' len=' + t.length, 200);
+      return json({ ok: true, test: 'api.bilibili.com -> ' + r.status + ' head=' + t.slice(0, 80) });
     }
 
     const { DB } = context.env;
@@ -32,12 +27,12 @@ export async function onRequestGet(context) {
     let data = null;
     try { data = JSON.parse(text); } catch {}
     if (!res.ok || !data || data.code !== 0 || !data.data) {
-      const msg = data?.message || ('B站返回异常（HTTP ' + res.status + '），可能触发风控，请稍后再试或手动填写。');
-      return fail(String(msg).slice(0, 200), 502);
+      // 返回 200 + ok:false：Cloudflare 会劫持 502 状态为通用错误页，故用 200 传递真实错误
+      return json({ ok: false, error: ERR }, 200);
     }
     const d = data.data;
     return json({ ok: true, title: String(d.title || '').slice(0, 200), author: String(d.owner?.name || '').slice(0, 100), bvid: String(d.bvid || bvid), pic: String(d.pic || ''), mid: String(d.owner?.mid || '') });
   } catch (e) {
-    return fail('ERR ' + String(e?.message || e).slice(0, 300), 500);
+    return json({ ok: false, error: ERR }, 200);
   }
 }
