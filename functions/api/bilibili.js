@@ -2,24 +2,12 @@ import { enforceRateLimit, fail, json, rateLimitFailed } from '../_lib.js';
 
 const API = 'https://api.bilibili.com/x/web-interface/view?bvid=';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
-const ERR = '读取 B 站数据失败，可能触发风控，请稍后再试或手动填写作者名和标题。';
+const ERR = 'B站风控已封禁自动读取（几乎无法成功），请手动填写作者名和标题。';
 
 export async function onRequestGet(context) {
   try {
     const url = new URL(context.request.url);
     const bvid = String(url.searchParams.get('bvid') || '').trim();
-    if (bvid === 'TESTAPI') {
-      const rand = Math.random().toString(36).slice(2, 13) + Math.floor(Date.now() / 1000).toString(16);
-      const r = await fetch(API + 'BV1GJ411x7h7', {
-        headers: {
-          'User-Agent': UA, 'Referer': 'https://www.bilibili.com/', 'Accept': 'application/json, text/plain, */*',
-          'Accept-Language': 'zh-CN,zh;q=0.9', 'Accept-Encoding': 'gzip, deflate, br',
-          'Cookie': 'buvid3=' + rand + '; b_nut=' + Math.floor(Date.now() / 1000),
-        },
-      });
-      const t = await r.text();
-      return json({ ok: true, test: 'view -> ' + r.status + ' head=' + t.slice(0, 60) });
-    }
 
     const { DB } = context.env;
     if (!DB) return fail('数据库尚未连接。', 503);
