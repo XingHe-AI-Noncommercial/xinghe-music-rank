@@ -9,9 +9,16 @@ export async function onRequestGet(context) {
     const url = new URL(context.request.url);
     const bvid = String(url.searchParams.get('bvid') || '').trim();
     if (bvid === 'TESTAPI') {
-      const r = await fetch(API + 'BV1GJ411x7h7', { headers: { 'User-Agent': UA, 'Referer': 'https://www.bilibili.com/' } });
+      let cookie = '';
+      try {
+        const spi = await fetch('https://api.bilibili.com/x/frontend/finger/spi', { headers: { 'User-Agent': UA, 'Referer': 'https://www.bilibili.com/' } });
+        const sj = await spi.json().catch(() => null);
+        const b3 = sj?.data?.b_3 || '';
+        if (b3) cookie = 'buvid3=' + b3;
+      } catch {}
+      const r = await fetch(API + 'BV1GJ411x7h7', { headers: { 'User-Agent': UA, 'Referer': 'https://www.bilibili.com/', ...(cookie ? { Cookie: cookie } : {}) } });
       const t = await r.text();
-      return json({ ok: true, test: 'api.bilibili.com -> ' + r.status + ' head=' + t.slice(0, 80) });
+      return json({ ok: true, test: 'view -> ' + r.status + ' cookie=' + (cookie ? 'yes' : 'no') + ' head=' + t.slice(0, 60) });
     }
 
     const { DB } = context.env;
